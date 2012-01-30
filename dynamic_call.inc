@@ -86,8 +86,11 @@ stock Call(address, bool:auto_pop = true) {
 	#emit load.s.pri bytes
 	#emit push.pri
 
+	#emit lctrl 6
+	#emit add.c 0x1c
+	#emit push.pri
 	#emit load.s.pri address
-	#emit call.pri
+	#emit sctrl 6
 
 	if (auto_pop) {
 		while (Pop()) {}
