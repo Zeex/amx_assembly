@@ -199,3 +199,58 @@ stock CallFunction(const name[], {Float,_}:...) {
 	#emit retn
 	return 0;
 }
+
+stock GetNativeFunctionAddress(const name[]) {
+	static amxhdr[AMX_HDR];
+	static natives, num_natives, defsize;
+
+	static bool:initialized = false;
+	if (!initialized) {
+		GetAMXHeader(amxhdr);
+		natives = amxhdr[AMX_HDR_NATIVES] - amxhdr[AMX_HDR_DAT];
+		defsize = amxhdr[AMX_HDR_DEFSIZE];
+		num_natives = (amxhdr[AMX_HDR_LIBRARIES] - amxhdr[AMX_HDR_NATIVES]) / defsize;
+	}
+
+	// Binary search
+	new first = 0;
+	new last = num_natives - 1;
+	new mid;
+
+	while (first <= last) {
+		mid = (first + last) / 2;
+
+		// Table record offset
+		new offset = natives + mid*defsize;
+
+		new address;
+		#emit lref.s.pri offset
+		#emit stor.s.pri address
+		offset += 4;
+
+		new nameofs;
+		#emit lref.s.pri offset
+		#emit stor.s.pri nameofs
+		//offset += 4;
+
+		// Copy native's name
+		new native_name[32];
+		new index = 0;
+		nameofs -= amxhdr[AMX_HDR_DAT];
+		do {
+			native_name[index] = @(nameofs) & 0xFF;
+			++nameofs;
+		} while (native_name[index] != '\0' && ++index < sizeof(native_name));
+
+		new cmp = strcmp(name, native_name);
+		if (cmp > 0) {
+			last = mid - 1;
+		} else if (cmp < 0) {
+			first = mid + 1;
+		} else {
+			return address;
+		}
+	}
+
+	return 0;
+}
