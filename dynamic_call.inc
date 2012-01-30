@@ -96,25 +96,36 @@ stock Call(address, bool:auto_pop = true) {
 
 stock GetFunctionAddress(const name[]) {
 	static amxhdr[AMX_HDR];
-	static begin, end;
+	static publics, num_publics, defsize;
 
 	static bool:initialized = false;
 	if (!initialized) {
 		GetAMXHeader(amxhdr);
-		begin = amxhdr[AMX_HDR_PUBLICS] - amxhdr[AMX_HDR_DAT];
-		end   = amxhdr[AMX_HDR_NATIVES] - amxhdr[AMX_HDR_DAT];
+		publics = amxhdr[AMX_HDR_PUBLICS] - amxhdr[AMX_HDR_DAT];
+		defsize = amxhdr[AMX_HDR_DEFSIZE];
+		num_publics = (amxhdr[AMX_HDR_NATIVES] - amxhdr[AMX_HDR_PUBLICS]) / defsize;
 	}
 
-	for (new i = begin; i < end;) {
+	// Binary search
+	new i = 0;
+	new j = num_publics - 1;
+	new k;
+
+	while (i <= j) {
+		k = (i + j) / 2;
+
+		// Table record offset
+		new offset = publics + k*defsize;
+
 		new address;
-		#emit lref.s.pri i
+		#emit lref.s.pri offset
 		#emit stor.s.pri address
-		i += 4;
+		offset += 4;
 
 		new nameofs;
-		#emit lref.s.pri i
+		#emit lref.s.pri offset
 		#emit stor.s.pri nameofs
-		i += 4;
+		//offset += 4;
 
 		// Copy public's name
 		new public_name[32];
@@ -125,7 +136,15 @@ stock GetFunctionAddress(const name[]) {
 			++nameofs;
 		} while (public_name[index] != '\0' && ++index < sizeof(public_name));
 
-		if (strcmp(name, public_name) == 0) {
+		new cmp = strcmp(name, public_name);
+		if (cmp > 0) {
+			//printf("%s > %s", name, public_name);
+			i = k + 1;
+		} else if (cmp < 0) {
+			//printf("%s < %s", name, public_name);
+			j = k - 1;
+		} else {
+			//printf("%s == %s", name, public_name);
 			return address;
 		}
 	}
