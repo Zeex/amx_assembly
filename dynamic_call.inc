@@ -107,15 +107,15 @@ stock GetFunctionAddress(const name[]) {
 	}
 
 	// Binary search
-	new i = 0;
-	new j = num_publics - 1;
-	new k;
+	new first = 0;
+	new last = num_publics - 1;
+	new mid;
 
-	while (i <= j) {
-		k = (i + j) / 2;
+	while (first <= last) {
+		mid = (first + last) / 2;
 
 		// Table record offset
-		new offset = publics + k*defsize;
+		new offset = publics + mid*defsize;
 
 		new address;
 		#emit lref.s.pri offset
@@ -138,13 +138,10 @@ stock GetFunctionAddress(const name[]) {
 
 		new cmp = strcmp(name, public_name);
 		if (cmp > 0) {
-			//printf("%s > %s", name, public_name);
-			i = k + 1;
+			last = mid - 1;
 		} else if (cmp < 0) {
-			//printf("%s < %s", name, public_name);
-			j = k - 1;
+			first = mid + 1;
 		} else {
-			//printf("%s == %s", name, public_name);
 			return address;
 		}
 	}
