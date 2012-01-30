@@ -1,6 +1,6 @@
 #include <a_samp>
 
-#include "amx_assembly/phys_memory"
+#include "phys_memory"
 
 main() {
 	new s[24 char];
