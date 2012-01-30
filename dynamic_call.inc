@@ -172,8 +172,11 @@ stock CallFunction(const name[], {Float,_}:...) {
 
 	// Call the function
 	#emit push.s arg_bytes
+	#emit lctrl 6
+	#emit add.c 0x1c
+	#emit push.pri
 	#emit load.s.pri address
-	#emit call.pri
+	#emit sctrl 6
 	// Arguments are popped by callee
 
 	#emit stack 0x14
