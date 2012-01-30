@@ -203,6 +203,59 @@ stock CallFunction(const name[], {Float,_}:...) {
 	return 0;
 }
 
+stock CallNative(address, bool:auto_pop = true) {
+	new arg = 0;
+	new index = g_nargs;
+	new bytes = g_nargs * 4;
+	new tmp;
+
+	while (--index >= 0) {
+		arg = g_args[index];
+		#emit push.s arg
+	}
+
+	#emit load.s.pri bytes
+	#emit push.pri
+
+	// tmp = cod + cip - dat + <distance to nop #1>
+	#emit lctrl 0  // COD
+	#emit move.alt
+	#emit lctrl 6  // CIP
+	#emit add
+	#emit move.alt
+	#emit lctrl 1 // DAT
+	#emit sub.alt
+	#emit add.c 0x5c
+	#emit stor.s.pri tmp
+
+	// nop #1 = sysreq.d
+	#emit const.pri 135
+	#emit sref.s.pri tmp
+
+	// tmp += 4
+	#emit load.s.pri tmp
+	#emit add.c 4
+	#emit stor.s.pri tmp
+
+	// nop #2 = address
+	#emit load.s.pri address
+	#emit sref.s.pri tmp
+
+	#emit nop
+	#emit nop
+
+	// Pop native arguments
+	#emit lctrl 4 // Get STK
+	#emit load.s.alt bytes
+	#emit add
+	#emit add.c 4 // One extra cell for params[0]
+	#emit sctrl 4
+
+	if (auto_pop) {
+		while (Pop()) {}
+	}
+}
+
 stock GetNativeFunctionAddress(const name[]) {
 	static amxhdr[AMX_HDR];
 	static natives, num_natives, defsize;
@@ -341,3 +394,4 @@ stock CallNativeFunction(const name[], {Float,_}:...) {
 	#emit retn
 	return 0;
 }
+
