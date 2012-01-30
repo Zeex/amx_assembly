@@ -179,7 +179,6 @@ stock CallFunction(const name[], {Float,_}:...) {
 
 	new arg = arg_end;
 	while (arg >= arg_begin) {
-		//printf("arg = %d", arg);
 		#emit lref.s.pri arg
 		#emit load.i // Variable arguments are passed by reference
 		#emit push.pri
@@ -195,6 +194,7 @@ stock CallFunction(const name[], {Float,_}:...) {
 	#emit sctrl 6
 	// Arguments are popped by callee
 
+	// Pop locals and return
 	#emit stack 0x14
 	#emit retn
 	return 0;
@@ -252,5 +252,89 @@ stock GetNativeFunctionAddress(const name[]) {
 		}
 	}
 
+	return 0;
+}
+
+stock CallNativeFunction(const name[], {Float,_}:...) {
+	// Obtain function address
+	new address = GetNativeFunctionAddress(name);
+	if (address == 0) {
+		return 0;
+	}
+
+	new arg_bytes, arg_begin, arg_end;
+
+	// Get number of bytes passed
+	#emit load.s.pri 0x8
+	#emit const.alt 4
+	#emit sub
+	#emit stor.s.pri arg_bytes
+	// Store in ALT
+	#emit move.alt
+
+	// Last argument is at FRM + 0x0C + arg_bytes (which is in ALT)
+	#emit lctrl 5
+	#emit add.c 0xc
+	#emit add
+	#emit stor.s.pri arg_end
+
+	// Frist argument is at FRM + 0x10
+	#emit lctrl 5
+	#emit add.c 0x10
+	#emit stor.s.pri arg_begin
+
+	new arg = arg_end;
+	new tmp;
+
+	while (arg >= arg_begin) {
+		#emit lref.s.pri arg
+		#emit load.i // Variable arguments are passed by reference
+		#emit push.pri
+		arg -= 4;
+	}
+
+	// Push number of arguments * 4 (which is params[0])
+	#emit push.s arg_bytes
+
+	// Call the function
+	// We use sysreq.d for this purpose
+
+	// tmp = cod + cip - dat + <distance to nop #1>
+	#emit lctrl 0  // COD
+	#emit move.alt
+	#emit lctrl 6  // CIP
+	#emit add
+	#emit move.alt
+	#emit lctrl 1 // DAT
+	#emit sub.alt
+	#emit add.c 0x5c
+	#emit stor.s.pri tmp
+
+	// nop #1 = sysreq.d
+	#emit const.pri 135
+	#emit sref.s.pri tmp
+
+	// tmp += 4
+	#emit load.s.pri tmp
+	#emit add.c 4
+	#emit stor.s.pri tmp
+
+	// nop #2 = address
+	#emit load.s.pri address
+	#emit sref.s.pri tmp
+
+	#emit nop
+	#emit nop
+
+	// Pop native arguments
+	#emit lctrl 4 // Get STK
+	#emit load.s.alt arg_bytes
+	#emit add
+	#emit add.c 4 // One extra cell for params[0]
+	#emit sctrl 4
+
+	// Pop locals and return
+	#emit stack 0x18
+	#emit retn
 	return 0;
 }
