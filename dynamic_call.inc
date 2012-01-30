@@ -133,41 +133,58 @@ stock GetFunctionAddress(const name[]) {
 	return 0;
 }
 
-stock CallFunction(const name[], {Float,_}:...) {
+stock CallFunction(const name[], const format[], {Float,_}:...) {
 	// Obtain function address
 	new address = GetFunctionAddress(name);
 	if (address == 0) {
+		printf("CallFunction(): Cannot find public function %s", name);
 		return 0;
 	}
 
 	new arg_bytes, arg_begin, arg_end;
 
-	// Get number of bytes passed
+	// Get the size of arguments
 	#emit load.s.pri 0x8
-	#emit const.alt 4
+	#emit const.alt 8
 	#emit sub
 	#emit stor.s.pri arg_bytes
 	// Store in ALT
 	#emit move.alt
 
-	// Last argument is at FRM + 0x0C + arg_bytes (which is in ALT)
+	// Last argument is at FRM + 0x10 + arg_bytes (which is in ALT)
 	#emit lctrl 5
-	#emit add.c 0xc
+	#emit add.c 0x10
 	#emit add
 	#emit stor.s.pri arg_end
 
-	// Frist argument is at FRM + 0x10
+	// First argument is at FRM + 0x14
 	#emit lctrl 5
-	#emit add.c 0x10
+	#emit add.c 0x14
 	#emit stor.s.pri arg_begin
 
-	new arg = arg_end;
-	while (arg >= arg_begin) {
-		//printf("arg = %d", arg);
-		#emit lref.s.pri arg
-		#emit load.i // Variable arguments are passed by reference
-		#emit push.pri
-		arg -= 4;
+	// Check parameter count
+	new format_len = strlen(format);
+	if (arg_bytes/4 != format_len) {
+		printf("CallFunction(): Expected %d arguments but got %d", format_len, arg_bytes/4);
+		return 0;
+	}
+
+	// Push the arguments
+	new cur_arg = arg_end;
+	new cur_idx = format_len - 1;
+	while (cur_arg >= arg_begin) {
+		switch (format[cur_idx--]) {
+			case 'i', 'd': {
+				#emit lref.s.pri cur_arg
+				#emit load.i // Variable arguments are passed by reference
+				#emit push.pri
+			}
+			case 's': {
+				#emit lref.s.pri cur_arg
+				#emit push.pri
+			}
+		}
+		cur_arg -= 4;
 	}
 
 	// Call the function
@@ -179,7 +196,7 @@ stock CallFunction(const name[], {Float,_}:...) {
 	#emit sctrl 6
 	// Arguments are popped by callee
 
-	#emit stack 0x14
+	#emit stack 0x1c
 	#emit retn
 	return 0;
 }
