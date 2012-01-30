@@ -36,7 +36,16 @@
 //         Looks up the address of the specified public function by its name.
 //         Returns 0 if the function is not found.
 //     CallFunction(const name[], {Float,_}:...)
-//         Similar to CallLocalFunction() but doesn't take a format string.
+//         Same as SA-MP's CallLocalFunction() but doesn't need a format string.
+//         You have to use addressofs() to pass strings and addressof() for references.
+//     CallNative(address)
+//         Calls a native function. The address can be obtained with GetNativeFunctionAddress(),
+//         see below.
+//     GetNativeFunctionAddress(const name[])
+//         Searches for a native function with a given name in native table and
+//         returns its address if found, or 0 otherwise.
+//     CallNativeFunction(const name[], {Float,_}:...)
+//         Similar to CallFunction but for natives.
 
 #include <a_samp>
 
