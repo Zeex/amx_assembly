@@ -1,11 +1,12 @@
 #include "dynamic_call"
 
-forward test(i, s[], t[]);
+forward test(i, &j, s[], t[]);
 
 main() {
-	CallFunction("test", "iss", 1, "hell", "yeah");
+	new x = 456;
+	CallFunction("test", 123, addressof(x), addressofs("hell"), addressofs("yeah"));
 }
 
-public test(i, s[], t[]) {
-	printf("%d %s %s", i, s, t);
+public test(i, &j, s[], t[]) {
+	printf("%d %d %s %s", i, j, s, t);
 }
