@@ -23,6 +23,7 @@
 //   bool:GetPublicInfo(index, info[AMX_FUNCSTUBNT])
 //   GetPublicAddressByName(const name[])
 //   GetPublicNameByIndex(index, name[], size = sizeof(name))
+//   CallPublic(address, {Float,_}:...)
 
 #include <string>
 #include "amx_hdr"
