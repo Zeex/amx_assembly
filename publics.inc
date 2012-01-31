@@ -120,19 +120,19 @@ stock GetPublicIndexByName(const name[]) {
 		//offset += 4;
 
 		// Copy public's name
-		new public_name[32];
+		new cur_name[32];
 		new index = 0;
 		nameofs -= amxhdr[AMX_HDR_DAT];
 		do {
-			public_name[index] = @(nameofs) & 0xFF;
+			cur_name[index] = @(nameofs) & 0xFF;
 			++nameofs;
-		} while (public_name[index] != '\0' && ++index < sizeof(public_name));
+		} while (cur_name[index] != '\0' && ++index < sizeof(cur_name));
 
-		new cmp = strcmp(name, public_name);
+		new cmp = strcmp(name, cur_name);
 		if (cmp > 0) {
-			last = mid - 1;
-		} else if (cmp < 0) {
 			first = mid + 1;
+		} else if (cmp < 0) {
+			last = mid - 1;
 		} else {
 			return mid;
 		}
