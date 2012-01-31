@@ -263,6 +263,32 @@ stock CallNative(address, bool:auto_pop = true) {
 	}
 }
 
+stock GetNativeFunctionIndex(address) {
+	new amxhdr[AMX_HDR];
+	GetAmxHeaderOnce(amxhdr);
+
+	new natives = amxhdr[AMX_HDR_NATIVES] - amxhdr[AMX_HDR_DAT];
+	new defsize = amxhdr[AMX_HDR_DEFSIZE];
+	new num_natives = (amxhdr[AMX_HDR_LIBRARIES] - amxhdr[AMX_HDR_NATIVES]) / defsize;
+
+	// Linear search
+	for (new i = 0; i < num_natives; i++) {
+		// Table record offset
+		new offset = natives + i*defsize;
+
+		new native_address;
+		#emit lref.s.pri offset
+		#emit stor.s.pri native_address
+		offset += 4;
+
+		if (native_address == address) {
+			return i;
+		}
+	}
+
+	return -1;
+}
+
 stock GetNativeFunctionAddress(const name[]) {
 	new amxhdr[AMX_HDR];
 	GetAmxHeaderOnce(amxhdr);
