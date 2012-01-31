@@ -8,8 +8,7 @@ and more. Heavily used by other modules.
 
 ### disasm ###
 
-Self-disassembling to a text file. Same as running `pawndisasm`
-against the target AMX.
+Self-disassemble to a text file. Same as running `pawndisasm` against the .amx.
 
 ### dynamic_call ###
 
