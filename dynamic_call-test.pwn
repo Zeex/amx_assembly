@@ -5,20 +5,20 @@ forward test(i, &j, s[], t[]);
 main() {
 	new x = 456;
 
-	// Publics -Method #1
-	CallPublic("test", 123, addressof(x), addressofs("hell"), addressofs("yeah"));
+	print("public - method #1");
+	CallPublic(GetPublicAddressByName("test"), 123, addressof(x), addressofs("hell"), addressofs("yeah"));
 
-	// Publics - Method #2
+	print("public - method #2");
 	Push(123);
 	Push(addressof(x));
 	Push(addressofs("hell"));
 	Push(addressofs("yeah"));
 	Call(GetPublicAddressByName("test"));
 
-	// Natives - Method #1
-	CallNative("printf", addressofs("Hello, %s!"), addressofs("World"));
+	print("native - method #1");
+	CallNative(GetNativeAddressByName("printf"), addressofs("Hello, %s!"), addressofs("World"));
 
-	// Natives - Method #2
+	print("native - method #2");
 	Push(addressofs("Hello, %s!"));
 	Push(addressofs("World"));
 	Sysreq(GetNativeAddressByName("printf"));
