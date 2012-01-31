@@ -453,3 +453,32 @@ stock GetFunctionName(address, name[], size = sizeof(name)) {
 
 	return 0;
 }
+
+stock GetNativeFunctionName(index, name[], size = sizeof(name)) {
+	new amxhdr[AMX_HDR];
+	GetAmxHeaderOnce(amxhdr);
+
+	new natives = amxhdr[AMX_HDR_NATIVES] - amxhdr[AMX_HDR_DAT];
+	new defsize = amxhdr[AMX_HDR_DEFSIZE];
+	new num_natives = (amxhdr[AMX_HDR_LIBRARIES] - amxhdr[AMX_HDR_NATIVES]) / defsize;
+
+	if (index < 0 || index >= num_natives) {
+		return 0;
+	}
+
+	// Table record offset
+	new offset = natives + index*defsize + 4;
+	new nameofs;
+	#emit lref.s.pri offset
+	#emit stor.s.pri nameofs
+
+	new i = 0;
+	nameofs -= amxhdr[AMX_HDR_DAT];
+	do {
+		name[i] = @(nameofs) & 0xFF;
+		++nameofs;
+	} while (name[i] != '\0' && ++i < size);
+	name[size - 1] = '\0'; // terminator
+
+	return 1;
+}
