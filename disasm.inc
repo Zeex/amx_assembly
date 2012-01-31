@@ -445,7 +445,7 @@ stock Disassemble(const out_filename[]) {
 		if (op == _:OP_PROC) {
 			// Print function name if it's public
 			new name[MAX_FUN_NAME];
-			GetFunctionName((cip + dat) - cod, name);
+			GetPublicNameByIndex(GetPublicIndexByAddress(cip + dat) - cod, name);
 			if (strlen(name) != 0) {
 				fwrite(file, "; ");
 				fwrite(file, name);
@@ -475,7 +475,7 @@ stock Disassemble(const out_filename[]) {
 		switch (Opcode:op) {
 			case OP_CALL: {
 				new name[MAX_FUN_NAME];
-				GetFunctionName(@(cip) - base - cod, name);
+				GetPublicNameByIndex(GetPublicIndexByAddress(@(cip) - base - cod), name);
 				if (strlen(name) > 0) {
 					fwrite(file, name);
 					cip += size_of_cell;
@@ -485,9 +485,9 @@ stock Disassemble(const out_filename[]) {
 			case OP_SYSREQ_C, OP_SYSREQ_D: {
 				new name[100]; // native name is not limited in length but we are
 				if (op == _:OP_SYSREQ_C) {
-					GetNativeFunctionName(@(cip), name);
+					GetNativeNameByIndex(@(cip), name);
 				} else {
-					GetNativeFunctionName(GetNativeFunctionIndex(@(cip)), name);
+					GetNativeNameByIndex(GetNativeIndexByAddress(@(cip)), name);
 				}
 				if (strlen(name) > 0) {
 					fwrite(file, name);
