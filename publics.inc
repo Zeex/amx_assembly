@@ -90,7 +90,7 @@ stock bool:GetPublicInfo(index, info[AMX_FUNCSTUBNT]) {
 	return true;
 }
 
-stock GetPublicAddressByName(const name[]) {
+stock GetPublicIndexByName(const name[]) {
 	new amxhdr[AMX_HDR];
 	GetAmxHeaderOnce(amxhdr);
 
@@ -134,11 +134,21 @@ stock GetPublicAddressByName(const name[]) {
 		} else if (cmp < 0) {
 			first = mid + 1;
 		} else {
-			return address;
+			return mid;
 		}
 	}
 
-	return 0;
+	return -1;
+}
+
+stock GetPublicAddressByIndex(index) {
+	new info[AMX_FUNCSTUBNT];
+	GetPublicInfo(index, info);
+	return info[AMX_FUNCSTUBNT_ADDRESS];
+}
+
+stock GetPublicAddressByName(const name[]) {
+	return GetPublicAddressByIndex(GetPublicIndexByName(name));
 }
 
 stock GetPublicNameByIndex(index, name[], size = sizeof(name)) {
