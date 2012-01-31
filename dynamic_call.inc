@@ -108,15 +108,6 @@ stock Call(address, bool:auto_pop = true) {
 	}
 }
 
-static stock GetAmxHeaderOnce(amxhdr[AMX_HDR]) {
-	static hdr[AMX_HDR];
-	static bool:initialized = false;
-	if (!initialized) {
-		GetAmxHeader(hdr);
-	}
-	amxhdr = hdr;
-}
-
 stock GetFunctionAddress(const name[]) {
 	new amxhdr[AMX_HDR];
 	GetAmxHeaderOnce(amxhdr);
