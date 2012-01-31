@@ -216,3 +216,28 @@ stock CallPublic(address, {Float,_}:...) {
 	#emit retn
 	return 0;
 }
+
+// Replace public's address in publics table and return the original address
+stock HookPublic(index, address) {
+	new amxhdr[AMX_HDR];
+	GetAmxHeaderOnce(amxhdr);
+
+	new publics = amxhdr[AMX_HDR_PUBLICS] - amxhdr[AMX_HDR_DAT];
+	new defsize = amxhdr[AMX_HDR_DEFSIZE];
+	new num_publics = (amxhdr[AMX_HDR_NATIVES] - amxhdr[AMX_HDR_PUBLICS]) / defsize;
+
+	if (index < 0 || index >= num_publics) {
+		return 0;
+	}
+
+	// Table record offset
+	new offset = publics + index*defsize;
+
+	new old_address;
+	#emit lref.s.pri offset
+	#emit stor.s.pri old_address
+	#emit load.s.pri address
+	#emit sref.s.pri offset
+
+	return old_address;
+}
