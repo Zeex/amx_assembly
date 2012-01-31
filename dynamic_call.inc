@@ -45,6 +45,8 @@
 
 #include "amx_hdr"
 #include "memory"
+#include "natives"
+#include "publics"
 
 #if !defined MAX_FUN_ARGS
 	#define MAX_FUN_ARGS 256
