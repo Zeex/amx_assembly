@@ -21,7 +21,9 @@
 // Function list:
 //   GetPublicIndexByAddress(address)
 //   bool:GetPublicInfo(index, info[AMX_FUNCSTUBNT])
+//   GetPublicIndexByName(const name[])
 //   GetPublicAddressByName(const name[])
+//   GetPublicAddressByIndex(index);
 //   GetPublicNameByIndex(index, name[], size = sizeof(name))
 //   CallPublic(address, {Float,_}:...)
 
