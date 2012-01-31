@@ -56,6 +56,8 @@
 	#define MAX_FUN_ARGS 256
 #endif
 
+#define MAX_FUN_NAME 32
+
 static stock g_nargs = 0;
 static stock g_args[MAX_FUN_ARGS];
 
@@ -106,17 +108,22 @@ stock Call(address, bool:auto_pop = true) {
 	}
 }
 
-stock GetFunctionAddress(const name[]) {
-	static amxhdr[AMX_HDR];
-	static publics, num_publics, defsize;
-
+static stock GetAmxHeaderOnce(amxhdr[AMX_HDR]) {
+	static hdr[AMX_HDR];
 	static bool:initialized = false;
 	if (!initialized) {
-		GetAmxHeader(amxhdr);
-		publics = amxhdr[AMX_HDR_PUBLICS] - amxhdr[AMX_HDR_DAT];
-		defsize = amxhdr[AMX_HDR_DEFSIZE];
-		num_publics = (amxhdr[AMX_HDR_NATIVES] - amxhdr[AMX_HDR_PUBLICS]) / defsize;
+		GetAmxHeader(hdr);
 	}
+	amxhdr = hdr;
+}
+
+stock GetFunctionAddress(const name[]) {
+	new amxhdr[AMX_HDR];
+	GetAmxHeaderOnce(amxhdr);
+
+	new publics = amxhdr[AMX_HDR_PUBLICS] - amxhdr[AMX_HDR_DAT];
+	new defsize = amxhdr[AMX_HDR_DEFSIZE];
+	new num_publics = (amxhdr[AMX_HDR_NATIVES] - amxhdr[AMX_HDR_PUBLICS]) / defsize;
 
 	// Binary search
 	new first = 0;
@@ -266,16 +273,12 @@ stock CallNative(address, bool:auto_pop = true) {
 }
 
 stock GetNativeFunctionAddress(const name[]) {
-	static amxhdr[AMX_HDR];
-	static natives, num_natives, defsize;
+	new amxhdr[AMX_HDR];
+	GetAmxHeaderOnce(amxhdr);
 
-	static bool:initialized = false;
-	if (!initialized) {
-		GetAmxHeader(amxhdr);
-		natives = amxhdr[AMX_HDR_NATIVES] - amxhdr[AMX_HDR_DAT];
-		defsize = amxhdr[AMX_HDR_DEFSIZE];
-		num_natives = (amxhdr[AMX_HDR_LIBRARIES] - amxhdr[AMX_HDR_NATIVES]) / defsize;
-	}
+	new natives = amxhdr[AMX_HDR_NATIVES] - amxhdr[AMX_HDR_DAT];
+	new defsize = amxhdr[AMX_HDR_DEFSIZE];
+	new num_natives = (amxhdr[AMX_HDR_LIBRARIES] - amxhdr[AMX_HDR_NATIVES]) / defsize;
 
 	// Binary search
 	new first = 0;
@@ -404,3 +407,49 @@ stock CallNativeFunction(const name[], {Float,_}:...) {
 	return 0;
 }
 
+static stock strcpy(dest[], const source[], size = sizeof(dest)) {
+	dest[0] = '\0';
+	return strcat(dest, source, size);
+}
+
+stock GetFunctionName(address, name[], size = sizeof(name)) {
+	new amxhdr[AMX_HDR];
+	GetAmxHeaderOnce(amxhdr);
+
+	if (address == amxhdr[AMX_HDR_CIP]) {
+		strcpy(name, "main", size);
+		return 1;
+	}
+
+	new publics = amxhdr[AMX_HDR_PUBLICS] - amxhdr[AMX_HDR_DAT];
+	new defsize = amxhdr[AMX_HDR_DEFSIZE];
+	new num_publics = (amxhdr[AMX_HDR_NATIVES] - amxhdr[AMX_HDR_PUBLICS]) / defsize;
+
+	// Linear search
+	for (new i = 0; i < num_publics; i++) {
+		// Table record offset
+		new offset = publics + i*defsize;
+
+		new public_address;
+		#emit lref.s.pri offset
+		#emit stor.s.pri public_address
+		offset += 4;
+
+		new nameofs;
+		#emit lref.s.pri offset
+		#emit stor.s.pri nameofs
+
+		if (public_address == address) {
+			new index = 0;
+			nameofs -= amxhdr[AMX_HDR_DAT];
+			do {
+				name[index] = @(nameofs) & 0xFF;
+				++nameofs;
+			} while (name[index] != '\0' && ++index < size);
+			name[size - 1] = '\0'; // terminator
+			return 1;
+		}
+	}
+
+	return 0;
+}
