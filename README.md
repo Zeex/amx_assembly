@@ -18,8 +18,11 @@ Call public/native functions dynamically using a high-level API.
 ### memory ###
 
 A few handy functions/macros for reading from/writing to AMX data section. 
-`new x = @(y) // Read x from address stored in y`.
-Becomes somehwat more powerful when used in conjuction with dynamic_call.
+
+	// Example:
+	new x = @(y) // Read x from address stored in y
+
+Also can be used to pass strings/references when working with dynamic_call.
 
 ### phys_memory ###
 
