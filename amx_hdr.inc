@@ -43,7 +43,7 @@ enum AMX_HDR {
 	AMX_HDR_NAMETABLE
 }
 
-stock GetPlainAMXHeader(plain_amxhdr[AMX_HDR_CELLS]) {
+stock GetPlainAmxHeader(plain_amxhdr[AMX_HDR_CELLS]) {
 	new address;
 	#emit lctrl 1  // DAT
 	#emit neg      // -DAT
@@ -82,9 +82,9 @@ static stock copy_4(&dest, const source[], start) {
 	#emit movs 4
 }
 
-stock GetAMXHeader(amxhdr[AMX_HDR]) {
+stock GetAmxHeader(amxhdr[AMX_HDR]) {
 	new plain_amxhdr[AMX_HDR_CELLS];
-	GetPlainAMXHeader(plain_amxhdr);
+	GetPlainAmxHeader(plain_amxhdr);
 
 	copy_4(amxhdr[AMX_HDR_SIZE], plain_amxhdr, 0);
 	copy_2(amxhdr[AMX_HDR_MAGIC], plain_amxhdr, 4);
@@ -105,7 +105,7 @@ stock GetAMXHeader(amxhdr[AMX_HDR]) {
 	copy_4(amxhdr[AMX_HDR_NAMETABLE], plain_amxhdr, 52);
 }
 
-stock PrintAMXHeader() {
+stock PrintAmxHeader() {
 	new amxhdr[AMX_HDR];
 	GetAMXHeader(amxhdr);
 

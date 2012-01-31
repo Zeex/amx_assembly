@@ -112,7 +112,7 @@ stock GetFunctionAddress(const name[]) {
 
 	static bool:initialized = false;
 	if (!initialized) {
-		GetAMXHeader(amxhdr);
+		GetAmxHeader(amxhdr);
 		publics = amxhdr[AMX_HDR_PUBLICS] - amxhdr[AMX_HDR_DAT];
 		defsize = amxhdr[AMX_HDR_DEFSIZE];
 		num_publics = (amxhdr[AMX_HDR_NATIVES] - amxhdr[AMX_HDR_PUBLICS]) / defsize;
@@ -271,7 +271,7 @@ stock GetNativeFunctionAddress(const name[]) {
 
 	static bool:initialized = false;
 	if (!initialized) {
-		GetAMXHeader(amxhdr);
+		GetAmxHeader(amxhdr);
 		natives = amxhdr[AMX_HDR_NATIVES] - amxhdr[AMX_HDR_DAT];
 		defsize = amxhdr[AMX_HDR_DEFSIZE];
 		num_natives = (amxhdr[AMX_HDR_LIBRARIES] - amxhdr[AMX_HDR_NATIVES]) / defsize;
