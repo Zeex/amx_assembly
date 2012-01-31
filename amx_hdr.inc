@@ -105,6 +105,15 @@ stock GetAmxHeader(amxhdr[AMX_HDR]) {
 	copy_4(amxhdr[AMX_HDR_NAMETABLE], plain_amxhdr, 52);
 }
 
+stock GetAmxHeaderOnce(amxhdr[AMX_HDR]) {
+	static hdr[AMX_HDR];
+	static bool:initialized = false;
+	if (!initialized) {
+		GetAmxHeader(hdr);
+	}
+	amxhdr = hdr;
+}
+
 stock PrintAmxHeader() {
 	new amxhdr[AMX_HDR];
 	GetAMXHeader(amxhdr);
