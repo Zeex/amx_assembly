@@ -21,7 +21,9 @@
 // Function list:
 //   GetNativeIndexByAddress(address)
 //   bool:GetNativeInfo(index, info[AMX_FUNCSTUBNT])
+//   GetNativeIndexByName(const name[]);
 //   GetNativeAddressByName(const name[])
+//   GetNativeAddressByIndex(index);
 //   GetNativeNameByIndex(index, name[], size = sizeof(name))
 //   CallNative(address, {Float,_}:...)
 
