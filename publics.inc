@@ -28,6 +28,11 @@
 #include "amx_hdr"
 #include "memory"
 
+static stock strcpy(dest[], const source[], size = sizeof(dest)) {
+	dest[0] = '\0';
+	return strcat(dest, source, size);
+}
+
 stock GetPublicIndexByAddress(address) {
 	new amxhdr[AMX_HDR];
 	GetAmxHeaderOnce(amxhdr);
@@ -161,7 +166,52 @@ stock GetPublicNameByIndex(index, name[], size = sizeof(name)) {
 	return 1;
 }
 
-static stock strcpy(dest[], const source[], size = sizeof(dest)) {
-	dest[0] = '\0';
-	return strcat(dest, source, size);
+stock CallPublic(address, {Float,_}:...) {
+	if (address <= 0) {
+		printf("CallPublic(): Invalid public address %x", address);
+		return 0;
+	}
+
+	new arg_bytes, arg_begin, arg_end;
+
+	// Get number of bytes passed
+	#emit load.s.pri 0x8
+	#emit const.alt 4
+	#emit sub
+	#emit stor.s.pri arg_bytes
+	// Store in ALT
+	#emit move.alt
+
+	// Last argument is at FRM + 0x0C + arg_bytes (which is in ALT)
+	#emit lctrl 5
+	#emit add.c 0xc
+	#emit add
+	#emit stor.s.pri arg_end
+
+	// Frist argument is at FRM + 0x10
+	#emit lctrl 5
+	#emit add.c 0x10
+	#emit stor.s.pri arg_begin
+
+	new arg = arg_end;
+	while (arg >= arg_begin) {
+		#emit lref.s.pri arg
+		#emit load.i // Variable arguments are passed by reference
+		#emit push.pri
+		arg -= 4;
+	}
+
+	// Call the function
+	#emit push.s arg_bytes
+	#emit lctrl 6
+	#emit add.c 0x1c
+	#emit push.pri
+	#emit load.s.pri address
+	#emit sctrl 6
+	// Arguments are popped by callee
+
+	// Pop locals and return
+	#emit stack 0x10
+	#emit retn
+	return 0;
 }
