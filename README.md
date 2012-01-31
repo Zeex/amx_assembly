@@ -3,8 +3,8 @@ Quick Overview
 
 ### amx_hdr ###
 
-Allows you to get/print AMX header (prefix) contents. Heavily used by other 
-modules.
+Allows you to get/print AMX header (prefix) contents, explore public/native tables
+and more. Heavily used by other modules.
 
 ### disasm ###
 
