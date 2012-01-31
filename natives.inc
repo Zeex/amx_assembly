@@ -18,7 +18,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-// Function list:
+// Functions:
 //   GetNativeIndexByAddress(address)
 //   bool:GetNativeInfo(index, info[AMX_FUNCSTUBNT])
 //   GetNativeIndexByName(const name[]);

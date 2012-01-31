@@ -18,7 +18,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-// Function list:
+// Functions:
 //   GetPublicIndexByAddress(address)
 //   bool:GetPublicInfo(index, info[AMX_FUNCSTUBNT])
 //   GetPublicIndexByName(const name[])
