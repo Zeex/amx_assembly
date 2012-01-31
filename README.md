@@ -8,7 +8,7 @@ and more. Heavily used by other modules.
 
 ### disasm ###
 
-Self-disassembling to a text file. Same as running pawndisasm
+Self-disassembling to a text file. Same as running `pawndisasm`
 against the target AMX.
 
 ### dynamic_call ###
@@ -31,4 +31,4 @@ memory. See phys_memory-test.pwn for examples.
 
 ### stack_dump ###
 
-Dump stack contents to the console. Useful for debugging.
+Dump stack contents to the console, sometimes useful for debugging.
