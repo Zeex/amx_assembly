@@ -84,34 +84,7 @@ stock bool:GetNativeInfo(index, info[AMX_FUNCSTUBNT]) {
 	return true;
 }
 
-stock GetNativeNameByIndex(index, name[], size = sizeof(name)) {
-	new info[AMX_FUNCSTUBNT];
-	GetNativeInfo(index, info);
-
-	new nameofs = info[AMX_FUNCSTUBNT_NAMEOFS];
-
-	new dat;
-	#emit lctrl 1
-	#emit stor.s.pri dat
-
-	new i = 0;
-	nameofs -= dat;
-	do {
-		name[i] = @(nameofs) & 0xFF;
-		++nameofs;
-	} while (name[i] != '\0' && ++i < size);
-	name[size - 1] = '\0'; // terminator
-
-	return 1;
-}
-
-stock GetNativeAddressByIndex(index) {
-	new info[AMX_FUNCSTUBNT];
-	GetNativeInfo(index, info);
-	return info[AMX_FUNCSTUBNT_ADDRESS];
-}
-
-stock GetNativeAddressByName(const name[]) {
+stock GetNativeIndexByName(const name[]) {
 	new amxhdr[AMX_HDR];
 	GetAmxHeaderOnce(amxhdr);
 
@@ -155,11 +128,42 @@ stock GetNativeAddressByName(const name[]) {
 		} else if (cmp < 0) {
 			first = mid + 1;
 		} else {
-			return address;
+			return mid;
 		}
 	}
 
-	return 0;
+	return -1;
+}
+
+stock GetNativeAddressByIndex(index) {
+	new info[AMX_FUNCSTUBNT];
+	GetNativeInfo(index, info);
+	return info[AMX_FUNCSTUBNT_ADDRESS];
+}
+
+stock GetNativeAddressByName(const name[]) {
+	return GetNativeAddressByIndex(GetNativeIndexByName(name));
+}
+
+stock GetNativeNameByIndex(index, name[], size = sizeof(name)) {
+	new info[AMX_FUNCSTUBNT];
+	GetNativeInfo(index, info);
+
+	new nameofs = info[AMX_FUNCSTUBNT_NAMEOFS];
+
+	new dat;
+	#emit lctrl 1
+	#emit stor.s.pri dat
+
+	new i = 0;
+	nameofs -= dat;
+	do {
+		name[i] = @(nameofs) & 0xFF;
+		++nameofs;
+	} while (name[i] != '\0' && ++i < size);
+	name[size - 1] = '\0'; // terminator
+
+	return 1;
 }
 
 stock CallNative(address, {Float,_}:...) {
