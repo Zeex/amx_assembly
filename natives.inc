@@ -23,6 +23,7 @@
 //   bool:GetNativeInfo(index, info[AMX_FUNCSTUBNT])
 //   GetNativeAddressByName(const name[])
 //   GetNativeNameByIndex(index, name[], size = sizeof(name))
+//   CallNative(address, {Float,_}:...)
 
 #include "amx_hdr"
 #include "memory"
