@@ -106,7 +106,9 @@ stock GetNativeNameByIndex(index, name[], size = sizeof(name)) {
 }
 
 stock GetNativeAddressByIndex(index) {
-	return info[AMX_FUNCSTUBNT_NAMEOFS];
+	new info[AMX_FUNCSTUBNT];
+	GetNativeInfo(index, info);
+	return info[AMX_FUNCSTUBNT_ADDRESS];
 }
 
 stock GetNativeAddressByName(const name[]) {
