@@ -6,22 +6,22 @@ main() {
 	new x = 456;
 
 	// Publics -Method #1
-	CallFunction("test", 123, addressof(x), addressofs("hell"), addressofs("yeah"));
+	CallPublic("test", 123, addressof(x), addressofs("hell"), addressofs("yeah"));
 
-	// Publics - method #2
+	// Publics - Method #2
 	Push(123);
 	Push(addressof(x));
 	Push(addressofs("hell"));
 	Push(addressofs("yeah"));
-	Call(GetFunctionAddress("test"));
+	Call(GetPublicAddressByName("test"));
 
 	// Natives - Method #1
-	CallNativeFunction("printf", addressofs("Hello, %s!"), addressofs("World"));
+	CallNative("printf", addressofs("Hello, %s!"), addressofs("World"));
 
 	// Natives - Method #2
 	Push(addressofs("Hello, %s!"));
 	Push(addressofs("World"));
-	CallNative(GetNativeFunctionAddress("printf"));
+	Sysreq(GetNativeAddressByName("printf"));
 }
 
 public test(i, &j, s[], t[]) {

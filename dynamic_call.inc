@@ -31,19 +31,13 @@
 ///        optional parameter to store the popped value in.
 //     Call(address)
 //         Calls a function located at the specified address. The address can be
-//         obtained with GetFunctionAddress(), see below.
-//     GetFunctionAddress(const name[])
-//         Looks up the address of the specified public function by its name.
-//         Returns 0 if the function is not found.
+//         obtained with GetFunctionAddress().
 //     CallFunction(const name[], {Float,_}:...)
 //         Same as SA-MP's CallLocalFunction() but doesn't need a format string.
 //         You have to use addressofs() to pass strings and addressof() for references.
 //     CallNative(address)
 //         Calls a native function. The address can be obtained with GetNativeFunctionAddress(),
 //         see below.
-//     GetNativeFunctionAddress(const name[])
-//         Searches for a native function with a given name in native table and
-//         returns its address if found, or 0 otherwise.
 //     CallNativeFunction(const name[], {Float,_}:...)
 //         Similar to CallFunction but for natives.
 
@@ -108,60 +102,9 @@ stock Call(address, bool:auto_pop = true) {
 	}
 }
 
-stock GetFunctionAddress(const name[]) {
-	new amxhdr[AMX_HDR];
-	GetAmxHeaderOnce(amxhdr);
-
-	new publics = amxhdr[AMX_HDR_PUBLICS] - amxhdr[AMX_HDR_DAT];
-	new defsize = amxhdr[AMX_HDR_DEFSIZE];
-	new num_publics = (amxhdr[AMX_HDR_NATIVES] - amxhdr[AMX_HDR_PUBLICS]) / defsize;
-
-	// Binary search
-	new first = 0;
-	new last = num_publics - 1;
-	new mid;
-
-	while (first <= last) {
-		mid = (first + last) / 2;
-
-		// Table record offset
-		new offset = publics + mid*defsize;
-
-		new address;
-		#emit lref.s.pri offset
-		#emit stor.s.pri address
-		offset += 4;
-
-		new nameofs;
-		#emit lref.s.pri offset
-		#emit stor.s.pri nameofs
-		//offset += 4;
-
-		// Copy public's name
-		new public_name[32];
-		new index = 0;
-		nameofs -= amxhdr[AMX_HDR_DAT];
-		do {
-			public_name[index] = @(nameofs) & 0xFF;
-			++nameofs;
-		} while (public_name[index] != '\0' && ++index < sizeof(public_name));
-
-		new cmp = strcmp(name, public_name);
-		if (cmp > 0) {
-			last = mid - 1;
-		} else if (cmp < 0) {
-			first = mid + 1;
-		} else {
-			return address;
-		}
-	}
-
-	return 0;
-}
-
-stock CallFunction(const name[], {Float,_}:...) {
+stock CallPublic(const name[], {Float,_}:...) {
 	// Obtain function address
-	new address = GetFunctionAddress(name);
+	new address = GetPublicAddressByName(name);
 	if (address == 0) {
 		return 0;
 	}
@@ -210,7 +153,7 @@ stock CallFunction(const name[], {Float,_}:...) {
 	return 0;
 }
 
-stock CallNative(address, bool:auto_pop = true) {
+stock Sysreq(address, bool:auto_pop = true) {
 	new arg = 0;
 	new index = g_nargs;
 	new bytes = g_nargs * 4;
@@ -263,86 +206,9 @@ stock CallNative(address, bool:auto_pop = true) {
 	}
 }
 
-stock GetNativeFunctionIndex(address) {
-	new amxhdr[AMX_HDR];
-	GetAmxHeaderOnce(amxhdr);
-
-	new natives = amxhdr[AMX_HDR_NATIVES] - amxhdr[AMX_HDR_DAT];
-	new defsize = amxhdr[AMX_HDR_DEFSIZE];
-	new num_natives = (amxhdr[AMX_HDR_LIBRARIES] - amxhdr[AMX_HDR_NATIVES]) / defsize;
-
-	// Linear search
-	for (new i = 0; i < num_natives; i++) {
-		// Table record offset
-		new offset = natives + i*defsize;
-
-		new native_address;
-		#emit lref.s.pri offset
-		#emit stor.s.pri native_address
-		offset += 4;
-
-		if (native_address == address) {
-			return i;
-		}
-	}
-
-	return -1;
-}
-
-stock GetNativeFunctionAddress(const name[]) {
-	new amxhdr[AMX_HDR];
-	GetAmxHeaderOnce(amxhdr);
-
-	new natives = amxhdr[AMX_HDR_NATIVES] - amxhdr[AMX_HDR_DAT];
-	new defsize = amxhdr[AMX_HDR_DEFSIZE];
-	new num_natives = (amxhdr[AMX_HDR_LIBRARIES] - amxhdr[AMX_HDR_NATIVES]) / defsize;
-
-	// Binary search
-	new first = 0;
-	new last = num_natives - 1;
-	new mid;
-
-	while (first <= last) {
-		mid = (first + last) / 2;
-
-		// Table record offset
-		new offset = natives + mid*defsize;
-
-		new address;
-		#emit lref.s.pri offset
-		#emit stor.s.pri address
-		offset += 4;
-
-		new nameofs;
-		#emit lref.s.pri offset
-		#emit stor.s.pri nameofs
-		//offset += 4;
-
-		// Copy native's name
-		new native_name[32];
-		new index = 0;
-		nameofs -= amxhdr[AMX_HDR_DAT];
-		do {
-			native_name[index] = @(nameofs) & 0xFF;
-			++nameofs;
-		} while (native_name[index] != '\0' && ++index < sizeof(native_name));
-
-		new cmp = strcmp(name, native_name);
-		if (cmp > 0) {
-			last = mid - 1;
-		} else if (cmp < 0) {
-			first = mid + 1;
-		} else {
-			return address;
-		}
-	}
-
-	return 0;
-}
-
-stock CallNativeFunction(const name[], {Float,_}:...) {
+stock CallNative(const name[], {Float,_}:...) {
 	// Obtain function address
-	new address = GetNativeFunctionAddress(name);
+	new address = GetNativeAddressByName(name);
 	if (address == 0) {
 		return 0;
 	}
@@ -422,80 +288,4 @@ stock CallNativeFunction(const name[], {Float,_}:...) {
 	#emit stack 0x18
 	#emit retn
 	return 0;
-}
-
-static stock strcpy(dest[], const source[], size = sizeof(dest)) {
-	dest[0] = '\0';
-	return strcat(dest, source, size);
-}
-
-stock GetFunctionName(address, name[], size = sizeof(name)) {
-	new amxhdr[AMX_HDR];
-	GetAmxHeaderOnce(amxhdr);
-
-	if (address == amxhdr[AMX_HDR_CIP]) {
-		strcpy(name, "main", size);
-		return 1;
-	}
-
-	new publics = amxhdr[AMX_HDR_PUBLICS] - amxhdr[AMX_HDR_DAT];
-	new defsize = amxhdr[AMX_HDR_DEFSIZE];
-	new num_publics = (amxhdr[AMX_HDR_NATIVES] - amxhdr[AMX_HDR_PUBLICS]) / defsize;
-
-	// Linear search
-	for (new i = 0; i < num_publics; i++) {
-		// Table record offset
-		new offset = publics + i*defsize;
-
-		new public_address;
-		#emit lref.s.pri offset
-		#emit stor.s.pri public_address
-		offset += 4;
-
-		new nameofs;
-		#emit lref.s.pri offset
-		#emit stor.s.pri nameofs
-
-		if (public_address == address) {
-			new index = 0;
-			nameofs -= amxhdr[AMX_HDR_DAT];
-			do {
-				name[index] = @(nameofs) & 0xFF;
-				++nameofs;
-			} while (name[index] != '\0' && ++index < size);
-			name[size - 1] = '\0'; // terminator
-			return 1;
-		}
-	}
-
-	return 0;
-}
-
-stock GetNativeFunctionName(index, name[], size = sizeof(name)) {
-	new amxhdr[AMX_HDR];
-	GetAmxHeaderOnce(amxhdr);
-
-	new natives = amxhdr[AMX_HDR_NATIVES] - amxhdr[AMX_HDR_DAT];
-	new defsize = amxhdr[AMX_HDR_DEFSIZE];
-	new num_natives = (amxhdr[AMX_HDR_LIBRARIES] - amxhdr[AMX_HDR_NATIVES]) / defsize;
-
-	if (index < 0 || index >= num_natives) {
-		return 0;
-	}
-
-	// Table record offset
-	new offset = natives + index*defsize + 4;
-	new nameofs;
-	#emit lref.s.pri offset
-	#emit stor.s.pri nameofs
-
-	new i = 0;
-	nameofs -= amxhdr[AMX_HDR_DAT];
-	do {
-		name[i] = @(nameofs) & 0xFF;
-		++nameofs;
-	} while (name[i] != '\0' && ++i < size);
-	name[size - 1] = '\0'; // terminator
-
-	return 1;
 }
