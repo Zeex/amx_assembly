@@ -18,7 +18,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-// Converts absolute address to DAT-relative
+// Converts a real address to DAT-relative.
 static stock AbsToRel(addr) {
 	new dat;
 	#emit lctrl 1
@@ -29,15 +29,15 @@ static stock AbsToRel(addr) {
 stock ReadPhysMemory(addr, dest[], num = sizeof(dest)) {
 	new rel_addr = AbsToRel(addr);
 
-	// Current destination cell address
+	// Current destination cell address.
 	new cur_dest;
 	#emit load.s.pri dest
 	#emit stor.s.pri cur_dest
 
-	// Currently reading address
+	// Currently reading address.
 	new cur_addr = rel_addr;
 
-	// Read num cells to dest
+	// Read num cells to dest.
 	for (new i = 0; i < num; i++, cur_addr += 4, cur_dest += 4) {
 		#emit lref.s.pri cur_addr
 		#emit sref.s.pri cur_dest
@@ -51,12 +51,12 @@ stock ReadPhysMemory(addr, dest[], num = sizeof(dest)) {
 stock WritePhysMemory(addr, src[], num = sizeof(src)) {
 	new rel_addr = AbsToRel(addr);
 
-	// Current destination cell address
+	// Current destination cell address..
 	new cur_src;
 	#emit load.s.pri src
 	#emit stor.s.pri cur_src
 
-	// Currently reading address
+	// Currently reading address.
 	new cur_addr = rel_addr;
 
 	// Write num cells from src
@@ -70,6 +70,7 @@ stock WritePhysMemory(addr, src[], num = sizeof(src)) {
 	return 0;
 }
 
+// Reads a single cell from memory and returns it.
 stock ReadPhysMemoryCell(addr) {
 	new rel_addr = AbsToRel(addr);
 	#emit lref.s.pri rel_addr
@@ -78,6 +79,7 @@ stock ReadPhysMemoryCell(addr) {
 	return 0;
 }
 
+// Writes a single cell to memory.
 stock WritePhysMemoryCell(addr, what) {
 	new rel_addr = AbsToRel(addr);
 	#emit load.s.pri what
@@ -87,7 +89,7 @@ stock WritePhysMemoryCell(addr, what) {
 	return 0;
 }
 
-// Returns AMX base address (i.e. amx->base).
+// Returns AMX base address i.e. amx->base.
 stock GetAmxBase() {
 	new cod, dat;
 	#emit lctrl 0
@@ -95,15 +97,15 @@ stock GetAmxBase() {
 	#emit lctrl 1
 	#emit stor.s.pri dat
 
-	// Get start of code section relative to data
+	// Start of code section relative to data.
 	new code_start = cod - dat;
 
-	// Get this function's address
+	// Get this function address.
 	new fn_addr;
 	#emit const.pri GetAmxBase
 	#emit stor.s.pri fn_addr
 
-	// Get return address from stack
+	// Get the return address stored from the stack.
 	new ret_addr, tmp;
 	#emit lctrl 5
 	#emit add.c 4
@@ -111,10 +113,11 @@ stock GetAmxBase() {
 	#emit lref.s.pri tmp
 	#emit stor.s.pri ret_addr
 
-	// Get location of relocated address in code
+	// Get location of relocated function address in code.
 	new fn_addr_reloc_ptr = code_start + ret_addr - 4;
 
-	// Read in the relocated address from code
+	// Read in the relocated address.
+	// It is equal to amx->base + amxhdr->cod + fn_addr.
 	new fn_addr_reloc;
 	#emit lref.s.pri fn_addr_reloc_ptr
 	#emit stor.s.pri fn_addr_reloc
@@ -122,7 +125,6 @@ stock GetAmxBase() {
 	return fn_addr_reloc - fn_addr - cod;
 }
 
-// Swap bytes of a cell
 stock AlignCell(c) {
 	new v[1];
 	v[0] = c;
