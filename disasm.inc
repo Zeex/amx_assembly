@@ -444,7 +444,7 @@ stock Disassemble(const out_filename[]) {
 		if (op == _:OP_PROC) {
 			// Print function name if it's public
 			new name[MAX_FUN_NAME];
-			GetPublicNameByIndex(GetPublicIndexByAddress(cip + dat) - cod, name);
+			GetPublicNameByIndex(GetPublicIndexByAddress(cip + dat - cod), name);
 			if (strlen(name) != 0) {
 				fwrite(file, "; ");
 				fwrite(file, name);
