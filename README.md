@@ -23,6 +23,12 @@ A few handy functions/macros for reading from/writing to AMX data section.
 
 Also can be used to pass strings/references when working with dynamic_call.
 
+### profiler ###
+
+A simple profiler that is able to measure execution time of public functions. 
+It modifies the public functions table of the running AMX in order to redirect 
+all public calls to internal helper functions which in turn call the original code.
+
 ### phys_memory ###
 
 Read and write arbitrary memory out of AMX sandbox, i.e. SA-MP server process 
