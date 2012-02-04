@@ -49,7 +49,7 @@
 
 #include <a_samp>
 
-#include "memory"
+#include "amx_memory"
 
 stock DumpStack()
 {

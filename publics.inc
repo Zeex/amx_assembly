@@ -29,7 +29,7 @@
 
 #include <string>
 #include "amx_hdr"
-#include "memory"
+#include "amx_memory"
 
 static stock strcpy(dest[], const source[], size = sizeof(dest)) {
 	dest[0] = '\0';

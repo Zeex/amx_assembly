@@ -19,7 +19,7 @@
 // SOFTWARE.
 
 #include <a_samp>
-#include "memory"
+#include "amx_memory"
 
 #define AMX_HDR_BYTES (60)
 #define AMX_HDR_CELLS (AMX_HDR_BYTES / 4)
