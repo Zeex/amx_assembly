@@ -197,18 +197,21 @@ stock bool:ProfilerWriteData(const filename[]) {
 		return false;
 	}
 
-	fwrite(file, "name\t\tcalls\t\tself_time\t\ttotal_time\n");
+	fwrite(file, "+----------------------------------+----------------+----------------+----------------+\n");
+	fwrite(file, "| name                             |          calls |      self_time |     total_time |\n");
+	fwrite(file, "+----------------------------------+----------------+----------------+----------------+\n");
 
 	for (new i = 0; i < g_num_publics; i++) {
 		new name[32];
 		GetPublicNameByIndex(i, name);
-		format(buffer, sizeof(buffer), "%s\t\t%d\t\t%d\t\t%d\n",
+		format(buffer, sizeof(buffer), "| %32s |%15d |%15d |%15d |\n",
 			name,
 			g_publics[i][ppi_num_calls],
 			g_publics[i][ppi_total_time] - g_publics[i][ppi_child_time],
 			g_publics[i][ppi_total_time]
 		);
 		fwrite(file, buffer);
+		fwrite(file, "+----------------------------------+----------------+----------------+----------------+\n");
 	}
 
 	fclose(file);
