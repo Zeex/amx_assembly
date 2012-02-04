@@ -105,6 +105,8 @@ static stock enter_public(index, address) {
 		pci[pci_index] = index;
 		pci[pci_start_time] = GetTickCount();
 		g_call_stack[g_call_depth] = pci;
+	} else {
+		printf("profiler warning: PROF_MAX_CALL_STACK is set to %d but current level is %d", PROF_MAX_CALL_STACK, g_call_depth);
 	}
 
 	// Pop locals + arguments + numbytes + return address + frm.
@@ -170,6 +172,7 @@ stock ProfilerInit() {
 
 		new pec_index = new_pec(i, address, amx_base + hdr[AMX_HDR_COD]);
 		if (pec_index < 0) {
+			printf("profiler warning: Too many public functions (%d). Consider increasing PROF_MAX_PUBLICS.", num_publics);
 			break;
 		}
 
