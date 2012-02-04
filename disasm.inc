@@ -20,7 +20,7 @@
 
 #include <string>
 
-#include "amx_hdr"
+#include "amx_header"
 #include "amx_memory"
 #include "dynamic_call"
 #include "phys_memory"
