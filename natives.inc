@@ -28,7 +28,7 @@
 //   CallNative(address, {Float,_}:...)
 
 #include "amx_hdr"
-#include "memory"
+#include "amx_memory"
 
 stock GetNativeIndexByAddress(address) {
 	new amxhdr[AMX_HDR];

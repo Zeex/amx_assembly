@@ -39,7 +39,7 @@
 #include <a_samp>
 
 #include "amx_hdr"
-#include "memory"
+#include "amx_memory"
 #include "natives"
 #include "publics"
 

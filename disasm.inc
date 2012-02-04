@@ -21,8 +21,8 @@
 #include <string>
 
 #include "amx_hdr"
+#include "amx_memory"
 #include "dynamic_call"
-#include "memory"
 #include "phys_memory"
 
 static stock const size_of_cell = cellbits / 8;
