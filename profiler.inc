@@ -72,9 +72,13 @@ static stock exit_public() {
 		if (index < g_num_publics) {
 			new i = g_call_depth;
 			new t = GetTickCount() - g_call_stack[i][pci_start_time];
-			g_publics[index][ppi_total_time] += t;
-			if (parent > 0) {
-				g_publics[parent][ppi_child_time] += t;
+			// Ugly workaround for negative intervals due to tick count overflow
+			// during execution. This happens rarely so we just drop it.
+			if (t > 0) {
+				g_publics[index][ppi_total_time] += t;
+				if (parent > 0) {
+					g_publics[parent][ppi_child_time] += t;
+				}
 			}
 			g_publics[index][ppi_num_calls]++;
 		}
