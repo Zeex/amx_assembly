@@ -20,7 +20,7 @@
 
 #include <a_samp>
 
-#include "publics"
+#include "amx_header"
 #include "phys_memory"
 
 // Call stack size (maximum call depth).

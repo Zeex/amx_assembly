@@ -38,10 +38,8 @@
 
 #include <a_samp>
 
-#include "amx_hdr"
+#include "amx_header"
 #include "amx_memory"
-#include "natives"
-#include "publics"
 
 #if !defined MAX_FUN_ARGS
 	#define MAX_FUN_ARGS 256
