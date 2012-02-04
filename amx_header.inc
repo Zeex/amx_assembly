@@ -21,25 +21,51 @@
 // List of functions:
 //   General:
 //     GetPlainAmxHeader(plain_amxhdr[AMX_HDR_CELLS])
+//       Copies AMX header to plain_amxhdr as is (byte by byte).
 //     GetAmxHeader(amxhdr[AMX_HDR])
+//       Returns AMX header as a structured array (enum-array?).
 //     GetAmxHeaderOnce(amxhdr[AMX_HDR])
+//       Same as GetAmxHeader but calls GetPlainAmxHeader only once, on first call.
 //     PrintAmxHeader()
-//     GetPublicIndexByAddress(address)
+//       Prints AMX header to the console in a human readable form.
 //   Publics:
+//     GetPublicIndexByAddress(address)
+//       Returns public function index by address or -1 if no such public found.
 //     bool:GetPublicInfo(index, info[AMX_FUNCSTUBNT])
+//       Copies public function information from AMX publics table (address + name offset).
 //     GetPublicIndexByName(const name[])
+//       Gets index of a public function with a given name. Returns is -1 if no such function exists.
+//       This function is very simil to the funcidx() native.
 //     GetPublicAddressByName(const name[])
+//       Gets address of a public function. Returns is 0 if no such function exists.
 //     GetPublicAddressByIndex(index);
+//       Gets address of a public function by its index in the publics table. Returns is 0 on invalid index.
 //     GetPublicNameByIndex(index, name[], size = sizeof(name))
+//       Gets name of a public function by its index in the natives table. Returns true on success and false on invalid index.
 //     CallPublic(address, {Float,_}:...)
+//       Calls a public function at the specified address. The address can be obtained using one of the above routines.
+//       This is somewhat similar to SA-MP's CallLocalFunction() but it doesn't take a format string.
+//       If you want to pass a variable by reference or pass a string/array, use addressof() and addressofs() from amx_memory.inc.
+//     HookPublic(index, address)
+//       Replace address of public function stored in publics table with the new one.
+//       This will ultimately recirect all calls of the hooked public to the specified address.
+//       Note that the address can point out to any location inside the code section, including ordinary (non-public) functions.
 //   Natives:
 //     GetNativeIndexByAddress(address)
+//       Returns native function index by address or -1 if no such native found.
 //     bool:GetNativeInfo(index, info[AMX_FUNCSTUBNT])
-//     GetNativeIndexByName(const name[]);
+//       Copies native function information from AMX natives table (address + name offset).
+//     GetNativeIndexByName(const name[])
+//       Gets index of a native function with a given name. Returns is -1 if no such function exists.
 //     GetNativeAddressByName(const name[])
-//     GetNativeAddressByIndex(index);
+//       Gets address of a native function. Returns is 0 if no such function exists.
+//     GetNativeAddressByIndex(index)
+//       Gets address of a native function by its index in the natives table. Returns is 0 on invalid index.
 //     GetNativeNameByIndex(index, name[], size = sizeof(name))
+//       Gets name of a native function by its index in the natives table. Returns true on success and false on invalid index.
 //     CallNative(address, {Float,_}:...)
+//       Calls a public function at the specified address. The address can be obtained using one of the above routines.
+//       If you want to pass a variable by reference or pass a string/array, use addressof() and addressofs() from amx_memory.inc.
 
 #include <a_samp>
 #include "amx_memory"
@@ -393,7 +419,6 @@ stock HookPublic(index, address) {
 
 	return old_address;
 }
-
 
 stock GetNativeIndexByAddress(address) {
 	new amxhdr[AMX_HDR];
