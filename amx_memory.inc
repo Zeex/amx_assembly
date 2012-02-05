@@ -18,6 +18,9 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+#include <core>
+#include "assert"
+
 // Read a cell at a given location
 stock read@(address) {
 	#emit lref.s.pri address
@@ -30,6 +33,7 @@ stock read@(address) {
 
 // Gets address of a variable.
 stock addressof(...) {
+	ASSERT(numargs() == 1);
 	#emit load.s.pri 12 // first argument
 	#emit retn
 	return 0;
