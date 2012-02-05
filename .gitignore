@@ -1,3 +1,7 @@
 *.amx
 *.lst
 *.asm
+
+YSI
+gl_common.inc
+gl_spawns.inc
