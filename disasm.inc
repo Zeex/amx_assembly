@@ -444,7 +444,15 @@ stock Disassemble(const out_filename[]) {
 		if (op == _:OP_PROC) {
 			// Print function name if it's public
 			new name[MAX_FUN_NAME];
-			GetPublicNameByIndex(GetPublicIndexByAddress(cip + dat - cod), name);
+			new address = cip + dat - cod;
+			if (address == hdr[AMX_HDR_CIP]) {
+				strcat(name, "main");
+			} else {
+				new index = GetPublicIndexByAddress(address);
+				if (index >= 0) {
+					GetPublicNameByIndex(index, name);
+				}
+			}
 			if (strlen(name) != 0) {
 				fwrite(file, "; ");
 				fwrite(file, name);
@@ -474,7 +482,15 @@ stock Disassemble(const out_filename[]) {
 		switch (Opcode:op) {
 			case OP_CALL: {
 				new name[MAX_FUN_NAME];
-				GetPublicNameByIndex(GetPublicIndexByAddress(@(cip) - base - cod), name);
+				new address = @(cip) - base - cod;
+				if (address == hdr[AMX_HDR_CIP]) {
+					strcat(name, "main");
+				} else {
+					new index = GetPublicIndexByAddress(address);
+					if (index >= 0) {
+						GetPublicNameByIndex(index, name);
+					}
+				}
 				if (strlen(name) > 0) {
 					fwrite(file, name);
 					cip += size_of_cell;
@@ -486,7 +502,10 @@ stock Disassemble(const out_filename[]) {
 				if (op == _:OP_SYSREQ_C) {
 					GetNativeNameByIndex(@(cip), name);
 				} else {
-					GetNativeNameByIndex(GetNativeIndexByAddress(@(cip)), name);
+					new index = GetNativeIndexByAddress(@(cip));
+					if (index >= 0) {
+						GetNativeNameByIndex(index, name);
+					}
 				}
 				if (strlen(name) > 0) {
 					fwrite(file, name);
