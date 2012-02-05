@@ -105,11 +105,6 @@ stock Call(address, bool:auto_pop = true) {
 }
 
 stock CallFunction(address, {Float,_}:...) {
-	if (address <= 0) {
-		printf("CallFunction(): Invalid public address %x", address);
-		return 0;
-	}
-
 	new arg_bytes, arg_begin, arg_end;
 
 	// Get number of bytes passed
@@ -208,11 +203,6 @@ stock Sysreq(address, bool:auto_pop = true) {
 }
 
 stock CallNative(address, {Float,_}:...) {
-	if (address <= 0) {
-		printf("CallNative(): Invalid native address %x", address);
-		return 0;
-	}
-
 	new arg_bytes, arg_begin, arg_end;
 
 	// Get number of bytes passed
