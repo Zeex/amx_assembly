@@ -32,8 +32,8 @@
 //     Call(address)
 //         Calls a native function. The address can be obtained with GetPublicAddressByName()
 //         from amx_header.inc.
-//     CallPublic(address, {Float,_}:...)
-//       Calls a public function at the specified address. The address can be obtained using one of the above routines.
+//     CallFunction(address, {Float,_}:...)
+//       Calls a function at the specified address. The address can be obtained using one of the above routines.
 //       This is somewhat similar to SA-MP's CallLocalFunction() but it doesn't take a format string.
 //       If you want to pass a variable by reference or pass a string/array, use addressof() and addressofs() from amx_memory.inc.
 //     Sysreq(address)
@@ -104,9 +104,9 @@ stock Call(address, bool:auto_pop = true) {
 	}
 }
 
-stock CallPublic(address, {Float,_}:...) {
+stock CallFunction(address, {Float,_}:...) {
 	if (address <= 0) {
-		printf("CallPublic(): Invalid public address %x", address);
+		printf("CallFunction(): Invalid public address %x", address);
 		return 0;
 	}
 
