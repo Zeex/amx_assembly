@@ -28,21 +28,14 @@ stock read@(address) {
 // Shorthand for read@
 #define @ read@
 
-// Get address of a variable
-stock addressof(&x) {
-	#emit load.s.pri x
+// Gets address of a variable.
+stock addressof(...) {
+	#emit load.s.pri 12 // first argument
 	#emit retn
 	return 0;
 }
 
-// Get address of a string
-stock addressofs(const array[]) {
-	#emit load.s.pri array
-	#emit retn
-	return 0;
-}
-
-// Write to memory at specified location
+// Writes to AMX data section at the sepcified address.
 stock write@(address, value) {
 	#emit load.s.pri value
 	#emit sref.s.pri address
