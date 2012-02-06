@@ -81,6 +81,8 @@ stock bool:Pop(&arg = 0) {
 }
 
 stock Call(address, bool:auto_pop = true) {
+	assert(address != 0);
+
 	new arg = 0;
 	new index = g_nargs;
 	new bytes = g_nargs * 4;
@@ -105,6 +107,8 @@ stock Call(address, bool:auto_pop = true) {
 }
 
 stock CallFunction(address, {Float,_}:...) {
+	assert(address != 0);
+
 	new arg_bytes, arg_begin, arg_end;
 
 	// Get number of bytes passed
@@ -150,6 +154,8 @@ stock CallFunction(address, {Float,_}:...) {
 }
 
 stock Sysreq(address, bool:auto_pop = true) {
+	assert(address != 0);
+
 	new arg = 0;
 	new index = g_nargs;
 	new bytes = g_nargs * 4;
@@ -203,6 +209,8 @@ stock Sysreq(address, bool:auto_pop = true) {
 }
 
 stock CallNative(address, {Float,_}:...) {
+	assert(address != 0);
+
 	new arg_bytes, arg_begin, arg_end;
 
 	// Get number of bytes passed
