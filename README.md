@@ -11,7 +11,9 @@ and more. Heavily used by other modules.
 A few handy functions/macros for reading from/writing to AMX data section. 
 
 	// Example:
-	new x = @(y) // Read x from address stored in y
+	new x = 123;
+	new y = addressof(x);
+	new z = @(y);
 
 Also can be used to pass strings/references when working with dynamic_call.
 
