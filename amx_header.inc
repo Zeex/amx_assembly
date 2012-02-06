@@ -459,9 +459,9 @@ stock GetNativeIndexByName(const name[]) {
 
 		new cmp = strcmp(name, cur_name);
 		if (cmp > 0) {
-			last = mid - 1;
-		} else if (cmp < 0) {
 			first = mid + 1;
+		} else if (cmp < 0) {
+			last = mid - 1;
 		} else {
 			return mid;
 		}
