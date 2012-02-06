@@ -91,6 +91,8 @@ enum AMX_FUNCSTUBNT {
 	AMX_FUNCSTUBNT_NAMEOFS
 }
 
+forward amx_header_use_funcs();
+
 stock GetPlainAmxHeader(plain_amxhdr[AMX_HDR_CELLS]) {
 	new address;
 	#emit lctrl 1  // DAT
@@ -128,6 +130,17 @@ static stock copy_4(&dest, const source[], start) {
 	#emit add
 	#emit load.s.alt dest
 	#emit movs 4
+}
+
+// Compare a packed string aginst unpacked one.
+// Should be static but can't...
+static strcmp_pu(const packed[], const unpacked[]) {
+	new index;
+	while (packed{index} != '\0' && unpacked[index] != '\0'
+			&& packed{index} == unpacked[index]) {
+		index++;
+	}
+	return packed{index} - unpacked[index] & charmax;
 }
 
 stock GetAmxHeader(amxhdr[AMX_HDR]) {
@@ -239,7 +252,6 @@ stock GetPublicIndexByName(const name[]) {
 	GetAmxHeaderOnce(amxhdr);
 
 	new num_publics = GetNumPublics(amxhdr);
-	new off = amxhdr[AMX_HDR_PUBLICS] - amxhdr[AMX_HDR_DAT];
 
 	// Binary search
 	new first = 0;
@@ -249,25 +261,28 @@ stock GetPublicIndexByName(const name[]) {
 	while (first <= last) {
 		mid = (first + last) / 2;
 
+		new off = amxhdr[AMX_HDR_PUBLICS] - amxhdr[AMX_HDR_DAT] + mid * amxhdr[AMX_HDR_DEFSIZE];
 		new nameofs = @(off + 4) - amxhdr[AMX_HDR_DAT];
 		new index = 0;
-		new cur_name[32];
+		new diff = 0;
+		new c1, c2;
 
 		do {
-			cur_name[index] = @(nameofs) & 0xFF;
-			++nameofs;
-		} while (cur_name[index] != '\0' && ++index < sizeof(cur_name));
+			c1 = name[index++];
+			c2 = @(nameofs++) & 0xFF;
+			diff = c1 - c2;
+			if (diff != 0) {
+				break;
+			}
+		} while (!(c1 & c2 == 0));
 
-		new cmp = strcmp(name, cur_name);
-		if (cmp > 0) {
+		if (diff > 0) {
 			first = mid + 1;
-		} else if (cmp < 0) {
+		} else if (diff < 0) {
 			last = mid - 1;
 		} else {
 			return mid;
 		}
-
-		off += amxhdr[AMX_HDR_DEFSIZE];
 	}
 
 	return -1;
@@ -376,16 +391,21 @@ stock GetNativeIndexByName(const name[]) {
 
 	// Linear search
 	for (new i = 0; i < num_natives; i++) {
-		new cur_nameofs = @(off + 4) - amxhdr[AMX_HDR_DAT];
-		new cur_name[32];
-
+		new nameofs = @(off + 4) - amxhdr[AMX_HDR_DAT];
 		new index = 0;
-		do {
-			cur_name[index] = @(cur_nameofs) & 0xFF;
-			++cur_nameofs;
-		} while (cur_name[index] != '\0' && ++index < sizeof(cur_name));
+		new diff = 0;
+		new c1, c2;
 
-		if (strcmp(name, cur_name) == 0) {
+		do {
+			c1 = name[index++];
+			c2 = @(nameofs++) & 0xFF;
+			diff = c1 - c2;
+			if (diff != 0) {
+				break;
+			}
+		} while (!(c1 & c2 == 0));
+
+		if (diff == 0) {
 			return i;
 		}
 
@@ -425,4 +445,8 @@ stock bool:GetNativeNameByIndex(index, name[], size = sizeof(name)) {
 	name[size - 1] = '\0'; // terminator
 
 	return true;
+}
+
+public amx_header_use_funcs() {
+	strcmp_pu("", "");
 }
