@@ -1,10 +1,19 @@
 Quick Overview
 --------------
 
-### amx_hdr ###
+### amx_header ###
 
 Allows you to get/print AMX header (prefix) contents, explore public/native tables
 and more. Heavily used by other modules.
+
+### amx_memory ###
+
+A few handy functions/macros for reading from/writing to AMX data section. 
+
+	// Example:
+	new x = @(y) // Read x from address stored in y
+
+Also can be used to pass strings/references when working with dynamic_call.
 
 ### disasm ###
 
@@ -13,15 +22,6 @@ Self-disassemble to a text file. Same as running `pawndisasm` against the .amx.
 ### dynamic_call ###
 
 Call public/native functions dynamically using a high-level API.
-
-### memory ###
-
-A few handy functions/macros for reading from/writing to AMX data section. 
-
-	// Example:
-	new x = @(y) // Read x from address stored in y
-
-Also can be used to pass strings/references when working with dynamic_call.
 
 ### profiler ###
 
