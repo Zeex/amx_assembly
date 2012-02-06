@@ -278,7 +278,6 @@ stock GetPublicIndexByName(const name[]) {
 		new nameofs;
 		#emit lref.s.pri offset
 		#emit stor.s.pri nameofs
-		//offset += 4;
 
 		// Copy public's name
 		new cur_name[32];
@@ -427,6 +426,10 @@ stock GetNativeIndexByName(const name[]) {
 	new defsize = amxhdr[AMX_HDR_DEFSIZE];
 	new num_natives = (amxhdr[AMX_HDR_LIBRARIES] - amxhdr[AMX_HDR_NATIVES]) / defsize;
 
+/*
+	// BINARY SEARCH IS NOT POSSIBLE DUE TO COMPILER BUG OR WHATEVER IT IS
+	// THE NATIVES ARE NOT SORTED BY NAMES (BUT PUBLICIS ARE...)
+
 	// Binary search
 	new first = 0;
 	new last = num_natives - 1;
@@ -446,11 +449,11 @@ stock GetNativeIndexByName(const name[]) {
 		new nameofs;
 		#emit lref.s.pri offset
 		#emit stor.s.pri nameofs
-		//offset += 4;
 
 		// Copy public's name
 		new cur_name[32];
 		new index = 0;
+
 		nameofs -= amxhdr[AMX_HDR_DAT];
 		do {
 			cur_name[index] = @(nameofs) & 0xFF;
@@ -464,6 +467,35 @@ stock GetNativeIndexByName(const name[]) {
 			last = mid - 1;
 		} else {
 			return mid;
+		}
+	}
+*/
+
+	// Linear search
+	for (new i = 0; i < num_natives; i++) {
+		// Table record offset
+		new offset = natives + i*defsize;
+
+		new address;
+		#emit lref.s.pri offset
+		#emit stor.s.pri address
+		offset += 4;
+
+		new nameofs;
+		#emit lref.s.pri offset
+		#emit stor.s.pri nameofs
+
+		// Copy public's name
+		new cur_name[32];
+		new index = 0;
+		nameofs -= amxhdr[AMX_HDR_DAT];
+		do {
+			cur_name[index] = @(nameofs) & 0xFF;
+			++nameofs;
+		} while (cur_name[index] != '\0' && ++index < sizeof(cur_name));
+
+		if (strcmp(name, cur_name) == 0) {
+			return i;
 		}
 	}
 
