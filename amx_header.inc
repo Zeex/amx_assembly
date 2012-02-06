@@ -164,7 +164,7 @@ stock GetAmxHeaderOnce(amxhdr[AMX_HDR]) {
 
 stock PrintAmxHeader() {
 	new amxhdr[AMX_HDR];
-	GetAMXHeader(amxhdr);
+	GetAmxHeader(amxhdr);
 
 	printf("------------------------");
 	printf("AMX Header:");
