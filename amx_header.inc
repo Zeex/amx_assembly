@@ -209,6 +209,7 @@ static stock strcpy(dest[], const source[], size = sizeof(dest)) {
 
 // Compares a string stored in the name table starting at "s1" (packed)
 // with an ordinary string "s2" (not packed).
+// The address in s1 should be relative to DAT.
 static stock NtNameVsString(s1, const s2[]) {
 	new index;
 	new c1, c2;
@@ -224,6 +225,23 @@ static stock NtNameVsString(s1, const s2[]) {
 	} while (!(c1 & c2 == 0));
 
 	return diff;
+}
+
+// Copies a name from the name table to a usual string.
+// The address in src should be relative to DAT.
+// Returns the number of characters that were copied.
+static stock CopyNtNameToString(src, dest[], size = sizeof(dest)) {
+	new i = 0;
+	new c;
+
+	do {
+		c = @(src++) & 0xFF;
+		dest[i++] = c;
+	} while (c != '\0' && i <= size);
+
+	dest[i] = '\0'; // terminator
+
+	return i;
 }
 
 stock GetNumPublics(amxhdr[AMX_HDR]) {
@@ -321,16 +339,7 @@ stock bool:GetPublicNameByIndex(index, name[], size = sizeof(name)) {
 	#emit lctrl 1
 	#emit stor.s.pri dat
 
-	new i = 0;
-	new nameofs = info[AMX_FUNCSTUBNT_NAMEOFS] - dat;
-
-	do {
-		name[i] = @(nameofs) & 0xFF;
-		++nameofs;
-	} while (name[i] != '\0' && ++i < size);
-	name[size - 1] = '\0'; // terminator
-
-	return true;
+	return (CopyNtNameToString(info[AMX_FUNCSTUBNT_NAMEOFS] - dat, name, size) > 0);
 }
 
 // Replace public's address in publics table and return the original address
@@ -432,16 +441,7 @@ stock bool:GetNativeNameByIndex(index, name[], size = sizeof(name)) {
 	#emit lctrl 1
 	#emit stor.s.pri dat
 
-	new i = 0;
-	new nameofs = info[AMX_FUNCSTUBNT_NAMEOFS] - dat;
-
-	do {
-		name[i] = @(nameofs) & 0xFF;
-		++nameofs;
-	} while (name[i] != '\0' && ++i < size);
-	name[size - 1] = '\0'; // terminator
-
-	return true;
+	return (CopyNtNameToString(info[AMX_FUNCSTUBNT_NAMEOFS] - dat, name, size) > 0);
 }
 
 public amx_header_use_funcs() {
