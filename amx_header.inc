@@ -18,38 +18,6 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-// Functions:
-//   Publics:
-//     GetPublicIndexByAddress(address)
-//     GetPublicIndexByName(const name[])
-//     bool:GetPublicInfo(index, info[AMX_FUNCSTUBNT])
-//     GetPublicAddressByName(const name[])
-//     GetPublicAddressByIndex(index);
-//     bool:GetPublicNameByIndex(index, name[], size = sizeof(name))
-//     bool:GetPublicNameByAddress(address, name[], size = sizeof(name))
-//     HookPublic(index, address)
-//   Natives:
-//     GetNativeIndexByAddress(address)
-//     GetNativeIndexByName(const name[])
-//     bool:GetNativeInfo(index, info[AMX_FUNCSTUBNT])
-//     GetNativeAddressByName(const name[])
-//     GetNativeAddressByIndex(index)
-//     bool:GetNativeNameByIndex(index, name[], size = sizeof(name))
-//     bool:GetNativeNameByAddress(address, name[], size = sizeof(name))
-//   Public Variables:
-//     bool:GetPubVarInfo(index, info[AMX_FUNCSTUBNT])
-//     GetPubVarIndexByName(const name[])
-//     GetPubVarIndexByAddress(address)
-//     GetPubVarAddressByName(const name[])
-//     GetPubVarAddressByIndex(index)
-//     bool:GetPubVarNameByIndex(index, name[], size = sizeof(name))
-//     bool:GetPubVarNameByAddress(address, name[], size = sizeof(name))
-//   General:
-//     GetPlainAmxHeader(plain_amxhdr[AMX_HDR_CELLS])
-//     GetAmxHeader(amxhdr[AMX_HDR])
-//     GetAmxHeaderOnce(amxhdr[AMX_HDR])
-//     PrintAmxHeader()
-
 #include <a_samp>
 #include "amx_memory"
 
@@ -81,7 +49,39 @@ enum AMX_FUNCSTUBNT {
 	AMX_FUNCSTUBNT_NAMEOFS
 }
 
-forward amx_header_use_funcs();
+// Publics
+forward GetPublicIndexByAddress(address);
+forward GetPublicIndexByName(const name[]);
+forward bool:GetPublicInfo(index, info[AMX_FUNCSTUBNT]);
+forward GetPublicAddressByName(const name[]);
+forward GetPublicAddressByIndex(index);
+forward bool:GetPublicNameByIndex(index, name[], size = sizeof(name));
+forward bool:GetPublicNameByAddress(address, name[], size = sizeof(name));
+forward HookPublic(index, address);
+
+// Natives
+forward GetNativeIndexByAddress(address);
+forward GetNativeIndexByName(const name[]);
+forward bool:GetNativeInfo(index, info[AMX_FUNCSTUBNT]);
+forward GetNativeAddressByName(const name[]);
+forward GetNativeAddressByIndex(index);
+forward bool:GetNativeNameByIndex(index, name[], size = sizeof(name));
+forward bool:GetNativeNameByAddress(address, name[], size = sizeof(name));
+
+// Public Variables
+forward bool:GetPubVarInfo(index, info[AMX_FUNCSTUBNT]);
+forward GetPubVarIndexByName(const name[]);
+forward GetPubVarIndexByAddress(address);
+forward GetPubVarAddressByName(const name[]);
+forward GetPubVarAddressByIndex(index);
+forward bool:GetPubVarNameByIndex(index, name[], size = sizeof(name));
+forward bool:GetPubVarNameByAddress(address, name[], size = sizeof(name));
+
+// General
+forward GetPlainAmxHeader(plain_amxhdr[AMX_HDR_CELLS]);
+forward GetAmxHeader(amxhdr[AMX_HDR]);
+forward GetAmxHeaderOnce(amxhdr[AMX_HDR]);
+forward PrintAmxHeader();
 
 stock GetPlainAmxHeader(plain_amxhdr[AMX_HDR_CELLS]) {
 	new address;
