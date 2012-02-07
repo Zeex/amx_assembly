@@ -207,6 +207,25 @@ static stock strcpy(dest[], const source[], size = sizeof(dest)) {
 	return strcat(dest, source, size);
 }
 
+// Compares a string stored in the name table starting at "s1" (packed)
+// with an ordinary string "s2" (not packed).
+static stock NtNameVsString(s1, const s2[]) {
+	new index;
+	new c1, c2;
+	new diff;
+
+	do {
+		c1 = @(s1++) & 0xFF;
+		c2 = s2[index++];
+		diff = c1 - c2;
+		if (diff != 0) {
+			break;
+		}
+	} while (!(c1 & c2 == 0));
+
+	return diff;
+}
+
 stock GetNumPublics(amxhdr[AMX_HDR]) {
 	new num_publics = (amxhdr[AMX_HDR_NATIVES] - amxhdr[AMX_HDR_PUBLICS]) / amxhdr[AMX_HDR_DEFSIZE];
 	return num_publics;
@@ -263,22 +282,11 @@ stock GetPublicIndexByName(const name[]) {
 
 		new off = amxhdr[AMX_HDR_PUBLICS] - amxhdr[AMX_HDR_DAT] + mid * amxhdr[AMX_HDR_DEFSIZE];
 		new nameofs = @(off + 4) - amxhdr[AMX_HDR_DAT];
-		new index = 0;
-		new diff = 0;
-		new c1, c2;
 
-		do {
-			c1 = name[index++];
-			c2 = @(nameofs++) & 0xFF;
-			diff = c1 - c2;
-			if (diff != 0) {
-				break;
-			}
-		} while (!(c1 & c2 == 0));
-
-		if (diff > 0) {
+		new diff = NtNameVsString(nameofs, name);
+		if (diff < 0) {
 			first = mid + 1;
-		} else if (diff < 0) {
+		} else if (diff > 0) {
 			last = mid - 1;
 		} else {
 			return mid;
@@ -392,19 +400,8 @@ stock GetNativeIndexByName(const name[]) {
 	// Linear search
 	for (new i = 0; i < num_natives; i++) {
 		new nameofs = @(off + 4) - amxhdr[AMX_HDR_DAT];
-		new index = 0;
-		new diff = 0;
-		new c1, c2;
 
-		do {
-			c1 = name[index++];
-			c2 = @(nameofs++) & 0xFF;
-			diff = c1 - c2;
-			if (diff != 0) {
-				break;
-			}
-		} while (!(c1 & c2 == 0));
-
+		new diff = NtNameVsString(nameofs, name);
 		if (diff == 0) {
 			return i;
 		}
