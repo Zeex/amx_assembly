@@ -18,47 +18,34 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-// List of functions:
-//   General:
-//     GetPlainAmxHeader(plain_amxhdr[AMX_HDR_CELLS])
-//       Copies AMX header to plain_amxhdr as is (byte by byte).
-//     GetAmxHeader(amxhdr[AMX_HDR])
-//       Returns AMX header as a structured array (enum-array?).
-//     GetAmxHeaderOnce(amxhdr[AMX_HDR])
-//       Same as GetAmxHeader but calls GetPlainAmxHeader only once, on first call.
-//     PrintAmxHeader()
-//       Prints AMX header to the console in a human readable form.
+// Functions:
 //   Publics:
 //     GetPublicIndexByAddress(address)
-//       Returns public function index by address or -1 if no such public found.
-//     bool:GetPublicInfo(index, info[AMX_FUNCSTUBNT])
-//       Copies public function information from AMX publics table (address + name offset).
 //     GetPublicIndexByName(const name[])
-//       Gets index of a public function with a given name. Returns is -1 if no such function exists.
-//       This function is very simil to the funcidx() native.
+//     bool:GetPublicInfo(index, info[AMX_FUNCSTUBNT])
 //     GetPublicAddressByName(const name[])
-//       Gets address of a public function. Returns is 0 if no such function exists.
 //     GetPublicAddressByIndex(index);
-//       Gets address of a public function by its index in the publics table. Returns is 0 on invalid index.
 //     bool:GetPublicNameByIndex(index, name[], size = sizeof(name))
-//       Gets name of a public function by its index in the natives table. Returns true on success and false on invalid index.
 //     HookPublic(index, address)
-//       Replace address of public function stored in publics table with the new one.
-//       This will ultimately recirect all calls of the hooked public to the specified address.
-//       Note that the address can point out to any location inside the code section, including ordinary (non-public) functions.
 //   Natives:
 //     GetNativeIndexByAddress(address)
-//       Returns native function index by address or -1 if no such native found.
-//     bool:GetNativeInfo(index, info[AMX_FUNCSTUBNT])
-//       Copies native function information from AMX natives table (address + name offset).
 //     GetNativeIndexByName(const name[])
-//       Gets index of a native function with a given name. Returns is -1 if no such function exists.
+//     bool:GetNativeInfo(index, info[AMX_FUNCSTUBNT])
 //     GetNativeAddressByName(const name[])
-//       Gets address of a native function. Returns is 0 if no such function exists.
 //     GetNativeAddressByIndex(index)
-//       Gets address of a native function by its index in the natives table. Returns is 0 on invalid index.
 //     bool:GetNativeNameByIndex(index, name[], size = sizeof(name))
-//       Gets name of a native function by its index in the natives table. Returns true on success and false on invalid index.
+//   Public Variables:
+//     bool:GetPubVarInfo(index, info[AMX_FUNCSTUBNT])
+//     GetPubVarIndexByName(const name[])
+//     GetPubVarIndexByAddress(address)
+//     GetPubVarAddressByName(const name[])
+//     GetPubVarAddressByIndex(index)
+//     bool:GetPubVarNameByIndex(index, name[], size = sizeof(name))
+//   General:
+//     GetPlainAmxHeader(plain_amxhdr[AMX_HDR_CELLS])
+//     GetAmxHeader(amxhdr[AMX_HDR])
+//     GetAmxHeaderOnce(amxhdr[AMX_HDR])
+//     PrintAmxHeader()
 
 #include <a_samp>
 #include "amx_memory"
@@ -428,4 +415,96 @@ stock bool:GetNativeNameByIndex(index, name[], size = sizeof(name)) {
 	#emit stor.s.pri dat
 
 	return (CopyNtNameToString(info[AMX_FUNCSTUBNT_NAMEOFS] - dat, name, size) > 0);
+}
+
+stock GetNumPubVars(amxhdr[AMX_HDR]) {
+	return (amxhdr[AMX_HDR_TAGS] - amxhdr[AMX_HDR_PUBVARS]) / amxhdr[AMX_HDR_DEFSIZE];
+}
+
+stock bool:GetPubVarInfo(index, info[AMX_FUNCSTUBNT]) {
+	new amxhdr[AMX_HDR];
+	GetAmxHeaderOnce(amxhdr);
+
+	new num_pubvars = GetNumPubVars(amxhdr);
+
+	if (index < 0 || index >= num_publics) {
+		return false;
+	}
+
+	new off = amxhdr[AMX_HDR_PUBVARS] - amxhdr[AMX_HDR_DAT] + index * amxhdr[AMX_HDR_DEFSIZE];
+	info[AMX_FUNCSTUBNT_ADDRESS] = @(off);
+	info[AMX_FUNCSTUBNT_NAMEOFS] = @(off + 4);
+
+	return true;
+}
+
+stock GetPubVarIndexByName(const name[]) {
+	new amxhdr[AMX_HDR];
+	GetAmxHeaderOnce(amxhdr);
+
+	new num_pubvars = GetNumPubVars(amxhdr);
+
+	// Binary search
+	new first = 0;
+	new last = num_pubvars - 1;
+	new mid;
+
+	while (first <= last) {
+		mid = (first + last) / 2;
+
+		new off = amxhdr[AMX_HDR_PUBVARS] - amxhdr[AMX_HDR_DAT] + mid * amxhdr[AMX_HDR_DEFSIZE];
+		new nameofs = @(off + 4) - amxhdr[AMX_HDR_DAT];
+
+		new diff = NtNameVsString(nameofs, name);
+		if (diff < 0) {
+			first = mid + 1;
+		} else if (diff > 0) {
+			last = mid - 1;
+		} else {
+			return mid;
+		}
+	}
+
+	return -1;
+}
+
+stock GetPubVarIndexByAddress(address) {
+	new amxhdr[AMX_HDR];
+	GetAmxHeaderOnce(amxhdr);
+
+	new num_pubvars = GetNumPubVars(amxhdr);
+	new off = amxhdr[AMX_HDR_PUBVARS] - amxhdr[AMX_HDR_DAT];
+
+	// Linear search
+	for (new i = 0; i < num_pubvars; i++) {
+		if (@(off) == address) {
+			return i;
+		}
+		off += amxhdr[AMX_HDR_DEFSIZE];
+	}
+
+	return -1;
+}
+
+stock GetPubVarAddressByIndex(index) {
+	new info[AMX_FUNCSTUBNT];
+	GetPubVarInfo(index, info);
+	return info[AMX_FUNCSTUBNT_ADDRESS];
+}
+
+stock bool:GetPubVarNameByIndex(index, name[], size = sizeof(name)) {
+	new info[AMX_FUNCSTUBNT];
+	if (!GetPubVarInfo(index, info)) {
+		return false;
+	}
+
+	new dat;
+	#emit lctrl 1
+	#emit stor.s.pri dat
+
+	return (CopyNtNameToString(info[AMX_FUNCSTUBNT_NAMEOFS] - dat, name, size) > 0);
+}
+
+stock GetPubVarAddressByName(const name[]) {
+	return GetPubVarAddressByIndex(GetPubVarIndexByName(name));
 }
