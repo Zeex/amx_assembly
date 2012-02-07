@@ -129,17 +129,6 @@ static stock copy_4(&dest, const source[], start) {
 	#emit movs 4
 }
 
-// Compare a packed string aginst unpacked one.
-// Should be static but can't...
-static strcmp_pu(const packed[], const unpacked[]) {
-	new index;
-	while (packed{index} != '\0' && unpacked[index] != '\0'
-			&& packed{index} == unpacked[index]) {
-		index++;
-	}
-	return packed{index} - unpacked[index] & charmax;
-}
-
 stock GetAmxHeader(amxhdr[AMX_HDR]) {
 	new plain_amxhdr[AMX_HDR_CELLS];
 	GetPlainAmxHeader(plain_amxhdr);
@@ -439,8 +428,4 @@ stock bool:GetNativeNameByIndex(index, name[], size = sizeof(name)) {
 	#emit stor.s.pri dat
 
 	return (CopyNtNameToString(info[AMX_FUNCSTUBNT_NAMEOFS] - dat, name, size) > 0);
-}
-
-public amx_header_use_funcs() {
-	strcmp_pu("", "");
 }
