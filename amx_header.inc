@@ -100,10 +100,7 @@ stock GetPlainAmxHeader(plain_amxhdr[AMX_HDR_CELLS]) {
 	#emit stor.s.pri address
 
 	for (new i = 0; i < AMX_HDR_CELLS; i++) {
-		new cell;
-		#emit lref.s.pri address
-		#emit stor.s.pri cell
-		plain_amxhdr[i] = cell;
+		plain_amxhdr[i] = @(address);
 		address += 4;
 	}
 }
