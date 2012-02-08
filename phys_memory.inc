@@ -26,6 +26,7 @@ static stock AbsToRel(addr) {
 	return addr - (GetAmxBase() + dat);
 }
 
+// Copy num cells from physical memory starting at addr to dest.
 stock ReadPhysMemory(addr, dest[], num = sizeof(dest)) {
 	new rel_addr = AbsToRel(addr);
 
@@ -48,6 +49,7 @@ stock ReadPhysMemory(addr, dest[], num = sizeof(dest)) {
 	return 0;
 }
 
+// Copy num cells from src to physical memory starting at addr.
 stock WritePhysMemory(addr, src[], num = sizeof(src)) {
 	new rel_addr = AbsToRel(addr);
 
@@ -59,7 +61,7 @@ stock WritePhysMemory(addr, src[], num = sizeof(src)) {
 	// Currently reading address.
 	new cur_addr = rel_addr;
 
-	// Write num cells from src
+	// Write num cells from src.
 	for (new i = 0; i < num; i++, cur_addr += 4, cur_src += 4) {
 		#emit lref.s.pri cur_src
 		#emit sref.s.pri cur_addr
@@ -131,6 +133,7 @@ stock GetAmxBase() {
 	return amx_base;
 }
 
+// Swaps all bytes in a cell.
 stock AlignCell(c) {
 	new v[1];
 	v[0] = c;
@@ -144,6 +147,7 @@ stock AlignCell(c) {
 	return v[0];
 }
 
+// Calls AlignCell against each element of an array.
 stock AlignCellArray(a[], size = sizeof(a)) {
 	for (new i = 0; i < size; i++) {
 		a[i] = AlignCell(a[i]);
