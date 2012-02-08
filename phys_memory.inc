@@ -135,16 +135,17 @@ stock GetAmxBase() {
 
 // Swaps all bytes in a cell.
 stock AlignCell(c) {
-	new v[1];
-	v[0] = c;
-	new tmp;
-	tmp = v{3};
-	v{3} = v{0};
-	v{0} = tmp;
-	tmp = v{2};
-	v{2} = v{1};
-	v{1} = tmp;
-	return v[0];
+	new a = 0x00000000;
+
+	// Swap the highest and the lowest bytes.
+	a |= (c & 0xff000000) >> 24;
+	a |= (c & 0x000000ff) << 24;
+
+	// Swap the other two.
+	a |= (c & 0x00ff0000) >> 8;
+	a |= (c & 0x0000ff00) << 8;
+
+	return a;
 }
 
 // Calls AlignCell against each element of an array.
