@@ -144,7 +144,7 @@ stock AlignCell(c) {
 	return v[0];
 }
 
-stock Align(a[], size = sizeof(a)) {
+stock AlignCellArray(a[], size = sizeof(a)) {
 	for (new i = 0; i < size; i++) {
 		a[i] = AlignCell(a[i]);
 	}
