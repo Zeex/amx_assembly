@@ -28,7 +28,7 @@
 #endif
 
 forward bool:Push(arg);
-forward bool:PushString(const string[]); // same as Push(addressof(string))
+forward bool:PushString(const string[]); // same as Push(ref(string))
 forward bool:Pop(&arg = 0);
 forward Call(address, bool:auto_pop = true);
 forward Sysreq(address, bool:auto_pop = true); // same as Call() but for natives
