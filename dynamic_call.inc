@@ -23,11 +23,9 @@
 #include "amx_header"
 #include "amx_memory"
 
-#if !defined MAX_FUN_ARGS
-	#define MAX_FUN_ARGS 256
+#if !defined DYNAMIC_CALL_MAX_ARGS
+	#define DYNAMIC_CALL_MAX_ARGS 256
 #endif
-
-#define MAX_FUN_NAME 32
 
 forward bool:Push(arg);
 forward bool:PushString(const string[]); // same as Push(addressof(string))
@@ -38,7 +36,7 @@ forward CallFunction(address, {Float,_}:...);
 forward CallNative(address, {Float,_}:...); // same as CallFunction() but for natives
 
 static stock g_nargs = 0;
-static stock g_args[MAX_FUN_ARGS];
+static stock g_args[DYNAMIC_CALL_MAX_ARGS];
 
 stock bool:Push(arg) {
 	if (g_nargs < sizeof(g_args)) {
