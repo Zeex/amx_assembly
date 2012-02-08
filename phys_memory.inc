@@ -91,38 +91,44 @@ stock WritePhysMemoryCell(addr, what) {
 
 // Returns AMX base address i.e. amx->base.
 stock GetAmxBase() {
-	new cod, dat;
-	#emit lctrl 0
-	#emit stor.s.pri cod
-	#emit lctrl 1
-	#emit stor.s.pri dat
+	static amx_base = 0; // cached
 
-	// Start of code section relative to data.
-	new code_start = cod - dat;
+	if (amx_base == 0) {
+		new cod, dat;
+		#emit lctrl 0
+		#emit stor.s.pri cod
+		#emit lctrl 1
+		#emit stor.s.pri dat
 
-	// Get this function address.
-	new fn_addr;
-	#emit const.pri GetAmxBase
-	#emit stor.s.pri fn_addr
+		// Start of code section relative to data.
+		new code_start = cod - dat;
 
-	// Get the return address stored from the stack.
-	new ret_addr, tmp;
-	#emit lctrl 5
-	#emit add.c 4
-	#emit stor.s.pri tmp
-	#emit lref.s.pri tmp
-	#emit stor.s.pri ret_addr
+		// Get this function address.
+		new fn_addr;
+		#emit const.pri GetAmxBase
+		#emit stor.s.pri fn_addr
 
-	// Get location of relocated function address in code.
-	new fn_addr_reloc_ptr = code_start + ret_addr - 4;
+		// Get the return address stored from the stack.
+		new ret_addr, tmp;
+		#emit lctrl 5
+		#emit add.c 4
+		#emit stor.s.pri tmp
+		#emit lref.s.pri tmp
+		#emit stor.s.pri ret_addr
 
-	// Read in the relocated address.
-	// It is equal to amx->base + amxhdr->cod + fn_addr.
-	new fn_addr_reloc;
-	#emit lref.s.pri fn_addr_reloc_ptr
-	#emit stor.s.pri fn_addr_reloc
+		// Get location of relocated function address in code.
+		new fn_addr_reloc_ptr = code_start + ret_addr - 4;
 
-	return fn_addr_reloc - fn_addr - cod;
+		// Read in the relocated address.
+		// It is equal to amx->base + amxhdr->cod + fn_addr.
+		new fn_addr_reloc;
+		#emit lref.s.pri fn_addr_reloc_ptr
+		#emit stor.s.pri fn_addr_reloc
+
+		amx_base = fn_addr_reloc - fn_addr - cod;
+	}
+
+	return amx_base;
 }
 
 stock AlignCell(c) {
