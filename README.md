@@ -11,8 +11,8 @@ A few handy functions/macros for reading from/writing to AMX data section.
 
 	// Example:
 	new x = 123;
-	new y = addressof(x);
-	new z = @(y);
+	new y = ref(x);
+	new z = @(y); // z will be set to 123
 
 Also can be used to pass strings/references when working with dynamic_call.
 
