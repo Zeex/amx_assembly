@@ -17,31 +17,6 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
-//
-// Functions:
-//     Push(value)
-//         Pushes an argument onto the stack (not the actual stack - real push is
-//         done when you Call() a function). The arguments are pushed from left
-//         to right.
-//     PushString(const string[])
-//         Same as Push() but for strings. This is cheap as it only pushes the
-//         address - no string copying performed.
-//     Pop(&value = 0)
-//         Pops the argument from the top of the argument pseudo-stack. Takes an
-///        optional parameter to store the popped value in.
-//     Call(address)
-//         Calls a native function. The address can be obtained with GetPublicAddressByName()
-//         from amx_header.inc.
-//     CallFunction(address, {Float,_}:...)
-//       Calls a function at the specified address. The address can be obtained using one of the above routines.
-//       This is somewhat similar to SA-MP's CallLocalFunction() but it doesn't take a format string.
-//       If you want to pass a variable by reference or pass a string/array, use addressof() and addressofs() from amx_memory.inc.
-//     Sysreq(address)
-//         Calls a native function. The address can be obtained with GetNativeAddressByName()
-//         from amx_header.inc.
-//     CallNative(address, {Float,_}:...)
-//       Calls a public function at the specified address. The address can be obtained using one of the above routines.
-//       If you want to pass a variable by reference or pass a string/array, use addressof() and addressofs() from amx_memory.inc.
 
 #include <a_samp>
 
@@ -53,6 +28,14 @@
 #endif
 
 #define MAX_FUN_NAME 32
+
+forward bool:Push(arg);
+forward bool:PushString(const string[]); // same as Push(addressof(string))
+forward bool:Pop(&arg = 0);
+forward Call(address, bool:auto_pop = true);
+forward Sysreq(address, bool:auto_pop = true); // same as Call() but for natives
+forward CallFunction(address, {Float,_}:...);
+forward CallNative(address, {Float,_}:...); // same as CallFunction() but for natives
 
 static stock g_nargs = 0;
 static stock g_args[MAX_FUN_ARGS];
