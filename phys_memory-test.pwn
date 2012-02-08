@@ -5,15 +5,10 @@
 main() {
 	new s[24 char];
 	new s2[24];
+
 	ReadPhysMemory(0x004AB8CC, s);
-	Align(s);
+	AlignCellArray(s);
+
 	strunpack(s2, s);
-	print(s2); // will print "SA-MP Dedicated Server" on SA-MP 0.3d R2
-
-	CrashServer();
+	print(s2); // prints "SA-MP Dedicated Server" on SA-MP 0.3d R2
 }
-
-stock CrashServer() {
-	WritePhysMemoryCell(0, 123); // will give "Access violation reading location 0x00000000"
-}
-
