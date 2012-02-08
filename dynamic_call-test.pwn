@@ -6,21 +6,21 @@ main() {
 	new x = 456;
 
 	print("public - method #1");
-	CallFunction(GetPublicAddressByName("test"), 123, addressof(x), addressof("hell"), addressof("yeah"));
+	CallFunction(GetPublicAddressByName("test"), 123, ref(x), ref("hell"), ref("yeah"));
 
 	print("public - method #2");
 	Push(123);
-	Push(addressof(x));
-	Push(addressof("hell"));
-	Push(addressof("yeah"));
+	Push(ref(x));
+	Push(ref("hell"));
+	Push(ref("yeah"));
 	Call(GetPublicAddressByName("test"));
 
 	print("native - method #1");
-	CallNative(GetNativeAddressByName("printf"), addressof("Hello, %s!"), addressof("World"));
+	CallNative(GetNativeAddressByName("printf"), ref("Hello, %s!"), ref("World"));
 
 	print("native - method #2");
-	Push(addressof("Hello, %s!"));
-	Push(addressof("World"));
+	Push(ref("Hello, %s!"));
+	Push(ref("World"));
 	Sysreq(GetNativeAddressByName("printf"));
 }
 

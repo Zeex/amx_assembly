@@ -30,8 +30,8 @@ stock read@(address) {
 // Shorthand for read@
 #define @ read@
 
-// Gets address of a variable.
-stock addressof(...) {
+// Returns address of a variable/array.
+stock ref(...) {
 	assert(numargs() == 1);
 	#emit load.s.pri 12 // first argument
 	#emit retn
