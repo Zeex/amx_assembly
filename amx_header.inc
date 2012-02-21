@@ -349,7 +349,7 @@ stock GetNativeIndexByAddress(address) {
 	GetAmxHeaderOnce(amxhdr);
 
 	new num_natives = GetNumNatives(amxhdr);
-	new off = amxhdr[AMX_HDR_NATIVES - amxhdr[AMX_HDR_DAT];
+	new off = amxhdr[AMX_HDR_NATIVES] - amxhdr[AMX_HDR_DAT];
 
 	// Linear search
 	for (new i = 0; i < num_natives; i++) {
