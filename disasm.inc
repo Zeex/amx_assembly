@@ -443,7 +443,7 @@ stock Disassemble(const out_filename[]) {
 
 		if (op == _:OP_PROC) {
 			// Print function name if it's public
-			new name[MAX_FUN_NAME];
+			new name[32];
 			new address = cip + dat - cod;
 			if (address == hdr[AMX_HDR_CIP]) {
 				strcat(name, "main");
@@ -481,7 +481,7 @@ stock Disassemble(const out_filename[]) {
 
 		switch (Opcode:op) {
 			case OP_CALL: {
-				new name[MAX_FUN_NAME];
+				new name[32];
 				new address = @(cip) - base - cod;
 				if (address == hdr[AMX_HDR_CIP]) {
 					strcat(name, "main");
