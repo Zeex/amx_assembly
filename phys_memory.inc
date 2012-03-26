@@ -91,6 +91,10 @@ stock WritePhysMemoryCell(addr, what) {
 	return 0;
 }
 
+static stock dummy() {
+	return 0;
+}
+
 // Returns the AMX base address i.e. amx->base.
 stock GetAmxBase() {
 	static amx_base = 0; // cached
@@ -105,26 +109,18 @@ stock GetAmxBase() {
 		// Get code section start address relative to data.
 		new code_start = cod - dat;
 
-		// Get this function's address.
+		// Get address of dummy().
 		new fn_addr;
-		#emit const.pri GetAmxBase
+		#emit const.pri dummy
 		#emit stor.s.pri fn_addr
 
-		// Get the return address stored on the stack.
-		new ret_addr, tmp;
-		#emit lctrl 5
-		#emit add.c 4
-		#emit stor.s.pri tmp
-		#emit lref.s.pri tmp
-		#emit stor.s.pri ret_addr
-
-		// Get location of relocated function address stored in code.
-		new fn_addr_reloc_ptr = code_start + ret_addr - 4;
-
-		// Read in the relocated address.
-		// It is equal to amx->base + amxhdr->cod + fn_addr.
-		new fn_addr_reloc;
-		#emit lref.s.pri fn_addr_reloc_ptr
+		// Get absolute address from the CALL instruction.
+		new fn_addr_reloc, call_addr;
+		dummy();
+		#emit lctrl 6
+		#emit stor.s.pri call_addr
+		call_addr = call_addr - 12 + code_start;
+		#emit lref.s.pri call_addr
 		#emit stor.s.pri fn_addr_reloc
 
 		amx_base = fn_addr_reloc - fn_addr - cod;
