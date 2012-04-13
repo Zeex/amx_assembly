@@ -76,7 +76,7 @@ stock WritePhysMemory(addr, src[], num = sizeof(src)) {
 stock ReadPhysMemoryCell(addr) {
 	new rel_addr = AbsToRel(addr);
 	#emit lref.s.pri rel_addr
-	#emit stack 8
+	#emit stack 4
 	#emit retn
 	return 0;
 }
