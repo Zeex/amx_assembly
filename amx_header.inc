@@ -438,7 +438,7 @@ stock bool:GetPubVarInfo(index, info[AMX_FUNCSTUBNT]) {
 
 	new num_pubvars = GetNumPubVars(amxhdr);
 
-	if (index < 0 || index >= num_publics) {
+	if (index < 0 || index >= num_pubvars) {
 		return false;
 	}
 
