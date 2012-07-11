@@ -173,6 +173,9 @@ stock SysreqC(index, bool:auto_pop = true) {
 	#emit nop
 	#emit nop
 
+	new retval;
+	#emit stor.s.pri retval
+
 	// Pop native arguments
 	#emit lctrl 4 // Get STK
 	#emit load.s.alt bytes
@@ -183,6 +186,8 @@ stock SysreqC(index, bool:auto_pop = true) {
 	if (auto_pop) {
 		while (Pop()) {}
 	}
+
+	return retval;
 }
 
 stock SysreqD(address, bool:auto_pop = true) {
@@ -226,6 +231,9 @@ stock SysreqD(address, bool:auto_pop = true) {
 	#emit nop
 	#emit nop
 
+	new retval;
+	#emit stor.s.pri retval
+
 	// Pop native arguments
 	#emit lctrl 4 // Get STK
 	#emit load.s.alt bytes
@@ -236,6 +244,8 @@ stock SysreqD(address, bool:auto_pop = true) {
 	if (auto_pop) {
 		while (Pop()) {}
 	}
+
+	return retval;
 }
 
 stock CallNative(index, {Float,_}:...) {
@@ -300,6 +310,9 @@ stock CallNative(index, {Float,_}:...) {
 	#emit nop
 	#emit nop
 
+	new retval;
+	#emit stor.s.pri retval
+
 	// Pop native arguments
 	#emit lctrl 4 // Get STK
 	#emit load.s.alt arg_bytes
@@ -307,10 +320,7 @@ stock CallNative(index, {Float,_}:...) {
 	#emit add.c 4 // One extra cell for params[0]
 	#emit sctrl 4
 
-	// Pop locals and return
-	#emit stack 0x14
-	#emit retn
-	return 0;
+	return retval;
 }
 
 // Unlike CallNative(), this funciton calls natives directly via SYSREQ.D.
@@ -376,6 +386,9 @@ stock CallNativeDirectly(address, {Float,_}:...) {
 	#emit nop
 	#emit nop
 
+	new retval;
+	#emit stor.s.pri retval
+
 	// Pop native arguments
 	#emit lctrl 4 // Get STK
 	#emit load.s.alt arg_bytes
@@ -384,7 +397,5 @@ stock CallNativeDirectly(address, {Float,_}:...) {
 	#emit sctrl 4
 
 	// Pop locals and return
-	#emit stack 0x14
-	#emit retn
-	return 0;
+	return retval;
 }
