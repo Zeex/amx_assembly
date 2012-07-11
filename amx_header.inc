@@ -50,33 +50,33 @@ enum AMX_FUNCSTUBNT {
 }
 
 // Publics
-forward GetPublicIndexByAddress(address);
-forward GetPublicIndexByName(const name[]);
+forward GetPublicIndexFromAddress(address);
+forward GetPublicIndexFromName(const name[]);
 forward bool:GetPublicInfo(index, info[AMX_FUNCSTUBNT]);
-forward GetPublicAddressByName(const name[]);
-forward GetPublicAddressByIndex(index);
-forward bool:GetPublicNameByIndex(index, name[], size = sizeof(name));
-forward bool:GetPublicNameByAddress(address, name[], size = sizeof(name));
+forward GetPublicAddressFromName(const name[]);
+forward GetPublicAddressFromIndex(index);
+forward bool:GetPublicNameFromIndex(index, name[], size = sizeof(name));
+forward bool:GetPublicNameFromAddress(address, name[], size = sizeof(name));
 forward HookPublic(index, address);
 
 // Natives
-forward GetNativeIndexByAddress(address);
-forward GetNativeIndexByName(const name[]);
+forward GetNativeIndexFromAddress(address);
+forward GetNativeIndexFromName(const name[]);
 forward bool:GetNativeInfo(index, info[AMX_FUNCSTUBNT]);
-forward GetNativeAddressByName(const name[]);
-forward GetNativeAddressByIndex(index);
-forward bool:GetNativeNameByIndex(index, name[], size = sizeof(name));
-forward bool:GetNativeNameByAddress(address, name[], size = sizeof(name));
+forward GetNativeAddressFromName(const name[]);
+forward GetNativeAddressFromIndex(index);
+forward bool:GetNativeNameFromIndex(index, name[], size = sizeof(name));
+forward bool:GetNativeNameFromAddress(address, name[], size = sizeof(name));
 forward HookNative(index, address);
 
 // Public Variables
 forward bool:GetPubVarInfo(index, info[AMX_FUNCSTUBNT]);
-forward GetPubVarIndexByName(const name[]);
-forward GetPubVarIndexByAddress(address);
-forward GetPubVarAddressByName(const name[]);
-forward GetPubVarAddressByIndex(index);
-forward bool:GetPubVarNameByIndex(index, name[], size = sizeof(name));
-forward bool:GetPubVarNameByAddress(address, name[], size = sizeof(name));
+forward GetPubVarIndexFromName(const name[]);
+forward GetPubVarIndexFromAddress(address);
+forward GetPubVarAddressFromName(const name[]);
+forward GetPubVarAddressFromIndex(index);
+forward bool:GetPubVarNameFromIndex(index, name[], size = sizeof(name));
+forward bool:GetPubVarNameFromAddress(address, name[], size = sizeof(name));
 
 // General
 forward GetPlainAmxHeader(plain_amxhdr[AMX_HDR_CELLS]);
@@ -226,7 +226,7 @@ stock GetNumPublics(amxhdr[AMX_HDR]) {
 	return num_publics;
 }
 
-stock GetPublicIndexByAddress(address) {
+stock GetPublicIndexFromAddress(address) {
 	new amxhdr[AMX_HDR];
 	GetAmxHeaderOnce(amxhdr);
 
@@ -261,7 +261,7 @@ stock bool:GetPublicInfo(index, info[AMX_FUNCSTUBNT]) {
 	return true;
 }
 
-stock GetPublicIndexByName(const name[]) {
+stock GetPublicIndexFromName(const name[]) {
 	new amxhdr[AMX_HDR];
 	GetAmxHeaderOnce(amxhdr);
 
@@ -291,17 +291,17 @@ stock GetPublicIndexByName(const name[]) {
 	return -1;
 }
 
-stock GetPublicAddressByIndex(index) {
+stock GetPublicAddressFromIndex(index) {
 	new info[AMX_FUNCSTUBNT];
 	GetPublicInfo(index, info);
 	return info[AMX_FUNCSTUBNT_ADDRESS];
 }
 
-stock GetPublicAddressByName(const name[]) {
-	return GetPublicAddressByIndex(GetPublicIndexByName(name));
+stock GetPublicAddressFromName(const name[]) {
+	return GetPublicAddressFromIndex(GetPublicIndexFromName(name));
 }
 
-stock bool:GetPublicNameByIndex(index, name[], size = sizeof(name)) {
+stock bool:GetPublicNameFromIndex(index, name[], size = sizeof(name)) {
 	if (index == -1) {
 		strcpy(name, "main", size);
 		return true;
@@ -319,8 +319,8 @@ stock bool:GetPublicNameByIndex(index, name[], size = sizeof(name)) {
 	return (CopyNtNameToString(info[AMX_FUNCSTUBNT_NAMEOFS] - dat, name, size) > 0);
 }
 
-stock bool:GetPublicNameByAddress(address, name[], size = sizeof(name)) {
-	return GetPublicNameByIndex(GetPublicIndexByAddress(address), name, size);
+stock bool:GetPublicNameFromAddress(address, name[], size = sizeof(name)) {
+	return GetPublicNameFromIndex(GetPublicIndexFromAddress(address), name, size);
 }
 
 stock HookPublic(index, address) {
@@ -344,7 +344,7 @@ stock GetNumNatives(amxhdr[AMX_HDR]) {
 	return (amxhdr[AMX_HDR_LIBRARIES] - amxhdr[AMX_HDR_NATIVES]) / amxhdr[AMX_HDR_DEFSIZE];
 }
 
-stock GetNativeIndexByAddress(address) {
+stock GetNativeIndexFromAddress(address) {
 	new amxhdr[AMX_HDR];
 	GetAmxHeaderOnce(amxhdr);
 
@@ -379,7 +379,7 @@ stock bool:GetNativeInfo(index, info[AMX_FUNCSTUBNT]) {
 	return true;
 }
 
-stock GetNativeIndexByName(const name[]) {
+stock GetNativeIndexFromName(const name[]) {
 	new amxhdr[AMX_HDR];
 	GetAmxHeaderOnce(amxhdr);
 
@@ -401,17 +401,17 @@ stock GetNativeIndexByName(const name[]) {
 	return -1;
 }
 
-stock GetNativeAddressByIndex(index) {
+stock GetNativeAddressFromIndex(index) {
 	new info[AMX_FUNCSTUBNT];
 	GetNativeInfo(index, info);
 	return info[AMX_FUNCSTUBNT_ADDRESS];
 }
 
-stock GetNativeAddressByName(const name[]) {
-	return GetNativeAddressByIndex(GetNativeIndexByName(name));
+stock GetNativeAddressFromName(const name[]) {
+	return GetNativeAddressFromIndex(GetNativeIndexFromName(name));
 }
 
-stock bool:GetNativeNameByIndex(index, name[], size = sizeof(name)) {
+stock bool:GetNativeNameFromIndex(index, name[], size = sizeof(name)) {
 	new info[AMX_FUNCSTUBNT];
 	if (!GetNativeInfo(index, info)) {
 		return false;
@@ -424,8 +424,8 @@ stock bool:GetNativeNameByIndex(index, name[], size = sizeof(name)) {
 	return (CopyNtNameToString(info[AMX_FUNCSTUBNT_NAMEOFS] - dat, name, size) > 0);
 }
 
-stock bool:GetNativeNameByAddress(address, name[], size = sizeof(name)) {
-	return GetNativeNameByIndex(GetNativeIndexByAddress(address), name, size);
+stock bool:GetNativeNameFromAddress(address, name[], size = sizeof(name)) {
+	return GetNativeNameFromIndex(GetNativeIndexFromAddress(address), name, size);
 }
 
 stock HookNative(index, address) {
@@ -466,7 +466,7 @@ stock bool:GetPubVarInfo(index, info[AMX_FUNCSTUBNT]) {
 	return true;
 }
 
-stock GetPubVarIndexByName(const name[]) {
+stock GetPubVarIndexFromName(const name[]) {
 	new amxhdr[AMX_HDR];
 	GetAmxHeaderOnce(amxhdr);
 
@@ -496,7 +496,7 @@ stock GetPubVarIndexByName(const name[]) {
 	return -1;
 }
 
-stock GetPubVarIndexByAddress(address) {
+stock GetPubVarIndexFromAddress(address) {
 	new amxhdr[AMX_HDR];
 	GetAmxHeaderOnce(amxhdr);
 
@@ -514,18 +514,18 @@ stock GetPubVarIndexByAddress(address) {
 	return -1;
 }
 
-stock GetPubVarAddressByIndex(index) {
+stock GetPubVarAddressFromIndex(index) {
 	new info[AMX_FUNCSTUBNT];
 	GetPubVarInfo(index, info);
 	return info[AMX_FUNCSTUBNT_ADDRESS];
 }
 
 
-stock GetPubVarAddressByName(const name[]) {
-	return GetPubVarAddressByIndex(GetPubVarIndexByName(name));
+stock GetPubVarAddressFromName(const name[]) {
+	return GetPubVarAddressFromIndex(GetPubVarIndexFromName(name));
 }
 
-stock bool:GetPubVarNameByIndex(index, name[], size = sizeof(name)) {
+stock bool:GetPubVarNameFromIndex(index, name[], size = sizeof(name)) {
 	new info[AMX_FUNCSTUBNT];
 	if (!GetPubVarInfo(index, info)) {
 		return false;
@@ -538,6 +538,6 @@ stock bool:GetPubVarNameByIndex(index, name[], size = sizeof(name)) {
 	return (CopyNtNameToString(info[AMX_FUNCSTUBNT_NAMEOFS] - dat, name, size) > 0);
 }
 
-stock bool:GetPubVarNameByAddress(address, name[], size = sizeof(name)) {
-	return GetPubVarNameByIndex(GetPubVarIndexByAddress(address), name, size);
+stock bool:GetPubVarNameFromAddress(address, name[], size = sizeof(name)) {
+	return GetPubVarNameFromIndex(GetPubVarIndexFromAddress(address), name, size);
 }
