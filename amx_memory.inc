@@ -21,13 +21,13 @@
 #include <core>
 
 // Read a cell at a given location
-stock read@(address) {
+stock ReadData(address) {
 	#emit lref.s.pri address
 	#emit retn
 	return 0;
 }
 
-// Shorthand for read@
+#define read@ ReadData // compatibility
 #define @ read@
 
 // Returns address of a variable/array.
@@ -39,12 +39,13 @@ stock ref(...) {
 }
 
 // Writes to AMX data section at the sepcified address.
-stock write@(address, value) {
+stock WriteData(address, value) {
 	#emit load.s.pri value
 	#emit sref.s.pri address
 	#emit retn
 	return 0;
 }
 
+#define write@ WriteData // compatibility
 #define w@ write@
 #define r@ read@
