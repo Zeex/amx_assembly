@@ -64,8 +64,6 @@ stock bool:Pop(&arg = 0) {
 }
 
 stock Call(address, bool:auto_pop = true) {
-	assert(address != 0);
-
 	new arg = 0;
 	new index = g_nargs;
 	new bytes = g_nargs * 4;
@@ -90,8 +88,6 @@ stock Call(address, bool:auto_pop = true) {
 }
 
 stock CallFunction(address, {Float,_}:...) {
-	assert(address != 0);
-
 	new arg_bytes, arg_begin, arg_end;
 
 	// Get number of bytes passed
@@ -137,8 +133,6 @@ stock CallFunction(address, {Float,_}:...) {
 }
 
 stock SysreqC(index, bool:auto_pop = true) {
-	assert(index >= 0);
-
 	new arg = 0;
 	new i = g_nargs;
 	new bytes = g_nargs * 4;
@@ -192,8 +186,6 @@ stock SysreqC(index, bool:auto_pop = true) {
 }
 
 stock SysreqD(address, bool:auto_pop = true) {
-	assert(address != 0);
-
 	new arg = 0;
 	new i = g_nargs;
 	new bytes = g_nargs * 4;
@@ -247,8 +239,6 @@ stock SysreqD(address, bool:auto_pop = true) {
 }
 
 stock CallNative(index, {Float,_}:...) {
-	assert(index >= 0);
-
 	new arg_bytes, arg_begin, arg_end;
 
 	// Get number of bytes passed
@@ -325,8 +315,6 @@ stock CallNative(index, {Float,_}:...) {
 
 // Unlike CallNative(), this funciton calls natives directly via SYSREQ.D.
 stock CallNativeDirectly(address, {Float,_}:...) {
-	assert(address != 0);
-
 	new arg_bytes, arg_begin, arg_end;
 
 	// Get number of bytes passed
