@@ -16,7 +16,7 @@ main() {
 	Call(GetPublicAddressByName("test"));
 
 	print("native - method #1");
-	CallNative(GetNativeAddressByName("printf"), ref("Hello, %s!"), ref("World"));
+	CallNative(GetNativeIndexByName("printf"), ref("Hello, %s!"), ref("World"));
 
 	print("native - method #2");
 	Push(ref("Hello, %s!"));
