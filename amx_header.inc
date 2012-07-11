@@ -67,6 +67,7 @@ forward GetNativeAddressByName(const name[]);
 forward GetNativeAddressByIndex(index);
 forward bool:GetNativeNameByIndex(index, name[], size = sizeof(name));
 forward bool:GetNativeNameByAddress(address, name[], size = sizeof(name));
+forward HookNative(index, address);
 
 // Public Variables
 forward bool:GetPubVarInfo(index, info[AMX_FUNCSTUBNT]);
@@ -322,7 +323,6 @@ stock bool:GetPublicNameByAddress(address, name[], size = sizeof(name)) {
 	return GetPublicNameByIndex(GetPublicIndexByAddress(address), name, size);
 }
 
-// Replace public's address in publics table and return the original address
 stock HookPublic(index, address) {
 	new amxhdr[AMX_HDR];
 	GetAmxHeaderOnce(amxhdr);
@@ -426,6 +426,23 @@ stock bool:GetNativeNameByIndex(index, name[], size = sizeof(name)) {
 
 stock bool:GetNativeNameByAddress(address, name[], size = sizeof(name)) {
 	return GetNativeNameByIndex(GetNativeIndexByAddress(address), name, size);
+}
+
+stock HookNative(index, address) {
+	new amxhdr[AMX_HDR];
+	GetAmxHeaderOnce(amxhdr);
+
+	new num_natives = GetNumNatives(amxhdr);
+
+	if (index < 0 || index >= num_natives) {
+		return 0;
+	}
+
+	new off = amxhdr[AMX_HDR_NATIVES] - amxhdr[AMX_HDR_DAT] + index * amxhdr[AMX_HDR_DEFSIZE];
+	new old_address = @(off);
+	write@(off, address);
+
+	return old_address;
 }
 
 stock GetNumPubVars(amxhdr[AMX_HDR]) {
