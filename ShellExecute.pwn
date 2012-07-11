@@ -18,12 +18,6 @@ static stock ToCharString(s[], size = sizeof(s)) {
 	}
 }
 
-static stock refabs(const s[]) {
-	new amxhdr[AMX_HDR];
-	GetAmxHeaderOnce(amxhdr);
-	return GetAmxBase() + amxhdr[AMX_HDR_DAT] + ref(s);
-}
-
 // http://msdn.microsoft.com/en-us/library/windows/desktop/bb762153%28v=vs.85%29.aspx
 
 #define SW_HIDE (0)

@@ -150,3 +150,17 @@ stock AlignCellArray(a[], size = sizeof(a)) {
 		a[i] = AlignCell(a[i]);
 	}
 }
+
+// Returns an absolute address of a variable/array.
+stock refabs(...) {
+	assert(numargs() == 1);
+
+	new offset;
+	#emit load.s.alt 12
+	#emit lctrl 1
+	#emit add
+	#emit move.alt
+	#emit stor.s.pri offset
+
+	return offset + GetAmxBase();
+}
