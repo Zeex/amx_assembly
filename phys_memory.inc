@@ -151,6 +151,13 @@ stock AlignCellArray(a[], size = sizeof(a)) {
 	}
 }
 
+// Converts a packed string to a null-terminated string of one-byte characters.
+stock ToCharString(s[], size = sizeof(s)) {
+	for (new i = 0; i < size; i++) {
+		s[i] = AlignCell(s[i]);
+	}
+}
+
 // Returns an absolute address of a variable/array.
 stock refabs(...) {
 	assert(numargs() == 1);

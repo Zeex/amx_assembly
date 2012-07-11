@@ -12,12 +12,6 @@
 #define asm7(%0,%1,%2,%3,%4,%5,%6)    asm4(%0,%1,%2,%3), asm3(%4,%5,%6)
 #define asm8(%0,%1,%2,%3,%4,%5,%6,%7) asm4(%0,%1,%2,%3), asm4(%4,%5,%6,%7)
 
-static stock ToCharString(s[], size = sizeof(s)) {
-	for (new i = 0; i < size; i++) {
-		s[i] = AlignCell(s[i]);
-	}
-}
-
 // http://msdn.microsoft.com/en-us/library/windows/desktop/bb762153%28v=vs.85%29.aspx
 
 #define SW_HIDE (0)
