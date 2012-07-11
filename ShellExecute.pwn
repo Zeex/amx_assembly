@@ -53,7 +53,7 @@ stock ShellExecute(const Operation[], const File[], const Parameters[], ShowCmd)
 	.text:10001026 8B 4D 0C                          mov     ecx, [ebp+arg_4]
 	.text:10001029 8B 51 04                          mov     edx, [ecx+4]
 	.text:1000102C 52                                push    edx             ; hwnd
-	.text:1000102D FF 15 E0 60 00 10                 call    ds:ShellExecuteA ; Opens or prints a specified file
+	.text:1000102D FF 15 78 56 34 12                 call    ds:ShellExecuteA ; Opens or prints a specified file
 	.text:10001033 5D                                pop     ebp
 	.text:10001034 C3                                retn
 	*/
@@ -79,7 +79,7 @@ stock ShellExecute(const Operation[], const File[], const Parameters[], ShowCmd)
 		asm3(0x8B, 0x4D, 0x0C),
 		asm3(0x8B, 0x51, 0x04),
 		asm1(0x52),
-		asm6(0xFF, 0x15, 0x14, 0x52, 0x4A, 0x00),
+		asm6(0xFF, 0x15, 0x14, 0x52, 0x4A, 0x00), // 0.3e
 		asm1(0x5D),
 		asm1(0xC3)
 	};
