@@ -31,7 +31,8 @@ forward bool:Push(arg);
 forward bool:PushString(const string[]); // same as Push(ref(string))
 forward bool:Pop(&arg = 0);
 forward Call(address, bool:auto_pop = true);
-forward Sysreq(address, bool:auto_pop = true); // same as Call() but for natives
+forward SysreqC(index, bool:auto_pop = true); // same as Call() but for natives
+forward SysreqD(address, bool:auto_pop = true); // same as Call() but for natives
 forward CallFunction(address, {Float,_}:...);
 forward CallNative(address, {Float,_}:...); // same as CallFunction() but for natives
 
@@ -134,16 +135,71 @@ stock CallFunction(address, {Float,_}:...) {
 	return 0;
 }
 
-stock Sysreq(address, bool:auto_pop = true) {
-	assert(address != 0);
+stock SysreqC(index, bool:auto_pop = true) {
+	assert(index >= 0);
 
 	new arg = 0;
-	new index = g_nargs;
+	new i = g_nargs;
 	new bytes = g_nargs * 4;
 	new tmp;
 
-	while (--index >= 0) {
-		arg = g_args[index];
+	while (--i >= 0) {
+		arg = g_args[i];
+		#emit push.s arg
+	}
+
+	#emit load.s.pri bytes
+	#emit push.pri
+
+	// tmp = cod + cip - dat + <distance to nop #1>
+	#emit lctrl 0  // COD
+	#emit move.alt
+	#emit lctrl 6  // CIP
+	#emit add
+	#emit move.alt
+	#emit lctrl 1 // DAT
+	#emit sub.alt
+	#emit add.c 0x5c
+	#emit stor.s.pri tmp
+
+	// nop #1 = sysreq.c
+	#emit const.pri 123
+	#emit sref.s.pri tmp
+
+	// tmp += 4
+	#emit load.s.pri tmp
+	#emit add.c 4
+	#emit stor.s.pri tmp
+
+	// nop #2 = address
+	#emit load.s.pri index
+	#emit sref.s.pri tmp
+
+	#emit nop
+	#emit nop
+
+	// Pop native arguments
+	#emit lctrl 4 // Get STK
+	#emit load.s.alt bytes
+	#emit add
+	#emit add.c 4 // One extra cell for params[0]
+	#emit sctrl 4
+
+	if (auto_pop) {
+		while (Pop()) {}
+	}
+}
+
+stock SysreqD(address, bool:auto_pop = true) {
+	assert(address != 0);
+
+	new arg = 0;
+	new i = g_nargs;
+	new bytes = g_nargs * 4;
+	new tmp;
+
+	while (--i >= 0) {
+		arg = g_args[i];
 		#emit push.s arg
 	}
 

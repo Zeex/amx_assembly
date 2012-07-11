@@ -21,7 +21,7 @@ main() {
 	print("native - method #2");
 	Push(ref("Hello, %s!"));
 	Push(ref("World"));
-	Sysreq(GetNativeAddressByName("printf"));
+	SysreqC(GetNativeIndexByName("printf"));
 }
 
 public test(i, &j, s[], t[]) {
