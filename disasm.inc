@@ -407,7 +407,7 @@ stock Disassemble(const out_filename[]) {
 		return;
 	}
 
-	new base = GetAmxBase();
+	new base = GetAmxBaseAddress();
 
 	new hdr[AMX_HDR];
 	GetAmxHeader(hdr);

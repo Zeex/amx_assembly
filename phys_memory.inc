@@ -23,7 +23,7 @@ static stock AbsToRel(addr) {
 	new dat;
 	#emit lctrl 1
 	#emit stor.s.pri dat
-	return addr - (GetAmxBase() + dat);
+	return addr - (GetAmxBaseAddress() + dat);
 }
 
 // Copy num cells from physical memory starting at addr to dest.
@@ -96,7 +96,7 @@ static stock dummy() {
 }
 
 // Returns the AMX base address i.e. amx->base.
-stock GetAmxBase() {
+stock GetAmxBaseAddress() {
 	static amx_base = 0; // cached
 
 	if (amx_base == 0) {
@@ -169,5 +169,5 @@ stock refabs(...) {
 	#emit move.alt
 	#emit stor.s.pri offset
 
-	return offset + GetAmxBase();
+	return offset + GetAmxBaseAddress();
 }
