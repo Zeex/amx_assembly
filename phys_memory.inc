@@ -152,7 +152,7 @@ stock GetAmxAddress() {
 #endif // DYNAMIC_CALL_INC
 
 // Swaps all bytes in a cell.
-stock AlignCell(c) {
+stock SwapBytes(c) {
 	new a = 0x00000000;
 
 	// Swap the highest and the lowest bytes.
@@ -166,17 +166,10 @@ stock AlignCell(c) {
 	return a;
 }
 
-// Calls AlignCell against each element of an array.
-stock AlignCellArray(a[], size = sizeof(a)) {
-	for (new i = 0; i < size; i++) {
-		a[i] = AlignCell(a[i]);
-	}
-}
-
 // Converts a packed string to a null-terminated string of one-byte characters.
 stock ToCharString(s[], size = sizeof(s)) {
 	for (new i = 0; i < size; i++) {
-		s[i] = AlignCell(s[i]);
+		s[i] = SwapBytes(s[i]);
 	}
 }
 

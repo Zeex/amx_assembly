@@ -7,7 +7,7 @@ main() {
 	new s2[24];
 
 	ReadPhysMemory(0x004AB8CC, s);
-	AlignCellArray(s);
+	ToCharString(s);
 
 	strunpack(s2, s);
 	print(s2); // prints "SA-MP Dedicated Server" on SA-MP 0.3d R2
