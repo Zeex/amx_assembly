@@ -134,6 +134,23 @@ stock GetAmxBaseAddress() {
 	return amx_base;
 }
 
+#tryinclude "dynamic_call"
+#if defined DYNAMIC_CALL_INC
+
+// Returns address of the abstract machine (address of the AMX structur in memory).
+stock GetAmxAddress() {
+	static address = 0;
+
+	if (address == 0) {
+		static const asm[] = !"\x04\x24\x44\x8B\xC3\xC3\xC3\xC3";
+		address = CallNativeCode(asm);
+	}
+
+	return address;
+}
+
+#endif // DYNAMIC_CALL_INC
+
 // Swaps all bytes in a cell.
 stock AlignCell(c) {
 	new a = 0x00000000;
