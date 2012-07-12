@@ -23,10 +23,11 @@
 #endif
 #define DISASM_INC
 
-#include <amx_header>
-#include <amx_memory>
-#include <phys_memory>
 #include <string>
+
+#include "amx_header"
+#include "amx_memory"
+#include "phys_memory"
 
 static stock const size_of_cell = cellbits / 8;
 

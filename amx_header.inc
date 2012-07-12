@@ -24,7 +24,8 @@
 #define AMX_HEADER_INC
 
 #include <a_samp>
-#include <amx_memory>
+
+#include "amx_memory"
 
 #define AMX_HDR_BYTES (60)
 #define AMX_HDR_CELLS (AMX_HDR_BYTES / 4)
