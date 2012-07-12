@@ -447,9 +447,9 @@ stock Disassemble(const out_filename[]) {
 			if (address == hdr[AMX_HDR_CIP]) {
 				strcat(name, "main");
 			} else {
-				new index = GetPublicIndexByAddress(address);
+				new index = GetPublicIndexFromAddress(address);
 				if (index >= 0) {
-					GetPublicNameByIndex(index, name);
+					GetPublicNameFromIndex(index, name);
 				}
 			}
 			if (strlen(name) != 0) {
@@ -485,9 +485,9 @@ stock Disassemble(const out_filename[]) {
 				if (address == hdr[AMX_HDR_CIP]) {
 					strcat(name, "main");
 				} else {
-					new index = GetPublicIndexByAddress(address);
+					new index = GetPublicIndexFromAddress(address);
 					if (index >= 0) {
-						GetPublicNameByIndex(index, name);
+						GetPublicNameFromIndex(index, name);
 					}
 				}
 				if (strlen(name) > 0) {
@@ -499,11 +499,11 @@ stock Disassemble(const out_filename[]) {
 			case OP_SYSREQ_C, OP_SYSREQ_D: {
 				new name[100]; // native name is not limited in length but we are
 				if (op == _:OP_SYSREQ_C) {
-					GetNativeNameByIndex(@(cip), name);
+					GetNativeNameFromIndex(@(cip), name);
 				} else {
-					new index = GetNativeIndexByAddress(@(cip));
+					new index = GetNativeIndexFromAddress(@(cip));
 					if (index >= 0) {
-						GetNativeNameByIndex(index, name);
+						GetNativeNameFromIndex(index, name);
 					}
 				}
 				if (strlen(name) > 0) {
