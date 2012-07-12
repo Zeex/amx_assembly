@@ -150,41 +150,31 @@ stock SysreqC(index, bool:auto_pop = true) {
 	#emit load.s.pri bytes
 	#emit push.pri
 
-	// tmp = cod + cip - dat + <distance to nop #1>
+	// tmp = cod + cip - dat + <distance to SYSREQ.C's operand>
 	#emit lctrl 0  // COD
 	#emit move.alt
 	#emit lctrl 6  // CIP
 	#emit add
 	#emit move.alt
-	#emit lctrl 1 // DAT
+	#emit lctrl 1  // DAT
 	#emit sub.alt
-	#emit add.c 0x5c
+	#emit add.c 0x38
 	#emit stor.s.pri tmp
 
-	// nop #1 = sysreq.c
-	#emit const.pri 123
-	#emit sref.s.pri tmp
-
-	// tmp += 4
-	#emit load.s.pri tmp
-	#emit add.c 4
-	#emit stor.s.pri tmp
-
-	// nop #2 = address
+	// Change native index in the following SYSREQ.C instruction.
 	#emit load.s.pri index
 	#emit sref.s.pri tmp
 
-	#emit nop
-	#emit nop
+	#emit sysreq.c 0xFFFFFFFF
 
 	new retval;
 	#emit stor.s.pri retval
 
-	// Pop native arguments
-	#emit lctrl 4 // Get STK
+	// Pop native arguments.
+	#emit lctrl 4
 	#emit load.s.alt bytes
 	#emit add
-	#emit add.c 4 // One extra cell for params[0]
+	#emit add.c 4 // Extra cell for params[0].
 	#emit sctrl 4
 
 	if (auto_pop) {
@@ -287,32 +277,22 @@ stock CallNative(index, {Float,_}:...) {
 	// Push number of arguments * 4 (which is params[0])
 	#emit push.s arg_bytes
 
-	// tmp = cod + cip - dat + <distance to nop #1>
+	// tmp = cod + cip - dat + <distance to SYSREQ.C's operand>
 	#emit lctrl 0  // COD
 	#emit move.alt
 	#emit lctrl 6  // CIP
 	#emit add
 	#emit move.alt
-	#emit lctrl 1 // DAT
+	#emit lctrl 1  // DAT
 	#emit sub.alt
-	#emit add.c 0x5c
+	#emit add.c 0x38
 	#emit stor.s.pri tmp
 
-	// nop #1 = sysreq.c
-	#emit const.pri 123
-	#emit sref.s.pri tmp
-
-	// tmp += 4
-	#emit load.s.pri tmp
-	#emit add.c 4
-	#emit stor.s.pri tmp
-
-	// nop #2 = address
+	// Change native index in the following SYSREQ.C instruction.
 	#emit load.s.pri index
 	#emit sref.s.pri tmp
 
-	#emit nop
-	#emit nop
+	#emit sysreq.c 0xFFFFFFFF
 
 	new retval;
 	#emit stor.s.pri retval
