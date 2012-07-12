@@ -40,7 +40,7 @@ forward SysreqC(index, bool:auto_pop = true); // same as Call() but for natives
 forward SysreqD(address, bool:auto_pop = true); // same as Call() but for natives
 forward CallFunction(address, {Float,_}:...);
 forward CallNative(index, {Float,_}:...); // same as CallFunction() but for natives
-forward CallNativeDirectly(address, {Float,_}:...); // same as CallFunction() but for natives
+forward CallNativeByAddress(address, {Float,_}:...); // same as CallFunction() but for natives
 
 static stock g_nargs = 0;
 static stock g_args[DYNAMIC_CALL_MAX_ARGS];
@@ -309,7 +309,7 @@ stock CallNative(index, {Float,_}:...) {
 }
 
 // Unlike CallNative(), this funciton calls natives directly via SYSREQ.D.
-stock CallNativeDirectly(address, {Float,_}:...) {
+stock CallNativeByAddress(address, {Float,_}:...) {
 	new arg_bytes, arg_begin, arg_end;
 
 	// Get number of bytes passed
