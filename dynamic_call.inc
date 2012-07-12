@@ -399,3 +399,24 @@ stock CallNativeDirectly(address, {Float,_}:...) {
 	// Pop locals and return
 	return retval;
 }
+
+#tryinclude "phys_memory"
+#if defined _inc_phys_memory
+
+// Calls machine code stored in the specified buffer.
+stock CallNativeCode(const code[]) {
+	static index = -1;
+
+	if (index < 0) {
+		fopen("<>");
+		index = GetNativeIndexFromName("fopen");
+	}
+
+	new old = HookNative(index, refabs(code));
+	new retval = SysreqC(index);
+	HookNative(index, old);
+
+	return retval;
+}
+
+#endif // _inc_phys_memory

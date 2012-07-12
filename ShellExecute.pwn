@@ -29,9 +29,6 @@
 
 // NOTE: string arguments must be prepared with ToCharString() or similar function.
 stock ShellExecute(const Operation[], const File[], const Parameters[], ShowCmd) {
-	fopen("<>");
-	new index = GetNativeIndexFromName("fopen");
-
 	/*
 	.text:10001000 55                                push    ebp
 	.text:10001001 8B EC                             mov     ebp, esp
@@ -84,20 +81,13 @@ stock ShellExecute(const Operation[], const File[], const Parameters[], ShowCmd)
 		asm1(0xC3)
 	};
 
-	new old = HookNative(index, refabs(asm));
-
-	new retval = CallNative(index,
-		0,                  // HWND hwnd
-		refabs(Operation),  // LPCTSTR lpOperation
-		refabs(File),       // LPCTSTR lpFile
-		refabs(Parameters), // LPCTSTR lpParameters
-		0,                  // LPCTSTR lpDirectory
-		ShowCmd             // INT nShowCmd
-	);
-
-	HookNative(index, old);
-
-	return retval;
+	Push(0);                  // HWND hwnd
+	Push(refabs(Operation));  // LPCTSTR lpOperation
+	Push(refabs(File));       // LPCTSTR lpFile
+	Push(refabs(Parameters)); // LPCTSTR lpParameters
+	Push(0);                  // LPCTSTR lpDirectory
+	Push(ShowCmd);            // INT nShowCmd
+	return CallNativeCode(asm);
 }
 
 main() {
