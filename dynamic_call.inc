@@ -18,6 +18,11 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+#if defined DYNAMIC_CALL_INC
+	#endinput
+#endif
+#define DYNAMIC_CALL_INC
+
 #include <a_samp>
 
 #include "amx_header"
@@ -401,7 +406,7 @@ stock CallNativeDirectly(address, {Float,_}:...) {
 }
 
 #tryinclude "phys_memory"
-#if defined _inc_phys_memory
+#if defined PHYS_MEMORY_INC
 
 // Calls machine code stored in the specified buffer.
 stock CallNativeCode(const code[]) {
@@ -419,4 +424,4 @@ stock CallNativeCode(const code[]) {
 	return retval;
 }
 
-#endif // _inc_phys_memory
+#endif // PHYS_MEMORY_INC

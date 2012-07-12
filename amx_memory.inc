@@ -18,6 +18,11 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+#if defined AMX_MEMORY_INC
+	#endinput
+#endif
+#define AMX_MEMORY_INC
+
 #include <core>
 
 // Read a cell at a given location

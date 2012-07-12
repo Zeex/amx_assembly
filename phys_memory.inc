@@ -18,6 +18,11 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+#if defined PHYS_MEMORY_INC
+	#endinput
+#endif
+#define PHYS_MEMORY_INC
+
 // Converts a real address to DAT-relative.
 static stock AbsToRel(addr) {
 	new dat;

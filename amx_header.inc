@@ -18,7 +18,13 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+#if defined AMX_HEADER_INC
+	#endinput
+#endif
+#define AMX_HEADER_INC
+
 #include <a_samp>
+
 #include "amx_memory"
 
 #define AMX_HDR_BYTES (60)

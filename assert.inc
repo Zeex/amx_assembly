@@ -18,6 +18,11 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+#if defined ASSERT_INC
+    #endinput
+#endif
+#define ASSERT_INC
+
 #include <a_samp>
 
 #if debug > 0

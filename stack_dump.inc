@@ -18,6 +18,11 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+#if defined STACK_DUMP_INC
+	#endinput
+#endif
+#define STACK_DUMP_INC
+
 ////////////////////////////////////////////////////
 //                  Stack layout
 ////////////////////////////////////////////////////

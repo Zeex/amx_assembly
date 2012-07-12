@@ -18,6 +18,11 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+#if defined DISASM_INC
+	#endinput
+#endif
+#define DISASM_INC
+
 #include <string>
 
 #include "amx_header"

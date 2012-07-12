@@ -18,6 +18,11 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+#if defined PROFILER_INC
+	#endinput
+#endif
+#define PROFILER_INC
+
 #include <a_samp>
 
 #include "amx_header"
