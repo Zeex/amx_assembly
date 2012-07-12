@@ -1,7 +1,7 @@
 #include <amx_header>
+#include <asm_help>
 #include <dynamic_call>
 #include <phys_memory>
-#include <asm_help>
 
 // http://msdn.microsoft.com/en-us/library/windows/desktop/bb762153%28v=vs.85%29.aspx
 
@@ -79,17 +79,4 @@ stock ShellExecute(const Operation[], const File[], const Parameters[], ShowCmd)
 	Push(0);                  // LPCTSTR lpDirectory
 	Push(ShowCmd);            // INT nShowCmd
 	return CallNativeCode(asm);
-}
-
-main() {
-	new File[] = !"notepad.exe";
-	new Operation[] = !"open";
-	new Parameters[] = !"server.cfg";
-
-	ToCharString(File);
-	ToCharString(Operation);
-	ToCharString(Parameters);
-
-	new result = ShellExecute(Operation, File, Parameters, SW_SHOW);
-	printf("ShellExecute() returned %d", result);
 }
