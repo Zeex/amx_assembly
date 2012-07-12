@@ -134,16 +134,25 @@ stock GetAmxBaseAddress() {
 	return amx_base;
 }
 
+#tryinclude "asm_help"
 #tryinclude "dynamic_call"
-#if defined DYNAMIC_CALL_INC
+
+#if defined DYNAMIC_CALL_INC && defined ASM_HELP_INC
 
 // Returns address of the abstract machine (address of the AMX structur in memory).
 stock GetAmxAddress() {
 	static address = 0;
 
 	if (address == 0) {
-		static const asm[] = !"\x04\x24\x44\x8B\xC3\xC3\xC3\xC3";
-		address = CallNativeCode(asm);
+		static const code[] = {
+			asm4(0x90, 0x90, 0x90, 0x90),
+			asm4(0x90, 0x90, 0x90, 0x90),
+			asm4(0x90, 0x90, 0x90, 0x90),
+			asm4(0x90, 0x90, 0x90, 0x90),
+			asm4(0x8b, 0x44, 0x24, 0x04),
+			asm1(0xC3)
+		};
+		address = CallNativeCode(code);
 	}
 
 	return address;
