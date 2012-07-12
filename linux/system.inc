@@ -1,7 +1,7 @@
-#include <amx_header>
-#include <asm_help>
-#include <dynamic_call>
-#include <phys_memory>
+#include "../amx_header"
+#include "../asm_help"
+#include "../dynamic_call"
+#include "../phys_memory"
 
 // NOTE: commands must be prepared with ToCharString() or similar function.
 stock system(const command[]) {
