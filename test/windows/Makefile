@@ -6,7 +6,7 @@ INCLUDE=-i../../ -i../../windows
 
 AMX = ShellExecute-test.amx
 
-all: $(AMX)
+all: clean $(AMX)
 
 ShellExecute-test.amx: ShellExecute-test.pwn
 	$(PAWNCC) $(PFLAGS) $(INCLUDE) $^ -o$@

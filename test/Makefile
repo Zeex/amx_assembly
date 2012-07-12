@@ -10,7 +10,7 @@ AMX += phys_memory-test.amx
 
 SUBDIRS = windows linux
 
-all: $(AMX) $(SUBDIRS)
+all: clean $(AMX) $(SUBDIRS)
 
 disasm-test.amx: disasm-test.pwn
 	$(PAWNCC) $(PFLAGS) $(INCLUDE) $^ -o$@
@@ -23,9 +23,6 @@ phys_memory-test.amx: phys_memory-test.pwn
 
 clean: $(SUBDIRS)
 	rm -rf $(AMX)
-	for subdir in $(SUBDIRS); do    \
-	    $(MAKE) clean -C $$subdir; \
-	done
 
 .PHONY: windows
 windows:

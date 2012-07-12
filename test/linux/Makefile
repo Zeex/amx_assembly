@@ -6,7 +6,7 @@ INCLUDE=-i../../ -i../../linux
 
 AMX = system-test.amx
 
-all: $(AMX)
+all: clean $(AMX)
 
 system-test.amx: system-test.pwn
 	$(PAWNCC) $(PFLAGS) $(INCLUDE) $^ -o$@
