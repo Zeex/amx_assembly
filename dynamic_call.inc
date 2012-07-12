@@ -24,9 +24,8 @@
 #define DYNAMIC_CALL_INC
 
 #include <a_samp>
-
-#include "amx_header"
-#include "amx_memory"
+#include <amx_header>
+#include <amx_memory>
 
 #if !defined DYNAMIC_CALL_MAX_ARGS
 	#define DYNAMIC_CALL_MAX_ARGS 256

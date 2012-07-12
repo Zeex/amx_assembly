@@ -24,9 +24,8 @@
 #define PROFILER_INC
 
 #include <a_samp>
-
-#include "amx_header"
-#include "phys_memory"
+#include <amx_header>
+#include <phys_memory>
 
 // Call stack size (maximum call depth).
 #if !defined PROF_MAX_CALL_STACK

@@ -53,8 +53,7 @@
 //--------------------------------------------------
 
 #include <a_samp>
-
-#include "amx_memory"
+#include <amx_memory>
 
 stock DumpStack()
 {
