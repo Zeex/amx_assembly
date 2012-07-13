@@ -53,6 +53,8 @@ stock const EMIT_CTRL_CIP = 6;
 stock EmitError:EmitInit(ctx[EmitContext], buffer[], size = sizeof(buffer)) {
 	ctx[EmitContext_buffer] = ref(buffer);
 	ctx[EmitContext_buffer_size] = size;
+	ctx[EmitContext_buffer_offset] = 0;
+	ctx[EmitContext_error_handler] = 0;
 	return EMIT_ERROR_NONE;
 }
 
