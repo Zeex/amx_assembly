@@ -22,6 +22,7 @@
 #include "amx_memory"
 #include "dynamic_call"
 #include "opcodes"
+#include "phys_memory"
 
 enum EmitError {
 	EMIT_ERROR_NONE,
@@ -34,7 +35,7 @@ enum EmitContext {
 	EmitContext_buffer,
 	EmitContext_buffer_size,
 	EmitContext_buffer_offset,
-	EmitContext_error_handler // ErrorHandler(ctx[EmitContext], EmitError:error)
+	EmitContext_error_handler  // ErrorHandler(ctx[EmitContext], EmitError:error)
 };
 
 stock const EMIT_ARGUMENTS_OFFSET    =  0x0C;
@@ -50,24 +51,9 @@ stock const EMIT_CTRL_STK = 4;
 stock const EMIT_CTRL_FRM = 5;
 stock const EMIT_CTRL_CIP = 6;
 
-stock EmitError:EmitInit(ctx[EmitContext], buffer[], size = sizeof(buffer)) {
-	ctx[EmitContext_buffer] = ref(buffer);
-	ctx[EmitContext_buffer_size] = size;
-	ctx[EmitContext_buffer_offset] = 0;
-	ctx[EmitContext_error_handler] = 0;
-	return EMIT_ERROR_NONE;
-}
+// Internal functions:
 
-stock EmitError:EmitSetErrorHandler(ctx[EmitContext], error_handler) {
-	ctx[EmitContext_error_handler] = error_handler;
-	return EMIT_ERROR_NONE;
-}
-
-stock EmitGetErrorHandler(const ctx[EmitContext]) {
-	return ctx[EmitContext_error_handler];
-}
-
-stock EmitError:EmitRaiseError(const ctx[EmitContext], EmitError:error) {
+static stock EmitError:EmitRaiseError(const ctx[EmitContext], EmitError:error) {
 	if (error != EMIT_ERROR_NONE) {
 		new fn = ctx[EmitContext_error_handler];
 		if (fn != 0) {
@@ -120,6 +106,40 @@ stock EmitError:EmitInstruction(ctx[EmitContext], Opcode:opcode, ...) {
 	return EMIT_ERROR_NONE;
 }
 
+static stock EmitGetJumpAddressFromOffset(ctx[EmitContext], offset) {
+	new amxhdr[AMX_HDR];
+	GetAmxHeaderOnce(amxhdr);
+
+	new next_offset = 2 * 4; // offset to the next instruction
+	new base = GetAmxBaseAddress() + amxhdr[AMX_HDR_DAT];
+	new dest = ctx[EmitContext_buffer] + ctx[EmitContext_buffer_offset] + next_offset + offset;
+
+	return base + dest;
+}
+
+static stock EmitJumpInstruction(ctx[EmitContext], opcode, offset) {
+	return EmitInstruction(ctx, opcode, EmitGetJumpAddressFromOffset(ctx, offset));
+}
+
+// Core function:
+
+stock EmitError:EmitInit(ctx[EmitContext], buffer[], size = sizeof(buffer)) {
+	ctx[EmitContext_buffer] = ref(buffer);
+	ctx[EmitContext_buffer_size] = size;
+	ctx[EmitContext_buffer_offset] = 0;
+	ctx[EmitContext_error_handler] = 0;
+	return EMIT_ERROR_NONE;
+}
+
+stock EmitError:EmitSetErrorHandler(ctx[EmitContext], error_handler) {
+	ctx[EmitContext_error_handler] = error_handler;
+	return EMIT_ERROR_NONE;
+}
+
+stock EmitGetErrorHandler(const ctx[EmitContext]) {
+	return ctx[EmitContext_error_handler];
+}
+
 stock EmitGetCode(const ctx[EmitContext]) {
 	new amxhdr[AMX_HDR];
 	GetAmxHeaderOnce(amxhdr);
@@ -130,11 +150,7 @@ stock EmitGetCodeSize(const ctx[EmitContext]) {
 	return ctx[EmitContext_buffer_offset];
 }
 
-stock EmitGetArgOffset(n) {
-	return EMIT_ARGUMENTS_OFFSET + 4 * n;
-}
-
-// Low level functions go here:
+// Low level functions:
 
 stock EmitError:EmitAdd(ctx[EmitContext]) {
 	return EmitInstruction(ctx, OP_ADD);
@@ -246,6 +262,58 @@ stock EmitError:EmitIncS(ctx[EmitContext], offset) {
 
 stock EmitError:EmitInvert(ctx[EmitContext]) {
 	return EmitInstruction(ctx, OP_INVERT);
+}
+
+stock EmitError:EmitJump(ctx[EmitContext], offset) {
+	return EmitJumpInstruction(ctx, OP_JUMP, offset);
+}
+
+stock EmitError:EmitJzer(ctx[EmitContext], offset) {
+	return EmitJumpInstruction(ctx, OP_JZER, offset);
+}
+
+stock EmitError:EmitJnz(ctx[EmitContext], offset) {
+	return EmitJumpInstruction(ctx, OP_JNZ, offset);
+}
+
+stock EmitError:EmitJeq(ctx[EmitContext], offset) {
+	return EmitJumpInstruction(ctx, OP_JEQ, offset);
+}
+
+stock EmitError:EmitJneq(ctx[EmitContext], offset) {
+	return EmitJumpInstruction(ctx, OP_JNEQ, offset);
+}
+
+stock EmitError:EmitJless(ctx[EmitContext], offset) {
+	return EmitJumpInstruction(ctx, OP_JLESS, offset);
+}
+
+stock EmitError:EmitJleq(ctx[EmitContext], offset) {
+	return EmitJumpInstruction(ctx, OP_JLEQ, offset);
+}
+
+stock EmitError:EmitJgrtr(ctx[EmitContext], offset) {
+	return EmitJumpInstruction(ctx, OP_JGRTR, offset);
+}
+
+stock EmitError:EmitJgeq(ctx[EmitContext], offset) {
+	return EmitJumpInstruction(ctx, OP_JGEQ, offset);
+}
+
+stock EmitError:EmitJsless(ctx[EmitContext], offset) {
+	return EmitJumpInstruction(ctx, OP_JSLESS, offset);
+}
+
+stock EmitError:EmitJsleq(ctx[EmitContext], offset) {
+	return EmitJumpInstruction(ctx, OP_JSLEQ, offset);
+}
+
+stock EmitError:EmitJsgrtr(ctx[EmitContext], offset) {
+	return EmitJumpInstruction(ctx, OP_JSTRTR, offset);
+}
+
+stock EmitError:EmitJsgeq(ctx[EmitContext], offset) {
+	return EmitJumpInstruction(ctx, OP_JSGEQ, offset);
 }
 
 stock EmitError:EmitLctrl(ctx[EmitContext], index) {
@@ -556,4 +624,10 @@ stock EmitError:EmitPopArgs(ctx[EmitContext], n) {
 
 stock EmitError:EmitPushNumArgs(ctx[EmitContext], n) {
 	return EmitPushC(ctx, 4 * n);
+}
+
+// Helpers:
+
+stock EmitGetArgOffset(n) {
+	return EMIT_ARGUMENTS_OFFSET + 4 * n;
 }
