@@ -29,7 +29,8 @@ main() {
 
 	CallFunction(EmitGetCode(ctx), ref("Hello!"));
 
-	// Same as above but using various helper functions:
+	// Same as above but using some helper functions:
+	EmitInit(ctx, code);
 
 	EmitProc(ctx);
 	EmitPushS(ctx, EmitGetArgOffset(1));
