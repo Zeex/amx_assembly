@@ -33,7 +33,7 @@ main() {
 	EmitInit(ctx, code);
 
 	EmitProc(ctx);
-	EmitPushS(ctx, EmitGetArgOffset(1));
+	EmitPushS(ctx, EmitGetArgOffset(0));
 	EmitPushNumArgs(ctx, 1);
 	EmitCallNative(ctx, "print");
 	EmitPopArgs(ctx, 1);
