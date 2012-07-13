@@ -35,6 +35,12 @@ Allows you to call any functions dynamically using a high-level API.
 	Push(ref("yeah"));
 	Call(GetPublicAddressFromName("test"));
 
+	// A test function.
+	public test(i, &j, s[], t[]) {
+		printf("test: %d %d %s %s", i, j, s, t);
+	}
+
+
 The snippet above calls a public function, but you can do the same with native functions as well
 using `SysreqC` or `CallNative`:
 
