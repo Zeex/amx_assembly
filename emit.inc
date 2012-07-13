@@ -85,7 +85,7 @@ static stock EmitError:EmitOperand(ctx[EmitContext], value) {
 	return EmitCell(ctx, value);
 }
 
-stock EmitError:EmitInstruction(ctx[EmitContext], Opcode:opcode, ...) {
+static stock EmitError:EmitInstruction(ctx[EmitContext], Opcode:opcode, ...) {
 	new EmitError:error = EMIT_ERROR_NONE;
 
 	error = EmitOpcode(ctx, opcode);
@@ -121,7 +121,7 @@ static stock EmitJumpInstruction(ctx[EmitContext], opcode, offset) {
 	return EmitInstruction(ctx, opcode, EmitGetJumpAddressFromOffset(ctx, offset));
 }
 
-// Core function:
+// Core functions:
 
 stock EmitError:EmitInit(ctx[EmitContext], buffer[], size = sizeof(buffer)) {
 	ctx[EmitContext_buffer] = ref(buffer);
