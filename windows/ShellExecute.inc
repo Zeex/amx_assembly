@@ -1,7 +1,7 @@
 #include "../amx_header"
-#include "../asm_help"
 #include "../dynamic_call"
 #include "../phys_memory"
+#include "../x86asm"
 
 // http://msdn.microsoft.com/en-us/library/windows/desktop/bb762153%28v=vs.85%29.aspx
 
