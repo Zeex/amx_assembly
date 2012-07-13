@@ -14,9 +14,6 @@ A few handy functions/macros for reading from/writing memory within AMX data sec
 	new y = ref(x);
 	new z = @(y); // z will be set to 123
 
-Also can be used to pass references to arrays or single variables when working with **dynamic_call**.
-Another example of usage is the `EmitContext` structure in **emit**.
-
 ### disasm ###
 
 Provides the `Disassemble()` function which disassembles the whole script in a human-readable format
