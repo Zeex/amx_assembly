@@ -547,7 +547,7 @@ stock EmitError:EmitZeroS(ctx[EmitContext], offset) {
 // Higher level functions:
 
 stock EmitError:EmitCallNative(ctx[EmitContext], const name[]) {
-	return EmitSysreqC(ctx, GetNativeAddressFromName(name));
+	return EmitSysreqC(ctx, GetNativeIndexFromName(name));
 }
 
 stock EmitError:EmitPopArgs(ctx[EmitContext], n) {
