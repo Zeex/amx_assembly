@@ -3,27 +3,34 @@ Quick Overview
 
 ### amx_header ###
 
-Print or copy AMX header, explore public/native tables, and more.
+Allows you to print or copy AMX header, to explore publics/natives tables of it and more...
 
 ### amx_memory ###
 
-A few handy functions/macros for reading from/writing to AMX data section. 
+A few handy functions/macros for reading from/writing memory within AMX data section. 
 
 	// Example:
 	new x = 123;
 	new y = ref(x);
 	new z = @(y); // z will be set to 123
 
-Also can be used to pass strings/references when working with dynamic_call.
+Also can be used to pass references to arrays or single variables when working with **dynamic_call**.
+Another example of usage is the `EmitContext` structure in **emit**.
 
 ### disasm ###
 
-Self-disassemble to a text file. Same as running `pawndisasm` against the .amx.
+Provides the `Disassemble()` function which disassembles the whole script in a human-readable format
+to the specified text file. The output format is similar to that of `pawndisasm`.
+
 Known to work only on Windows.
 
 ### dynamic_call ###
 
-Call any functions dynamically using a high-level API.
+Allows you to call any functions dynamically using a high-level API.
+
+### emit ###
+
+A modest library for runtime (dynamic) code generation.
 
 ### profiler ###
 
@@ -33,8 +40,10 @@ all public calls to internal helper functions which in turn call the original co
 
 ### phys_memory ###
 
-Read and write physical (real) memory at arbitrary locations. See phys_memory-test.pwn for examples.
+Allows you to read and write physical (real) memory at arbitrary addresses locations.
+See phys_memory-test.pwn for examples.
 
 ### stack_dump ###
 
-Dump stack contents to the console, sometimes useful for debugging.
+Provides a function which dumps the currently active stack area to the server console.
+This is Sometimes useful for debugging.
