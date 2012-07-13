@@ -14,6 +14,25 @@ A few handy functions/macros for reading from/writing memory within AMX data sec
 	new y = ref(x);
 	new z = @(y); // z will be set to 123
 
+### asm ###
+
+A library for runtime (dynamic) code generation. For example, to build a function that
+prints a string you would do somethin like this this:
+
+	new code[100];
+	new ctx[AsmContext];
+
+	AsmInit(ctx, code);
+
+	AsmEmitProc(ctx);
+	AsmEmitPushS(ctx, 12);
+	AsmEmitPushC(ctx, 4);
+	AsmEmitSysreqC(ctx, GetNativeIndexFromName("print"));
+	AsmEmitStack(ctx, 8);
+	AsmEmitRetn(ctx);
+
+	CallFunction(AsmGetCode(ctx), ref("Hello!"));
+
 ### disasm ###
 
 Provides the `Disassemble()` function which disassembles the whole script in a human-readable format
@@ -51,25 +70,6 @@ using `SysreqC` or `CallNative`:
 	Push(ref("Hello, %s!"));
 	Push(ref("World"));
 	SysreqC(GetNativeIndexFromName("printf"));
-
-### emit ###
-
-A library for runtime (dynamic) code generation. For example, to build a function that
-prints a string you would do this:
-
-	new code[100];
-	new ctx[EmitContext];
-
-	EmitInit(ctx, code);
-
-	EmitProc(ctx);
-	EmitPushS(ctx, 12);
-	EmitPushC(ctx, 4);
-	EmitSysreqC(ctx, GetNativeIndexFromName("print"));
-	EmitStack(ctx, 8);
-	EmitRetn(ctx);
-
-	CallFunction(EmitGetCode(ctx), ref("Hello!"));
 
 ### profiler ###
 
