@@ -6,6 +6,7 @@ INCLUDE = -i../
 
 AMX  = disasm-test.amx
 AMX += dynamic_call-test.amx
+AMX += emit-test.amx
 AMX += phys_memory-test.amx
 
 SUBDIRS = windows linux
@@ -16,6 +17,9 @@ disasm-test.amx: disasm-test.pwn
 	$(PAWNCC) $(PFLAGS) $(INCLUDE) $^ -o$@
 
 dynamic_call-test.amx: dynamic_call-test.pwn
+	$(PAWNCC) $(PFLAGS) $(INCLUDE) $^ -o$@
+
+emit-test.amx: emit-test.pwn
 	$(PAWNCC) $(PFLAGS) $(INCLUDE) $^ -o$@
 
 phys_memory-test.amx: phys_memory-test.pwn
