@@ -28,9 +28,45 @@ Known to work only on Windows.
 
 Allows you to call any functions dynamically using a high-level API.
 
+	print("public - method #1");
+	CallFunction(GetPublicAddressFromName("test"), 123, ref(x), ref("hell"), ref("yeah"));
+
+	print("public - method #2");
+	Push(123);
+	Push(ref(x));
+	Push(ref("hell"));
+	Push(ref("yeah"));
+	Call(GetPublicAddressFromName("test"));
+
+The snippet above calls a public function, but you can do the same with native functions as well
+using `SysreqC` or `CallNative`:
+
+	print("native - method #1");
+	CallNative(GetNativeIndexFromName("printf"), ref("Hello, %s!"), ref("World"));
+
+	print("native - method #2");
+	Push(ref("Hello, %s!"));
+	Push(ref("World"));
+	SysreqC(GetNativeIndexFromName("printf"));
+
 ### emit ###
 
-A modest library for runtime (dynamic) code generation.
+A library for runtime (dynamic) code generation. For example, to build a function that
+prints a string you would do this:
+
+	new code[100];
+	new ctx[EmitContext];
+
+	EmitInit(ctx, code);
+
+	EmitProc(ctx);
+	EmitPushS(ctx, 12);
+	EmitPushC(ctx, 4);
+	EmitSysreqC(ctx, GetNativeIndexFromName("print"));
+	EmitStack(ctx, 8);
+	EmitRetn(ctx);
+
+	CallFunction(EmitGetCode(ctx), ref("Hello!"));
 
 ### profiler ###
 
@@ -40,8 +76,7 @@ all public calls to internal helper functions which in turn call the original co
 
 ### phys_memory ###
 
-Allows you to read and write physical (real) memory at arbitrary addresses locations.
-See phys_memory-test.pwn for examples.
+Allows you to read and write physical (real) memory of the server's process.
 
 ### stack_dump ###
 
