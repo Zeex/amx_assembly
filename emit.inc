@@ -23,10 +23,6 @@
 #include "dynamic_call"
 #include "opcodes"
 
-
-
-static const size_of_cell = cellbits / 8;
-
 enum EmitError {
 	EMIT_ERROR_NONE,
 	EMIT_ERROR_OPCODE,
@@ -53,8 +49,6 @@ stock const EMIT_CTRL_STP = 3;
 stock const EMIT_CTRL_STK = 4;
 stock const EMIT_CTRL_FRM = 5;
 stock const EMIT_CTRL_CIP = 6;
-
-
 
 stock EmitError:EmitInit(ctx[EmitContext], buffer[], size = sizeof(buffer)) {
 	ctx[EmitContext_buffer] = ref(buffer);
@@ -87,7 +81,7 @@ static stock EmitError:EmitCell(ctx[EmitContext], value) {
 	}
 
 	WriteAmxMemory(ctx[EmitContext_buffer] + ctx[EmitContext_buffer_offset], value);
-	ctx[EmitContext_buffer_offset] += size_of_cell;
+	ctx[EmitContext_buffer_offset] += 4;
 
 	return EMIT_ERROR_NONE;
 }
@@ -135,10 +129,10 @@ stock EmitGetCodeSize(const ctx[EmitContext]) {
 }
 
 stock EmitGetArgOffset(n) {
-	return EMIT_ARGUMENTS_OFFSET + size_of_cell * n;
+	return EMIT_ARGUMENTS_OFFSET + 4 * n;
 }
 
-
+// Low level functions go here:
 
 stock EmitError:EmitAdd(ctx[EmitContext]) {
 	return EmitInstruction(ctx, OP_ADD);
@@ -548,16 +542,16 @@ stock EmitError:EmitZeroS(ctx[EmitContext], offset) {
 	return EmitInstruction(ctx, OP_ZERO_S, offset);
 }
 
-
+// Higher level functions:
 
 stock EmitError:EmitCallNative(ctx[EmitContext], const name[]) {
 	return EmitSysreqC(ctx, GetNativeAddressFromName(name));
 }
 
 stock EmitError:EmitPopArgs(ctx[EmitContext], n) {
-	return EmitStack(ctx, (n + 1) * size_of_cell);
+	return EmitStack(ctx, (n + 1) * 4);
 }
 
 stock EmitError:EmitPushNumArgs(ctx[EmitContext], n) {
-	return EmitPushC(ctx, size_of_cell * n);
+	return EmitPushC(ctx, 4 * n);
 }
