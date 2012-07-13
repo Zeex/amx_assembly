@@ -23,6 +23,8 @@
 #include "dynamic_call"
 #include "opcodes"
 
+
+
 static const size_of_cell = cellbits / 8;
 
 enum EmitError {
@@ -51,6 +53,8 @@ stock const EMIT_CTRL_STP = 3;
 stock const EMIT_CTRL_STK = 4;
 stock const EMIT_CTRL_FRM = 5;
 stock const EMIT_CTRL_CIP = 6;
+
+
 
 stock EmitError:EmitInit(ctx[EmitContext], buffer[], size = sizeof(buffer)) {
 	ctx[EmitContext_buffer] = ref(buffer);
@@ -135,32 +139,81 @@ stock EmitGetArgOffset(n) {
 }
 
 
-stock EmitError:EmitAddrPri(ctx[EmitContext], offset) {
-	return EmitInstruction(ctx, OP_ADDR_PRI, offset);
+
+stock EmitError:EmitAdd(ctx[EmitContext]) {
+	return EmitInstruction(ctx, OP_ADD);
+}
+
+stock EmitError:EmitAddC(ctx[EmitContext], value) {
+	return EmitInstruction(ctx, OP_ADD_C, value);
 }
 
 stock EmitError:EmitAddrAlt(ctx[EmitContext], offset) {
 	return EmitInstruction(ctx, OP_ADDR_ALT, offset);
 }
 
-stock EmitError:AlignPri(ctx[EmitContext], number) {
+stock EmitError:EmitAddrPri(ctx[EmitContext], offset) {
+	return EmitInstruction(ctx, OP_ADDR_PRI, offset);
+}
+
+stock EmitError:EmitAlignAlt(ctx[EmitContext], number) {
+	return EmitInstruction(ctx, OP_ALIGN_ALT, number);
+}
+
+stock EmitError:EmitAlignPri(ctx[EmitContext], number) {
 	return EmitInstruction(ctx, OP_ALIGN_PRI, number);
 }
 
-stock EmitError:AlignAlt(ctx[EmitContext], number) {
-	return EmitInstruction(ctx, OP_ALIGN_ALT, number);
+stock EmitError:EmitAnd(ctx[EmitContext]) {
+	return EmitInstruction(ctx, OP_AND);
+}
+
+stock EmitError:EmitBounds(ctx[EmitContext], bound) {
+	return EmitInstruction(ctx, OP_BOUDNS, bound);
 }
 
 stock EmitError:EmitCall(ctx[EmitContext], address) {
 	return EmitInstruction(ctx, OP_CALL, address);
 }
 
-stock EmitError:EmitConstPri(ctx[EmitContext], value) {
-	return EmitInstruction(ctx, OP_CONST_PRI, value);
+stock EmitError:EmitCmps(ctx[EmitContext], nbytes) {
+	return EmitInstruction(ctx, OP_CMPS, nbytes);
 }
 
 stock EmitError:EmitConstAlt(ctx[EmitContext], value) {
 	return EmitInstruction(ctx, OP_CONST_ALT, value);
+}
+
+stock EmitError:EmitConstPri(ctx[EmitContext], value) {
+	return EmitInstruction(ctx, OP_CONST_PRI, value);
+}
+
+stock EmitError:EmitDec(ctx[EmitContext], addess) {
+	return EmitInstruction(ctx, OP_DEC, address);
+}
+
+stock EmitError:EmitDecAlt(ctx[EmitContext]) {
+	return EmitInstruction(ctx, OP_DEC_ALT);
+}
+
+stock EmitError:EmitDecI(ctx[EmitContext]) {
+	return EmitInstruction(ctx, OP_DEC_I);
+}
+
+stock EmitError:EmitDecPri(ctx[EmitContext]) {
+	return EmitInstruction(ctx, OP_DEC_PRI);
+}
+
+stock EmitError:EmitDecS(ctx[EmitContext], offset) {
+	return EmitInstruction(ctx, OP_DEC_S, offset);
+}
+
+stock EmitError:EmitFill(ctx[EmitContext], nbytes) {
+	return EmitInstruction(ctx, OP_FILL, nbytes);
+}
+
+stock EmitError:EmitHalt(ctx[EmitContext], code) {
+	return EmitInstruction(ctx, OP_HALT, code);
 }
 
 stock EmitError:EmitHeap(ctx[EmitContext], nbytes) {
@@ -173,6 +226,30 @@ stock EmitError:EmitIdxaddr(ctx[EmitContext]) {
 
 stock EmitError:EmitIdxaddrB(ctx[EmitContext], shift) {
 	return EmitInstruction(ctx, OP_IDXADDR_B, shift);
+}
+
+stock EmitError:EmitInc(ctx[EmitContext], addess) {
+	return EmitInstruction(ctx, OP_INC, address);
+}
+
+stock EmitError:EmitIncAlt(ctx[EmitContext]) {
+	return EmitInstruction(ctx, OP_INC_ALT);
+}
+
+stock EmitError:EmitIncI(ctx[EmitContext]) {
+	return EmitInstruction(ctx, OP_INC_I);
+}
+
+stock EmitError:EmitIncPri(ctx[EmitContext]) {
+	return EmitInstruction(ctx, OP_INC_PRI);
+}
+
+stock EmitError:EmitIncS(ctx[EmitContext], offset) {
+	return EmitInstruction(ctx, OP_INC_S, offset);
+}
+
+stock EmitError:EmitInvert(ctx[EmitContext]) {
+	return EmitInstruction(ctx, OP_INVERT);
 }
 
 stock EmitError:EmitLctrl(ctx[EmitContext], index) {
@@ -188,6 +265,10 @@ stock EmitError:EmitLidxB(ctx[EmitContext], shift) {
 	return EmitInstruction(ctx, OP_LIDX_B, shift);
 }
 
+stock EmitError:EmitLoadAlt(ctx[EmitContext], address) {
+	return EmitInstruction(ctx, OP_LOAD_ALT, address);
+}
+
 stock EmitError:EmitLoadPri(ctx[EmitContext], address) {
 	return EmitInstruction(ctx, OP_LOAD_PRI, address);
 }
@@ -200,12 +281,12 @@ stock EmitError:EmitLoadI(ctx[EmitContext]) {
 	return EmitInstruction(ctx, OP_LOAD_I);
 }
 
-stock EmitError:EmitLoadSPri(ctx[EmitContext], offset) {
-	return EmitInstruction(ctx, OP_LOAD_S_PRI, offset);
-}
-
 stock EmitError:EmitLoadSAlt(ctx[EmitContext], offset) {
 	return EmitInstruction(ctx, OP_LOAD_S_ALT, offset);
+}
+
+stock EmitError:EmitLoadSPri(ctx[EmitContext], offset) {
+	return EmitInstruction(ctx, OP_LOAD_S_PRI, offset);
 }
 
 stock EmitError:EmitLodbI(ctx[EmitContext], nbytes) {
@@ -213,44 +294,64 @@ stock EmitError:EmitLodbI(ctx[EmitContext], nbytes) {
 	return EmitInstruction(ctx, OP_LODB_I, nbytes);
 }
 
-stock EmitError:EmitLrefPri(ctx[EmitContext], address) {
-	return EmitInstruction(ctx, OP_LREF_PRI, address);
-}
-
 stock EmitError:EmitLrefAlt(ctx[EmitContext], address) {
 	return EmitInstruction(ctx, OP_LREF_ALT, address);
 }
 
-stock EmitError:EmitLrefSPri(ctx[EmitContext], offset) {
-	return EmitInstruction(ctx, OP_LREF_S_PRI, offset);
+stock EmitError:EmitLrefPri(ctx[EmitContext], address) {
+	return EmitInstruction(ctx, OP_LREF_PRI, address);
 }
 
 stock EmitError:EmitLrefSAlt(ctx[EmitContext], offset) {
 	return EmitInstruction(ctx, OP_LREF_S_ALT, offset);
 }
 
-stock EmitError:EmitMovePri(ctx[EmitContext]) {
-	return EmitInstruction(ctx, OP_MOVE_PRI);
+stock EmitError:EmitLrefSPri(ctx[EmitContext], offset) {
+	return EmitInstruction(ctx, OP_LREF_S_PRI, offset);
 }
 
 stock EmitError:EmitMoveAlt(ctx[EmitContext]) {
 	return EmitInstruction(ctx, OP_MOVE_ALT);
 }
 
-stock EmitError:PopPri(ctx[EmitContext]) {
-	return EmitInstruction(ctx, OP_POP_PRI);
+stock EmitError:EmitMovePri(ctx[EmitContext]) {
+	return EmitInstruction(ctx, OP_MOVE_PRI);
 }
 
-stock EmitError:PopAlt(ctx[EmitContext]) {
+stock EmitError:EmitMovs(ctx[EmitContext], nbytes) {
+	return EmitInstruction(ctx, OP_MOVS, nbytes);
+}
+
+stock EmitError:EmitNeg(ctx[EmitContext]) {
+	return EmitInstruction(ctx, OP_NEG);
+}
+
+stock EmitError:EmitNop(ctx[EmitContext]) {
+	return EmitInstruction(ctx, OP_NOP);
+}
+
+stock EmitError:EmitNot(ctx[EmitContext]) {
+	return EmitInstruction(ctx, OP_NOT);
+}
+
+stock EmitError:EmitOr(ctx[EmitContext]) {
+	return EmitInstruction(ctx, OP_OR);
+}
+
+stock EmitError:EmitPopAlt(ctx[EmitContext]) {
 	return EmitInstruction(ctx, OP_POP_ALT);
+}
+
+stock EmitError:EmitPopPri(ctx[EmitContext]) {
+	return EmitInstruction(ctx, OP_POP_PRI);
 }
 
 stock EmitError:EmitProc(ctx[EmitContext]) {
 	return EmitInstruction(ctx, OP_PROC);
 }
 
-stock EmitError:EmitPushPri(ctx[EmitContext]) {
-	return EmitInstruction(ctx, OP_PUSH_PRI);
+stock EmitError:EmitPushAddr(ctx[EmitContext], offset) {
+	return EmitInstruction(ctx, OP_PUSH_ADDR, offset);
 }
 
 stock EmitError:EmitPushAlt(ctx[EmitContext]) {
@@ -259,6 +360,10 @@ stock EmitError:EmitPushAlt(ctx[EmitContext]) {
 
 stock EmitError:EmitPushC(ctx[EmitContext], value) {
 	return EmitInstruction(ctx, OP_PUSH_C, value);
+}
+
+stock EmitError:EmitPushPri(ctx[EmitContext]) {
+	return EmitInstruction(ctx, OP_PUSH_PRI);
 }
 
 stock EmitError:EmitPush(ctx[EmitContext], address) {
@@ -282,49 +387,117 @@ stock EmitError:EmitSctrl(ctx[EmitContext], index) {
 	return EmitInstruction(ctx, OP_SCTRL, index);
 }
 
-stock EmitError:EmitSrefPri(ctx[EmitContext], address) {
-	return EmitInstruction(ctx, OP_SREF_PRI, address);
+stock EmitError:EmitSdiv(ctx[EmitContext]) {
+	return EmitInstruction(ctx, OP_SDIV);
+}
+
+stock EmitError:EmitSdivAlt(ctx[EmitContext]) {
+	return EmitInstruction(ctx, OP_SDIV_ALT);
+}
+
+stock EmitError:EmitShl(ctx[EmitContext]) {
+	return EmitInstruction(ctx, OP_SHL);
+}
+
+stock EmitError:EmitShlCAlt(ctx[EmitContext], shift) {
+	return EmitInstruction(ctx, OP_SHL_C_PRI, shift);
+}
+
+stock EmitError:EmitShlCPri(ctx[EmitContext], shift) {
+	return EmitInstruction(ctx, OP_SHL_C_PRI, shift);
+}
+
+stock EmitError:EmitShrCAlt(ctx[EmitContext], shift) {
+	return EmitInstruction(ctx, OP_SHR_C_PRI, shift);
+}
+
+stock EmitError:EmitShrCPri(ctx[EmitContext], shift) {
+	return EmitInstruction(ctx, OP_SHR_C_PRI, shift);
+}
+
+stock EmitError:EmitShr(ctx[EmitContext]) {
+	return EmitInstruction(ctx, OP_SHR);
+}
+
+stock EmitError:EmitSignAlt(ctx[EmitContext]) {
+	return EmitInstruction(ctx, OP_SIGN_ALT);
+}
+
+stock EmitError:EmitSignPri(ctx[EmitContext]) {
+	return EmitInstruction(ctx, OP_SIGN_PRI);
+}
+
+stock EmitError:EmitSmul(ctx[EmitContext]) {
+	return EmitInstruction(ctx, OP_SMUL);
+}
+
+stock EmitError:EmitSmulC(ctx[EmitContext], value) {
+	return EmitInstruction(ctx, OP_SMUL_C, value);
+}
+
+stock EmitError:EmitSshr(ctx[EmitContext]) {
+	return EmitInstruction(ctx, OP_SSHR);
 }
 
 stock EmitError:EmitSrefAlt(ctx[EmitContext], address) {
 	return EmitInstruction(ctx, OP_SREF_ALT, address);
 }
 
-stock EmitError:EmitSrefSPri(ctx[EmitContext], offset) {
-	return EmitInstruction(ctx, OP_SREF_S_PRI, offset);
+stock EmitError:EmitSrefPri(ctx[EmitContext], address) {
+	return EmitInstruction(ctx, OP_SREF_PRI, address);
 }
 
 stock EmitError:EmitSrefSAlt(ctx[EmitContext], offset) {
 	return EmitInstruction(ctx, OP_SREF_S_ALT, offset);
 }
 
-stock EmitError:EmitStack(ctx[EmitContext], nbytes) {
-	return EmitInstruction(ctx, OP_STACK, nbytes);
+stock EmitError:EmitSrefSPri(ctx[EmitContext], offset) {
+	return EmitInstruction(ctx, OP_SREF_S_PRI, offset);
 }
 
-stock EmitError:EmitStorPri(ctx[EmitContext], address) {
-	return EmitInstruction(ctx, OP_STOR_PRI, address);
+stock EmitError:EmitStack(ctx[EmitContext], nbytes) {
+	return EmitInstruction(ctx, OP_STACK, nbytes);
 }
 
 stock EmitError:EmitStorAlt(ctx[EmitContext], address) {
 	return EmitInstruction(ctx, OP_STOR_ALT, address);
 }
 
-stock EmitError:EmitStorI(ctx[EmitContext]) {
-	return EmitInstruction(ctx, OP_STOR_I);
+stock EmitError:EmitStorPri(ctx[EmitContext], address) {
+	return EmitInstruction(ctx, OP_STOR_PRI, address);
 }
 
-stock EmitError:EmitStorSPri(ctx[EmitContext], offset) {
-	return EmitInstruction(ctx, OP_STOR_S_PRI, offset);
+stock EmitError:EmitStorI(ctx[EmitContext]) {
+	return EmitInstruction(ctx, OP_STOR_I);
 }
 
 stock EmitError:EmitStorSAlt(ctx[EmitContext], offset) {
 	return EmitInstruction(ctx, OP_STOR_S_ALT, offset);
 }
 
+stock EmitError:EmitStorSPri(ctx[EmitContext], offset) {
+	return EmitInstruction(ctx, OP_STOR_S_PRI, offset);
+}
+
 stock EmitError:EmitStrbI(ctx[EmitContext], nbytes) {
 	assert(nbytes == 1 || nbytes == 2 || nbytes == 4);
 	return EmitInstruction(ctx, OP_STRB_I, nbytes);
+}
+
+stock EmitError:EmitSub(ctx[EmitContext]) {
+	return EmitInstruction(ctx, OP_SUB);
+}
+
+stock EmitError:EmitSubAlt(ctx[EmitContext]) {
+	return EmitInstruction(ctx, OP_SUB_ALT);
+}
+
+stock EmitError:EmitSwapAlt(ctx[EmitContext]) {
+	return EmitInstruction(ctx, OP_SWAP_ALT);
+}
+
+stock EmitError:EmitSwapPri(ctx[EmitContext]) {
+	return EmitInstruction(ctx, OP_SWAP_PRI);
 }
 
 stock EmitError:EmitSysreqC(ctx[EmitContext], index) {
@@ -335,8 +508,44 @@ stock EmitError:EmitSysreqD(ctx[EmitContext], address) {
 	return EmitInstruction(ctx, OP_SYSREQ_D, address);
 }
 
+stock EmitError:EmitSysreqPri(ctx[EmitContext]) {
+	return EmitInstruction(ctx, OP_SYSREQ_PRI);
+}
+
+stock EmitError:EmitUdiv(ctx[EmitContext]) {
+	return EmitInstruction(ctx, OP_UDIV);
+}
+
+stock EmitError:EmitUdivAlt(ctx[EmitContext]) {
+	return EmitInstruction(ctx, OP_UDIV_ALT);
+}
+
+stock EmitError:EmitUmul(ctx[EmitContext]) {
+	return EmitInstruction(ctx, OP_UMUL);
+}
+
 stock EmitError:EmitXchg(ctx[EmitContext]) {
 	return EmitInstruction(ctx, OP_XCHG);
+}
+
+stock EmitError:EmitXor(ctx[EmitContext]) {
+	return EmitInstruction(ctx, OP_XOR);
+}
+
+stock EmitError:EmitZero(ctx[EmitContext], address) {
+	return EmitInstruction(ctx, OP_ZERO, address);
+}
+
+stock EmitError:EmitZeroAlt(ctx[EmitContext]) {
+	return EmitInstruction(ctx, OP_ZERO_ALT);
+}
+
+stock EmitError:EmitZeroPri(ctx[EmitContext]) {
+	return EmitInstruction(ctx, OP_ZERO_PRI);
+}
+
+stock EmitError:EmitZeroS(ctx[EmitContext], offset) {
+	return EmitInstruction(ctx, OP_ZERO_S, offset);
 }
 
 
@@ -345,10 +554,10 @@ stock EmitError:EmitCallNative(ctx[EmitContext], const name[]) {
 	return EmitSysreqC(ctx, GetNativeAddressFromName(name));
 }
 
-stock EmitError:EmitPushNumArgs(ctx[EmitContext], n) {
-	return EmitPushC(ctx, size_of_cell * n);
-}
-
 stock EmitError:EmitPopArgs(ctx[EmitContext], n) {
 	return EmitStack(ctx, (n + 1) * size_of_cell);
+}
+
+stock EmitError:EmitPushNumArgs(ctx[EmitContext], n) {
+	return EmitPushC(ctx, size_of_cell * n);
 }
