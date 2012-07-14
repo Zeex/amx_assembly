@@ -633,6 +633,6 @@ stock AsmError:AsmEmitPushNumArgs(ctx[AsmContext], n) {
 
 // Helpers:
 
-stock EmitGetArgOffset(n) {
+stock AsmGetArgOffset(n) {
 	return ASM_ARGUMENTS_OFFSET + 4 * n;
 }
