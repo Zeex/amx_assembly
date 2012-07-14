@@ -631,6 +631,10 @@ stock AsmError:AsmEmitPushNumArgs(ctx[AsmContext], n) {
 	return AsmEmitPushC(ctx, 4 * n);
 }
 
+stock AsmError:AsmEmitPushArg(ctx[AsmContext], n) {
+	return AsmEmitPushS(ctx, AsmGetArgOffset(n));
+}
+
 // Helpers:
 
 stock AsmGetArgOffset(n) {
