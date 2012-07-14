@@ -5,7 +5,7 @@
 forward funny_public();
 
 main() {
-	Disassemble("disasm.lst");
+	DisasmDump("disasm.lst");
 	funny_public();
 }
 

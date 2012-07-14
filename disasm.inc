@@ -30,173 +30,249 @@
 #include "opcodes"
 #include "phys_memory"
 
-static stock const size_of_cell = cellbits / 8;
-
 #define MAX_INSN_NAME 15
 
-enum Instruction {
-	insn_mnemonic[MAX_INSN_NAME],
-	insn_num_opers,
-	bool:insn_needs_reloc
+enum DisasmInsnInfo {
+	DisasmInsnInfo_name[MAX_INSN_NAME],
+	DisasmInsnInfo_num_opers,
+	bool:DisasmInsnInfo_needs_reloc
 }
 
-static stock const insn_table[][Instruction] = {
-	{ "none", 0, false },
-	{ "load.pri", 1, false },
-	{ "load.alt", 1, false },
-	{ "load.s.pri", 1, false },
-	{ "load.s.alt", 1, false },
-	{ "lref.pri", 1, false },
-	{ "lref.alt", 1, false },
-	{ "lref.s.pri", 1, false },
-	{ "lref.s.alt", 1, false },
-	{ "load.i", 0, false },
-	{ "lodb.i", 1, false },
-	{ "const.pri", 1, false },
-	{ "const.alt", 1, false },
-	{ "addr.pri", 1, false },
-	{ "addr.alt", 1, false },
-	{ "stor.pri", 1, false },
-	{ "stor.alt", 1, false },
-	{ "stor.s.pri", 1, false },
-	{ "stor.s.alt", 1, false },
-	{ "sref.pri", 1, false },
-	{ "sref.alt", 1, false },
-	{ "sref.s.pri", 1, false },
-	{ "sref.s.alt", 1, false },
-	{ "stor.i", 0, false },
-	{ "strb.i", 1, false },
-	{ "lidx", 0, false },
-	{ "lidx.b", 1, false },
-	{ "idxaddr", 0, false },
-	{ "idxaddr.b", 1, false },
-	{ "align.pri", 1, false },
-	{ "align.alt", 1, false },
-	{ "lctrl", 1, false },
-	{ "sctrl", 1, false },
-	{ "move.pri", 0, false },
-	{ "move.alt", 0, false },
-	{ "xchg", 0, false },
-	{ "push.pri", 0, false },
-	{ "push.alt", 0, false },
-	{ "push.r", 1, false },
-	{ "push.c", 1, false },
-	{ "push", 1, false },
-	{ "push.s", 1, false },
-	{ "pop.pri", 0, false },
-	{ "pop.alt", 0, false },
-	{ "stack", 1, false },
-	{ "heap", 1, false },
-	{ "proc", 0, false },
-	{ "ret", 0, false },
-	{ "retn", 0, false },
-	{ "call", 1, true },
-	{ "call.pri", 0, false },
-	{ "jump", 1, true },
-	{ "jrel", 1, true },
-	{ "jzer", 1, true },
-	{ "jnz", 1, true },
-	{ "jeq", 1, true },
-	{ "jneq", 1, true },
-	{ "jless", 1, true },
-	{ "jleq", 1, true },
-	{ "jgrtr", 1, true },
-	{ "jgeq", 1, true },
-	{ "jsless", 1, true },
-	{ "jsleq", 1, true },
-	{ "jsgrtr", 1, true },
-	{ "jsgeq", 1, true },
-	{ "shl", 0, false },
-	{ "shr", 0, false },
-	{ "sshr", 0, false },
-	{ "shl.c.pri", 1, false },
-	{ "shl.c.alt", 1, false },
-	{ "shr.c.pri", 1, false },
-	{ "shr.c.alt", 1, false },
-	{ "smul", 0, false },
-	{ "sdiv", 0, false },
-	{ "sdiv.alt", 0, false },
-	{ "umul", 0, false },
-	{ "udiv", 0, false },
-	{ "udiv.alt", 0, false },
-	{ "add", 0, false },
-	{ "sub", 0, false },
-	{ "sub.alt", 0, false },
-	{ "and", 0, false },
-	{ "or", 0, false },
-	{ "xort", 0, false },
-	{ "not", 0, false },
-	{ "neg", 0, false },
-	{ "invert", 0, false },
-	{ "add.c", 1, false },
-	{ "smul.c", 1, false },
-	{ "zero.pri", 0, false },
-	{ "zero.alt", 0, false },
-	{ "zero", 1, false },
-	{ "zero.s", 1, false },
-	{ "sign.pri", 0, false },
-	{ "sign.alt", 0, false },
-	{ "eq", 0, false },
-	{ "neq", 0, false },
-	{ "less", 0, false },
-	{ "leq", 0, false },
-	{ "grtr", 0, false },
-	{ "geq", 0, false },
-	{ "sless", 0, false },
-	{ "sleq", 0, false },
-	{ "sgrtr", 0, false },
-	{ "sgeq", 0, false },
-	{ "eq.c.pri", 1, false },
-	{ "eq.c.alt", 1, false },
-	{ "inc.pri", 0, false },
-	{ "inc.alt", 0, false },
-	{ "inc", 1, false },
-	{ "inc.s", 1, false },
-	{ "inc.i", 0, false },
-	{ "dec.pri", 0, false },
-	{ "dec.alt", 0, false },
-	{ "dec", 1, false },
-	{ "dec.s", 1, false },
-	{ "dec.i", 0, false },
-	{ "movs", 1, false },
-	{ "cmps", 1, false },
-	{ "fill", 1, false },
-	{ "halt", 1, false },
-	{ "bounds", 1, false },
-	{ "sysreq.pri", 1, false },
-	{ "sysreq.c", 1, false },
-	{ "file", -1, false }, // obsolete
-	{ "line", -1, false }, // obsolete
-	{ "symbol", -1, false }, // obsolete
-	{ "srange", -1, false }, // obsolete
-	{ "jump.pri", 0, false },
-	{ "switch", 1, false },
-	{ "casetbl", -1, true },
-	{ "swap.pri", 0, false },
-	{ "swap.alt", 0, false },
-	{ "push.adr", 1, false },
-	{ "nop", 0, false },
-	{ "sysreq.d", 1, false },
-	{ "symtag", 1, false }, // obsolete
-	{ "break", 0, false }
+enum DisasmContext {
+	DisasmContext_start_ip,
+	DisasmContext_end_ip,
+	DisasmContext_nip,
+	DisasmContext_cip,
+	Opcode:DisasmContext_opcode,
+	DisasmContext_insn[DisasmInsnInfo]
+}
+
+static stock const insn_table[][DisasmInsnInfo] = {
+	{ "none",        0, false },
+	{ "load.pri",    1, false },
+	{ "load.alt",    1, false },
+	{ "load.s.pri",  1, false },
+	{ "load.s.alt",  1, false },
+	{ "lref.pri",    1, false },
+	{ "lref.alt",    1, false },
+	{ "lref.s.pri",  1, false },
+	{ "lref.s.alt",  1, false },
+	{ "load.i",      0, false },
+	{ "lodb.i",      1, false },
+	{ "const.pri",   1, false },
+	{ "const.alt",   1, false },
+	{ "addr.pri",    1, false },
+	{ "addr.alt",    1, false },
+	{ "stor.pri",    1, false },
+	{ "stor.alt",    1, false },
+	{ "stor.s.pri",  1, false },
+	{ "stor.s.alt",  1, false },
+	{ "sref.pri",    1, false },
+	{ "sref.alt",    1, false },
+	{ "sref.s.pri",  1, false },
+	{ "sref.s.alt",  1, false },
+	{ "stor.i",      0, false },
+	{ "strb.i",      1, false },
+	{ "lidx",        0, false },
+	{ "lidx.b",      1, false },
+	{ "idxaddr",     0, false },
+	{ "idxaddr.b",   1, false },
+	{ "align.pri",   1, false },
+	{ "align.alt",   1, false },
+	{ "lctrl",       1, false },
+	{ "sctrl",       1, false },
+	{ "move.pri",    0, false },
+	{ "move.alt",    0, false },
+	{ "xchg",        0, false },
+	{ "push.pri",    0, false },
+	{ "push.alt",    0, false },
+	{ "push.r",      1, false },
+	{ "push.c",      1, false },
+	{ "push",        1, false },
+	{ "push.s",      1, false },
+	{ "pop.pri",     0, false },
+	{ "pop.alt",     0, false },
+	{ "stack",       1, false },
+	{ "heap",        1, false },
+	{ "proc",        0, false },
+	{ "ret",         0, false },
+	{ "retn",        0, false },
+	{ "call",        1, true  },
+	{ "call.pri",    0, false },
+	{ "jump",        1, true  },
+	{ "jrel",        1, true  },
+	{ "jzer",        1, true  },
+	{ "jnz",         1, true  },
+	{ "jeq",         1, true  },
+	{ "jneq",        1, true  },
+	{ "jless",       1, true  },
+	{ "jleq",        1, true  },
+	{ "jgrtr",       1, true  },
+	{ "jgeq",        1, true  },
+	{ "jsless",      1, true  },
+	{ "jsleq",       1, true  },
+	{ "jsgrtr",      1, true  },
+	{ "jsgeq",       1, true  },
+	{ "shl",         0, false },
+	{ "shr",         0, false },
+	{ "sshr",        0, false },
+	{ "shl.c.pri",   1, false },
+	{ "shl.c.alt",   1, false },
+	{ "shr.c.pri",   1, false },
+	{ "shr.c.alt",   1, false },
+	{ "smul",        0, false },
+	{ "sdiv",        0, false },
+	{ "sdiv.alt",    0, false },
+	{ "umul",        0, false },
+	{ "udiv",        0, false },
+	{ "udiv.alt",    0, false },
+	{ "add",         0, false },
+	{ "sub",         0, false },
+	{ "sub.alt",     0, false },
+	{ "and",         0, false },
+	{ "or",          0, false },
+	{ "xort",        0, false },
+	{ "not",         0, false },
+	{ "neg",         0, false },
+	{ "invert",      0, false },
+	{ "add.c",       1, false },
+	{ "smul.c",      1, false },
+	{ "zero.pri",    0, false },
+	{ "zero.alt",    0, false },
+	{ "zero",        1, false },
+	{ "zero.s",      1, false },
+	{ "sign.pri",    0, false },
+	{ "sign.alt",    0, false },
+	{ "eq",          0, false },
+	{ "neq",         0, false },
+	{ "less",        0, false },
+	{ "leq",         0, false },
+	{ "grtr",        0, false },
+	{ "geq",         0, false },
+	{ "sless",       0, false },
+	{ "sleq",        0, false },
+	{ "sgrtr",       0, false },
+	{ "sgeq",        0, false },
+	{ "eq.c.pri",    1, false },
+	{ "eq.c.alt",    1, false },
+	{ "inc.pri",     0, false },
+	{ "inc.alt",     0, false },
+	{ "inc",         1, false },
+	{ "inc.s",       1, false },
+	{ "inc.i",       0, false },
+	{ "dec.pri",     0, false },
+	{ "dec.alt",     0, false },
+	{ "dec",         1, false },
+	{ "dec.s",       1, false },
+	{ "dec.i",       0, false },
+	{ "movs",        1, false },
+	{ "cmps",        1, false },
+	{ "fill",        1, false },
+	{ "halt",        1, false },
+	{ "bounds",      1, false },
+	{ "sysreq.pri",  1, false },
+	{ "sysreq.c",    1, false },
+	{ "file",       -1, false }, // obsolete
+	{ "line",       -1, false }, // obsolete
+	{ "symbol",     -1, false }, // obsolete
+	{ "srange",     -1, false }, // obsolete
+	{ "jump.pri",    0, false },
+	{ "switch",      1, false },
+	{ "casetbl",    -1, true },
+	{ "swap.pri",    0, false },
+	{ "swap.alt",    0, false },
+	{ "push.adr",    1, false },
+	{ "nop",         0, false },
+	{ "sysreq.d",    1, false },
+	{ "symtag",      1, false }, // obsolete
+	{ "break",       0, false }
 };
 
-enum hex_flags (<<= 1) {
-	hex_default = 0,
-	hex_prefix,
-	hex_sign,
-	hex_pad
-};
+stock DisasmInit(ctx[DisasmContext], start = 0, end = 0) {
+	new hdr[AMX_HDR];
+	GetAmxHeaderStatic(hdr);
 
-static stock ToHexStr(x, hex_flags:flags = hex_default) {
+	new dat = hdr[AMX_HDR_DAT];
+	new cod = hdr[AMX_HDR_COD];
+
+	new code_base = cod - dat;
+	new code_size = dat - cod;
+
+	ctx[DisasmContext_nip] = code_base;
+	ctx[DisasmContext_cip] = code_base;
+
+	ctx[DisasmContext_start_ip] = code_base + start;
+	if (end != 0) {
+		ctx[DisasmContext_end_ip] = code_base + end;
+	} else {
+		ctx[DisasmContext_end_ip] = code_base + code_size;
+	}
+}
+
+stock bool:DisasmDecodeInsn(ctx[DisasmContext]) {
+	new Opcode:opcode = Opcode:@(ctx[DisasmContext_nip]);
+	if (opcode <= OP_NONE || opcode >= NUM_OPCODES) {
+		return false;
+	}
+
+	new ip = ctx[DisasmContext_nip];
+	if (ip >= 0) {
+		return false;
+	}
+
+	ctx[DisasmContext_cip] = ctx[DisasmContext_nip];
+	ctx[DisasmContext_opcode] = opcode;
+	ctx[DisasmContext_insn] = insn_table[_:opcode];
+
+	ip += 4;
+
+	if (opcode == OP_CASETBL) {
+		new n = @(ip);
+		ip += 4;
+		ip += (2 * n + 1) * 4;
+		ctx[DisasmContext_insn][DisasmInsnInfo_num_opers] = n;
+	} else {
+		ip += 4 * insn_table[_:opcode][DisasmInsnInfo_num_opers];
+	}
+
+	ctx[DisasmContext_nip] = ip;
+	return true;
+}
+
+stock Opcode:DisasmGetOpcode(ctx[DisasmContext]) {
+	return ctx[DisasmContext_opcode];
+}
+
+stock DisasmGetOperand(ctx[DisasmContext], index = 0) {
+	return @(ctx[DisasmContext_cip] + (index + 1) * 4);
+}
+
+stock DisasmGetNumOperands(ctx[DisasmContext]) {
+	return ctx[DisasmContext_insn][DisasmInsnInfo_num_opers];
+}
+
+stock bool:DisasmNeedReloc(ctx[DisasmContext]) {
+	return ctx[DisasmContext_insn][DisasmInsnInfo_needs_reloc];
+}
+
+stock DisasmGetNextIp(ctx[DisasmContext]) {
+	return ctx[DisasmContext_nip];
+}
+
+stock DisasmGetCurIp(ctx[DisasmContext]) {
+	return ctx[DisasmContext_cip];
+}
+
+stock DisasmGetInsnName(ctx[DisasmContext], name[], size = sizeof(name)) {
+	name[0] = '\0';
+	strcat(name, ctx[DisasmContext_insn][DisasmInsnInfo_name], size);
+}
+
+static stock ToHexStr(x) {
 	new s[11];
 	new i = 0;
 	new j = 0;
 
-	if (flags & hex_prefix) {
-		strcat(s, "0x");
-		i += 2;
-	}
 	while (i < sizeof(s) && j < 8) {
 		new n = x >> (7 - j) * 4 & 0xF;
 		switch (n) {
@@ -225,7 +301,7 @@ static stock ToPrintableAscii(c) {
 
 static stock DumpDataRowChar(File:file, start, num, max) {
 	new cur = start;
-	new end = start + num*size_of_cell;
+	new end = start + num*4;
 
 	while (cur < max) {
 		new p[4 char + 1];
@@ -243,27 +319,29 @@ static stock DumpDataRowChar(File:file, start, num, max) {
 		} else {
 			fwrite(file, " ");
 		}
-		cur += size_of_cell;
+		cur += 4;
 	}
 }
 
 static stock DumpDataRowHex(File:file, start, num, max) {
 	new cur = start;
-	new end = start + num*size_of_cell;
+	new end = start + num*4;
 
 	while (cur < max) {
 		if (cur < end) {
-			fwrite(file, ToHexStr(@(cur), hex_pad));
+			fwrite(file, ToHexStr(@(cur)));
 		} else {
 			fwrite(file, "        ");
 		}
 		fwrite(file, " ");
-		cur += size_of_cell;
+		cur += 4;
 	}
 }
 
-// Disassemble the current AMX script.
-stock Disassemble(const out_filename[]) {
+stock DisasmDump(const out_filename[]) {
+	new ctx[DisasmContext];
+	DisasmInit(ctx);
+
 	new File:file = fopen(out_filename, io_write);
 	if (!file) {
 		return;
@@ -277,33 +355,27 @@ stock Disassemble(const out_filename[]) {
 	new dat = hdr[AMX_HDR_DAT];
 	new cod = hdr[AMX_HDR_COD];
 	new hea = hdr[AMX_HDR_HEA];
-	new cip = cod - dat;
 
 	// DISASSAMBLE CODE
 	fwrite(file, "; CODE\n\n");
 
-	while (cip < 0) {
-		new op = @(cip);
+	while (DisasmDecodeInsn(ctx)) {
+		new Opcode:opcode = DisasmGetOpcode(ctx);
 
-		if (op < 0 || op >= sizeof(insn_table)) {
-			fwrite(file, "Invalid instruction ");
-			fwrite(file, ToHexStr(op, hex_prefix | hex_pad));
-			fwrite(file, "\n");
-			break;
-		}
-
-		if (op == _:OP_PROC) {
-			// Beginning of a function
+		if (opcode == OP_PROC) {
 			fwrite(file, "\n");
 		}
 
+		new cip = DisasmGetCurIp(ctx);
+
+		new insn_name[10];
+		DisasmGetInsnName(ctx, insn_name);
 		fwrite(file, ToHexStr(cip + dat - cod));
 		fwrite(file, "  ");
-		fwrite(file, insn_table[op][insn_mnemonic]);
+		fwrite(file, insn_name);
 		fwrite(file, " ");
 
-		if (op == _:OP_PROC) {
-			// Print function name if it's public
+		if (opcode == OP_PROC) {
 			new name[32];
 			new address = cip + dat - cod;
 			if (address == hdr[AMX_HDR_CIP]) {
@@ -320,27 +392,21 @@ stock Disassemble(const out_filename[]) {
 			}
 		}
 
-		cip += size_of_cell;
-
-		if (op == _:OP_CASETBL) {
-			// Case table
-			// Number of records follows the opcode
-			new num = @(cip);
-			cip += size_of_cell;
+		if (opcode == OP_CASETBL) {
+			new num = DisasmGetNumOperands(ctx);
 			for (new i = 0; i < num; i++) {
 				fwrite(file, "\n\t");
-				new addr = @(cip + size_of_cell * i * 2);
-				new rel_addr = addr - (base + cod) + (cip - size_of_cell + dat - cod);
-				fwrite(file, ToHexStr(rel_addr, hex_sign));
+				new addr = @(cip + 4 * i * 2);
+				new rel_addr = addr - (base + cod) + (cip - 4 + dat - cod);
+				fwrite(file, ToHexStr(rel_addr));
 				fwrite(file, " ");
-				new val = @(cip + size_of_cell * i * 2 + size_of_cell);
-				fwrite(file, ToHexStr(val, hex_sign));
+				new val = @(cip + 4 * i * 2 + 4);
+				fwrite(file, ToHexStr(val));
 			}
-			cip += (2 * num + 1) * size_of_cell;
 			goto next;
 		}
 
-		switch (Opcode:op) {
+		switch (opcode) {
 			case OP_CALL: {
 				new name[32];
 				new address = @(cip) - base - cod;
@@ -354,35 +420,35 @@ stock Disassemble(const out_filename[]) {
 				}
 				if (strlen(name) > 0) {
 					fwrite(file, name);
-					cip += size_of_cell;
 					goto next;
 				}
 			}
 			case OP_SYSREQ_C, OP_SYSREQ_D: {
-				new name[100]; // native name is not limited in length but we are
-				if (op == _:OP_SYSREQ_C) {
-					GetNativeNameFromIndex(@(cip), name);
+				new name[100];
+				if (opcode == OP_SYSREQ_C) {
+					new index = DisasmGetOperand(ctx);
+					GetNativeNameFromIndex(index, name);
 				} else {
-					new index = GetNativeIndexFromAddress(@(cip));
+					new address = DisasmGetOperand(ctx);
+					new index = GetNativeIndexFromAddress(address);
 					if (index >= 0) {
 						GetNativeNameFromIndex(index, name);
 					}
 				}
 				if (strlen(name) > 0) {
 					fwrite(file, name);
-					cip += size_of_cell;
 					goto next;
 				}
 			}
 		}
 
-		for (new i = 0; i < insn_table[op][insn_num_opers]; i++) {
-			new oper = @(cip);
-			if (insn_table[op][insn_needs_reloc]) {
-				oper -= base + cod;
+		new n = DisasmGetNumOperands(ctx);
+		for (new i = 0; i < n; i++) {
+			new operand = DisasmGetOperand(ctx, i);
+			if (DisasmNeedReloc(ctx)) {
+				operand -= base + cod;
 			}
-			fwrite(file, ToHexStr(oper, hex_sign));
-			cip += size_of_cell;
+			fwrite(file, ToHexStr(operand));
 		}
 
 next:
@@ -395,7 +461,7 @@ next:
 	new data_end = hea - dat;
 
 	for (new i = 0; i < data_end; i += 0x10) {
-		fwrite(file, ToHexStr(i, hex_pad));
+		fwrite(file, ToHexStr(i));
 		fwrite(file, "  ");
 		DumpDataRowHex(file, i, 4, min(i + 0x10, data_end));
 		fwrite(file, " ");

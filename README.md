@@ -35,10 +35,8 @@ prints a string you would do somethin like this this:
 
 ### disasm ###
 
-Provides the `Disassemble()` function which disassembles the whole script in a human-readable format
-to the specified text file. The output format is similar to that of `pawndisasm`.
-
-Known to work only on Windows.
+Provides an API for disassembling the calling script, either by pieces or as a whole. For the latter case there
+is a function called `DisasmDump(const filename[])` which produces an output similar to that of `pawndisasm`.
 
 ### dynamic_call ###
 
