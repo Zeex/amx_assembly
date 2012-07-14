@@ -113,7 +113,7 @@ static stock AsmError:AsmEmitInstruction(ctx[AsmContext], Opcode:opcode, ...) {
 
 static stock AsmGetJumpAddressFromOffset(ctx[AsmContext], offset) {
 	new amxhdr[AMX_HDR];
-	GetAmxHeaderOnce(amxhdr);
+	GetAmxHeaderStatic(amxhdr);
 
 	new next_offset = 2 * 4; // offset to the next instruction
 	new base = GetAmxBaseAddress() + amxhdr[AMX_HDR_DAT];
@@ -147,7 +147,7 @@ stock AsmGetErrorHandler(const ctx[AsmContext]) {
 
 stock AsmGetCode(const ctx[AsmContext]) {
 	new amxhdr[AMX_HDR];
-	GetAmxHeaderOnce(amxhdr);
+	GetAmxHeaderStatic(amxhdr);
 	return ctx[AsmContext_buffer] + amxhdr[AMX_HDR_DAT] - amxhdr[AMX_HDR_COD];
 }
 
