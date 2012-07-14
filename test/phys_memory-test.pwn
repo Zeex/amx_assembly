@@ -3,6 +3,9 @@
 #include "phys_memory"
 
 main() {
+	printf("AMX address: %x", GetAmxAddress());
+	printf("AMX base address: %x", GetAmxBaseAddress());
+
 	new s[24 char];
 	new s2[24];
 
