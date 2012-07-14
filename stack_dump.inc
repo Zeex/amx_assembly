@@ -77,22 +77,3 @@ stock DumpStack()
 
 	print("------------------------");
 }
-
-stock GetStackUsedSpace() {
-	new stp, stk;
-	#emit lctrl 3
-	#emit stor.s.pri stp
-	#emit lctrl 4
-	#emit stor.s.pri stk
-	return stp - stk + 20;
-}
-
-stock GetStackHeapSize() {
-	static size = 0;
-	if (size == 0) {
-		new amxhdr[AMX_HDR];
-		GetAMXHeader(amxhdr);
-		size = amxhdr[AMX_HDR_STP] - amxhdr[AMX_HDR_HEA];
-	}
-	return size;
-}
