@@ -21,7 +21,6 @@
 #include "../amx_header"
 #include "../dynamic_call"
 #include "../phys_memory"
-#include "../x86asm"
 
 // http://msdn.microsoft.com/en-us/library/windows/desktop/bb762153%28v=vs.85%29.aspx
 
@@ -37,6 +36,16 @@
 #define SW_SHOWNA (8)
 #define SW_SHOWNOACTIVATE (4)
 #define SW_SHOWNORMAL (1)
+
+#define asm1(%0)          (0x90909000 | (%0))
+#define asm2(%0,%1)       (0x90900000 | ((%1) << 8) | (%0))
+#define asm3(%0,%1,%2)    (0x90000000 | ((%2) << 16) | ((%1) << 8) | %0)
+#define asm4(%0,%1,%2,%3) (0x00000000 | ((%3) << 24) | ((%2) << 16) | (%1 << 8) | (%0))
+
+#define asm5(%0,%1,%2,%3,%4)          asm4(%0,%1,%2,%3), asm1(%4)
+#define asm6(%0,%1,%2,%3,%4,%5)       asm4(%0,%1,%2,%3), asm2(%4,%5)
+#define asm7(%0,%1,%2,%3,%4,%5,%6)    asm4(%0,%1,%2,%3), asm3(%4,%5,%6)
+#define asm8(%0,%1,%2,%3,%4,%5,%6,%7) asm4(%0,%1,%2,%3), asm4(%4,%5,%6,%7)
 
 // NOTE: string arguments must be prepared with ToCharString() or similar function.
 stock ShellExecute(const Operation[], const File[], const Parameters[], ShowCmd) {
