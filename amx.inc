@@ -26,6 +26,18 @@
 #include "dynamic_call"
 #include "phys_memory"
 
+const AMX_OFFSET_BASE = 0;
+const AMX_OFFSET_DATA = 4;
+const AMX_OFFSET_CALLBACK = 8;
+const AMX_OFFSET_DEBUG = 12;
+const AMX_OFFSET_CIP = 16;
+const AMX_OFFSET_FRM = 20;
+const AMX_OFFSET_HEA = 24;
+const AMX_OFFSET_HLW = 28;
+const AMX_OFFSET_STK = 32;
+const AMX_OFFSET_STP = 36;
+const AMX_OFFSET_FLAGS = 40;
+
 // Returns address of the abstract machine (address of the AMX structur in memory).
 stock GetAmxAddress() {
 	static address = 0;

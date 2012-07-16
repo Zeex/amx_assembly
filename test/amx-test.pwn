@@ -10,8 +10,8 @@ main() {
 	#emit stor.s.pri stp
 
 	// Read values STK and STPr; they should be equal to those returned by LCTRL.
-	new hea_amx = ReadAmxCell(24);
-	new stp_amx = ReadAmxCell(36);
+	new hea_amx = ReadAmxCell(AMX_OFFSET_HEA);
+	new stp_amx = ReadAmxCell(AMX_OFFSET_STP);
 
 	// This must output:
 	// 1
