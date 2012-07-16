@@ -23,6 +23,8 @@
 #endif
 #define PHYS_MEMORY_INC
 
+#include "amx_base"
+
 // Converts a real address to DAT-relative.
 static stock AbsToRel(addr) {
 	new dat;
@@ -94,44 +96,6 @@ stock WritePhysMemoryCell(addr, what) {
 	#emit stack 8
 	#emit retn
 	return 0;
-}
-
-static stock dummy() {
-	return 0;
-}
-
-// Returns the AMX base address i.e. amx->base.
-stock GetAmxBaseAddress() {
-	static amx_base = 0; // cached
-
-	if (amx_base == 0) {
-		new cod, dat;
-		#emit lctrl 0
-		#emit stor.s.pri cod
-		#emit lctrl 1
-		#emit stor.s.pri dat
-
-		// Get code section start address relative to data.
-		new code_start = cod - dat;
-
-		// Get address of dummy().
-		new fn_addr;
-		#emit const.pri dummy
-		#emit stor.s.pri fn_addr
-
-		// Get absolute address from the CALL instruction.
-		new fn_addr_reloc, call_addr;
-		dummy();
-		#emit lctrl 6
-		#emit stor.s.pri call_addr
-		call_addr = call_addr - 12 + code_start;
-		#emit lref.s.pri call_addr
-		#emit stor.s.pri fn_addr_reloc
-
-		amx_base = fn_addr_reloc - fn_addr - cod;
-	}
-
-	return amx_base;
 }
 
 #tryinclude "dynamic_call"
