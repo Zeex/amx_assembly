@@ -98,26 +98,6 @@ stock WritePhysMemoryCell(addr, what) {
 	return 0;
 }
 
-#tryinclude "dynamic_call"
-#if defined DYNAMIC_CALL_INC
-
-// Returns address of the abstract machine (address of the AMX structur in memory).
-stock GetAmxAddress() {
-	static address = 0;
-
-	if (address == 0) {
-		static const code[] = {
-			0x90909090, 0x90909090, 0x90909090, 0x90909090, // for alignment
-			0x0424448b, 0xC3C3C3C3
-		};
-		address = CallNativeCode(code);
-	}
-
-	return address;
-}
-
-#endif // DYNAMIC_CALL_INC
-
 // Swaps all bytes in a cell.
 stock SwapBytes(c) {
 	new a = 0x00000000;
