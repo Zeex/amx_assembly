@@ -1,5 +1,6 @@
 #include <a_samp>
 
+#include "amx"
 #include "phys_memory"
 
 main() {
