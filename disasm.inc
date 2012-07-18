@@ -210,13 +210,13 @@ stock DisasmInit(ctx[DisasmContext], start = 0, end = 0) {
 }
 
 stock bool:DisasmDecodeInsn(ctx[DisasmContext]) {
-	new Opcode:opcode = UnrelocateOpcode(Opcode:@(ctx[DisasmContext_nip]));
-	if (opcode <= OP_NONE || opcode >= NUM_OPCODES) {
+	new ip = ctx[DisasmContext_nip];
+	if (ip >= 0) {
 		return false;
 	}
 
-	new ip = ctx[DisasmContext_nip];
-	if (ip >= 0) {
+	new Opcode:opcode = UnrelocateOpcode(Opcode:@(ctx[DisasmContext_nip]));
+	if (opcode <= OP_NONE || opcode >= NUM_OPCODES) {
 		return false;
 	}
 
@@ -350,7 +350,7 @@ stock DisasmDump(const out_filename[]) {
 	new base = GetAmxBaseAddress();
 
 	new hdr[AMX_HDR];
-	GetAmxHeaderNow(hdr);
+	GetAmxHeader(hdr);
 
 	new dat = hdr[AMX_HDR_DAT];
 	new cod = hdr[AMX_HDR_COD];
@@ -368,10 +368,10 @@ stock DisasmDump(const out_filename[]) {
 
 		new cip = DisasmGetCurIp(ctx);
 
-		new insn_name[10];
+		new insn_name[15];
 		DisasmGetInsnName(ctx, insn_name);
 		fwrite(file, ToHexStr(cip + dat - cod));
-		fwrite(file, "  ");
+		fwrite(file, " ");
 		fwrite(file, insn_name);
 		fwrite(file, " ");
 
@@ -395,7 +395,7 @@ stock DisasmDump(const out_filename[]) {
 		if (opcode == OP_CASETBL) {
 			new num = DisasmGetNumOperands(ctx);
 			for (new i = 0; i < num; i++) {
-				fwrite(file, "\n\t");
+				fwrite(file, "\n         ");
 				new addr = @(cip + 4 * i * 2);
 				new rel_addr = addr - (base + cod) + (cip - 4 + dat - cod);
 				fwrite(file, ToHexStr(rel_addr));
