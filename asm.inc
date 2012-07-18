@@ -225,8 +225,28 @@ stock AsmError:AsmEmitDecS(ctx[AsmContext], offset) {
 	return AsmEmitInstruction(ctx, OP_DEC_S, offset);
 }
 
+stock AsmError:AsmEmitEq(ctx[AsmContext]) {
+	return AsmEmitInstruction(ctx, OP_EQ);
+}
+
+stock AsmError:AsmEmitEqCAlt(ctx[AsmContext], value) {
+	return AsmEmitInstruction(ctx, OP_EQ_C_ALT, value);
+}
+
+stock AsmError:AsmEmitEqCPri(ctx[AsmContext], value) {
+	return AsmEmitInstruction(ctx, OP_EQ_C_PRI, value);
+}
+
 stock AsmError:AsmEmitFill(ctx[AsmContext], nbytes) {
 	return AsmEmitInstruction(ctx, OP_FILL, nbytes);
+}
+
+stock AsmError:AsmEmitGeq(ctx[AsmContext]) {
+	return AsmEmitInstruction(ctx, OP_GEQ);
+}
+
+stock AsmError:AsmEmitGrtr(ctx[AsmContext]) {
+	return AsmEmitInstruction(ctx, OP_GRTR);
 }
 
 stock AsmError:AsmEmitHalt(ctx[AsmContext], code) {
@@ -326,6 +346,14 @@ stock AsmError:AsmEmitLctrl(ctx[AsmContext], index) {
 	return AsmEmitInstruction(ctx, OP_LCTRL, index);
 }
 
+stock AsmError:AsmEmitLeq(ctx[AsmContext]) {
+	return AsmEmitInstruction(ctx, OP_LEQ);
+}
+
+stock AsmError:AsmEmitLess(ctx[AsmContext]) {
+	return AsmEmitInstruction(ctx, OP_LESS);
+}
+
 stock AsmError:AsmEmitLidx(ctx[AsmContext]) {
 	return AsmEmitInstruction(ctx, OP_LIDX);
 }
@@ -393,6 +421,10 @@ stock AsmError:AsmEmitMovs(ctx[AsmContext], nbytes) {
 
 stock AsmError:AsmEmitNeg(ctx[AsmContext]) {
 	return AsmEmitInstruction(ctx, OP_NEG);
+}
+
+stock AsmError:AsmEmitNeq(ctx[AsmContext]) {
+	return AsmEmitInstruction(ctx, OP_NEQ);
 }
 
 stock AsmError:AsmEmitNop(ctx[AsmContext]) {
@@ -464,6 +496,14 @@ stock AsmError:AsmEmitSdivAlt(ctx[AsmContext]) {
 	return AsmEmitInstruction(ctx, OP_SDIV_ALT);
 }
 
+stock AsmError:AsmEmitSgeq(ctx[AsmContext]) {
+	return AsmEmitInstruction(ctx, OP_SGEQ);
+}
+
+stock AsmError:AsmEmitSgrtr(ctx[AsmContext]) {
+	return AsmEmitInstruction(ctx, OP_SGRTR);
+}
+
 stock AsmError:AsmEmitShl(ctx[AsmContext]) {
 	return AsmEmitInstruction(ctx, OP_SHL);
 }
@@ -494,6 +534,14 @@ stock AsmError:AsmEmitSignAlt(ctx[AsmContext]) {
 
 stock AsmError:AsmEmitSignPri(ctx[AsmContext]) {
 	return AsmEmitInstruction(ctx, OP_SIGN_PRI);
+}
+
+stock AsmError:AsmEmitSleq(ctx[AsmContext]) {
+	return AsmEmitInstruction(ctx, OP_SLEQ);
+}
+
+stock AsmError:AsmEmitSless(ctx[AsmContext]) {
+	return AsmEmitInstruction(ctx, OP_SLESS);
 }
 
 stock AsmError:AsmEmitSmul(ctx[AsmContext]) {
