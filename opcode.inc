@@ -334,9 +334,10 @@ stock Opcode:RelocateOpcodeNow(Opcode:opcode) {
 		case OP_RETN: { __
 			#emit retn
 		}
-		//case OP_CALL: { __
-			//#emit call
-		//}
+		case OP_CALL: {
+			// We can't do just "#emit call 0" - this will crash compiler for some reason (bug?).
+			return ReadOpcodeNextToThis(-8);
+		}
 		case OP_JUMP: { __
 			#emit jump 0
 		}
@@ -559,6 +560,10 @@ stock Opcode:RelocateOpcodeNow(Opcode:opcode) {
 		case OP_SWITCH: { __
 			#emit switch 0
 		}
+		case OP_CASETBL: {
+			new x = 0;
+			switch (x) { default: return ReadOpcodeNextToThis(20); }
+		}
 		case OP_SWAP_PRI: { __
 			#emit swap.pri
 		}
@@ -606,7 +611,7 @@ stock Opcode:UnrelocateOpcode(Opcode:opcode) {
 			return Opcode:i;
 		}
 	}
-	return OP_NONE;
+	return opcode;
 }
 
 #undef __
