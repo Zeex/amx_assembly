@@ -26,7 +26,7 @@
 #include "amx_header"
 #include "amx_memory"
 #include "dynamic_call"
-#include "opcodes"
+#include "opcode"
 #include "phys_memory"
 
 enum AsmError {

@@ -18,10 +18,10 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#if defined OPCODES_INC
+#if defined OPCODE_INC
 	#endinput
 #endif
-#define OPCODES_INC
+#define OPCODE_INC
 
 enum Opcode {
 	OP_NONE,              /* invalid opcode */

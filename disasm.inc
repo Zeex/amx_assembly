@@ -27,7 +27,7 @@
 
 #include "amx_header"
 #include "amx_memory"
-#include "opcodes"
+#include "opcode"
 #include "phys_memory"
 
 #define MAX_INSN_NAME 15
