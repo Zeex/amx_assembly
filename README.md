@@ -38,6 +38,8 @@ prints a string you would do somethin like this this:
 Provides an API for disassembling the calling script, either by pieces or as a whole. For the latter case there
 is a function called `DisasmDump(const filename[])` which produces an output similar to that of `pawndisasm`.
 
+**NOTE**: disasms doesn't support `SYSREQ.D` opcodes when running on Linux.
+
 ### dynamic_call ###
 
 Allows you to call any functions dynamically using a high-level API.
