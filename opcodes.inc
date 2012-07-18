@@ -190,11 +190,6 @@ static stock Opcode:ReadOpcodeNextToThis(offset = 0) {
 
 #define __ return ReadOpcodeNextToThis(4);
 
-static stock Unreachable() {
-	new z = 0;
-	assert(z);
-}
-
 // Based on this idea: http://forum.sa-mp.com/showthread.php?t=358084
 stock Opcode:RelocateOpcode(Opcode:opcode) {
 	switch (opcode) {
@@ -580,8 +575,7 @@ stock Opcode:RelocateOpcode(Opcode:opcode) {
 			#emit break
 		}
 	}
-	Unreachable();
-	return OP_NONE;
+	return opcode;
 }
 
 static stock Opcode:opcode_list[_:NUM_OPCODES];
