@@ -85,12 +85,12 @@ forward bool:GetPubVarNameFromIndex(index, name[], size = sizeof(name));
 forward bool:GetPubVarNameFromAddress(address, name[], size = sizeof(name));
 
 // General
-forward GetPlainAmxHeader(plain_amxhdr[AMX_HDR_CELLS]);
+forward GetRawAmxHeader(plain_amxhdr[AMX_HDR_CELLS]);
+forward GetAmxHeaderNow(amxhdr[AMX_HDR]);
 forward GetAmxHeader(amxhdr[AMX_HDR]);
-forward GetAmxHeaderStatic(amxhdr[AMX_HDR]);
 forward PrintAmxHeader();
 
-stock GetPlainAmxHeader(plain_amxhdr[AMX_HDR_CELLS]) {
+stock GetRawAmxHeader(plain_amxhdr[AMX_HDR_CELLS]) {
 	new address;
 	#emit lctrl 1  // DAT
 	#emit neg      // -DAT
@@ -126,9 +126,9 @@ static stock copy_4(&dest, const source[], start) {
 	#emit movs 4
 }
 
-stock GetAmxHeader(amxhdr[AMX_HDR]) {
+stock GetAmxHeaderNow(amxhdr[AMX_HDR]) {
 	new plain_amxhdr[AMX_HDR_CELLS];
-	GetPlainAmxHeader(plain_amxhdr);
+	GetRawAmxHeader(plain_amxhdr);
 
 	copy_4(amxhdr[AMX_HDR_SIZE], plain_amxhdr, 0);
 	copy_2(amxhdr[AMX_HDR_MAGIC], plain_amxhdr, 4);
@@ -149,18 +149,18 @@ stock GetAmxHeader(amxhdr[AMX_HDR]) {
 	copy_4(amxhdr[AMX_HDR_NAMETABLE], plain_amxhdr, 52);
 }
 
-stock GetAmxHeaderStatic(amxhdr[AMX_HDR]) {
+stock GetAmxHeader(amxhdr[AMX_HDR]) {
 	static hdr[AMX_HDR];
 	static bool:initialized = false;
 	if (!initialized) {
-		GetAmxHeader(hdr);
+		GetAmxHeaderNow(hdr);
 	}
 	amxhdr = hdr;
 }
 
 stock PrintAmxHeader() {
 	new amxhdr[AMX_HDR];
-	GetAmxHeader(amxhdr);
+	GetAmxHeaderNow(amxhdr);
 
 	printf("------------------------");
 	printf("AMX Header:");
@@ -234,7 +234,7 @@ stock GetNumPublics(amxhdr[AMX_HDR]) {
 
 stock GetPublicIndexFromAddress(address) {
 	new amxhdr[AMX_HDR];
-	GetAmxHeaderStatic(amxhdr);
+	GetAmxHeader(amxhdr);
 
 	new num_publics = GetNumPublics(amxhdr);
 	new off = amxhdr[AMX_HDR_PUBLICS] - amxhdr[AMX_HDR_DAT];
@@ -252,7 +252,7 @@ stock GetPublicIndexFromAddress(address) {
 
 stock bool:GetPublicInfo(index, info[AMX_FUNCSTUBNT]) {
 	new amxhdr[AMX_HDR];
-	GetAmxHeaderStatic(amxhdr);
+	GetAmxHeader(amxhdr);
 
 	new num_publics = GetNumPublics(amxhdr);
 
@@ -269,7 +269,7 @@ stock bool:GetPublicInfo(index, info[AMX_FUNCSTUBNT]) {
 
 stock GetPublicIndexFromName(const name[]) {
 	new amxhdr[AMX_HDR];
-	GetAmxHeaderStatic(amxhdr);
+	GetAmxHeader(amxhdr);
 
 	new num_publics = GetNumPublics(amxhdr);
 
@@ -331,7 +331,7 @@ stock bool:GetPublicNameFromAddress(address, name[], size = sizeof(name)) {
 
 stock HookPublic(index, address) {
 	new amxhdr[AMX_HDR];
-	GetAmxHeaderStatic(amxhdr);
+	GetAmxHeader(amxhdr);
 
 	new num_publics = GetNumPublics(amxhdr);
 
@@ -352,7 +352,7 @@ stock GetNumNatives(amxhdr[AMX_HDR]) {
 
 stock GetNativeIndexFromAddress(address) {
 	new amxhdr[AMX_HDR];
-	GetAmxHeaderStatic(amxhdr);
+	GetAmxHeader(amxhdr);
 
 	new num_natives = GetNumNatives(amxhdr);
 	new off = amxhdr[AMX_HDR_NATIVES] - amxhdr[AMX_HDR_DAT];
@@ -370,7 +370,7 @@ stock GetNativeIndexFromAddress(address) {
 
 stock bool:GetNativeInfo(index, info[AMX_FUNCSTUBNT]) {
 	new amxhdr[AMX_HDR];
-	GetAmxHeaderStatic(amxhdr);
+	GetAmxHeader(amxhdr);
 
 	new num_natives = GetNumNatives(amxhdr);
 
@@ -387,7 +387,7 @@ stock bool:GetNativeInfo(index, info[AMX_FUNCSTUBNT]) {
 
 stock GetNativeIndexFromName(const name[]) {
 	new amxhdr[AMX_HDR];
-	GetAmxHeaderStatic(amxhdr);
+	GetAmxHeader(amxhdr);
 
 	new num_natives = GetNumNatives(amxhdr);
 	new off = amxhdr[AMX_HDR_NATIVES] - amxhdr[AMX_HDR_DAT];
@@ -436,7 +436,7 @@ stock bool:GetNativeNameFromAddress(address, name[], size = sizeof(name)) {
 
 stock HookNative(index, address) {
 	new amxhdr[AMX_HDR];
-	GetAmxHeaderStatic(amxhdr);
+	GetAmxHeader(amxhdr);
 
 	new num_natives = GetNumNatives(amxhdr);
 
@@ -457,7 +457,7 @@ stock GetNumPubVars(amxhdr[AMX_HDR]) {
 
 stock bool:GetPubVarInfo(index, info[AMX_FUNCSTUBNT]) {
 	new amxhdr[AMX_HDR];
-	GetAmxHeaderStatic(amxhdr);
+	GetAmxHeader(amxhdr);
 
 	new num_pubvars = GetNumPubVars(amxhdr);
 
@@ -474,7 +474,7 @@ stock bool:GetPubVarInfo(index, info[AMX_FUNCSTUBNT]) {
 
 stock GetPubVarIndexFromName(const name[]) {
 	new amxhdr[AMX_HDR];
-	GetAmxHeaderStatic(amxhdr);
+	GetAmxHeader(amxhdr);
 
 	new num_pubvars = GetNumPubVars(amxhdr);
 
@@ -504,7 +504,7 @@ stock GetPubVarIndexFromName(const name[]) {
 
 stock GetPubVarIndexFromAddress(address) {
 	new amxhdr[AMX_HDR];
-	GetAmxHeaderStatic(amxhdr);
+	GetAmxHeader(amxhdr);
 
 	new num_pubvars = GetNumPubVars(amxhdr);
 	new off = amxhdr[AMX_HDR_PUBVARS] - amxhdr[AMX_HDR_DAT];

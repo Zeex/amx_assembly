@@ -28,35 +28,37 @@ static stock GetAmxBaseAddress_helper() {
 }
 
 // Returns the AMX base address i.e. amx->base.
+stock GetAmxBaseAddressNow() {
+	new cod, dat;
+	#emit lctrl 0
+	#emit stor.s.pri cod
+	#emit lctrl 1
+	#emit stor.s.pri dat
+
+	// Get code section start address relative to data.
+	new code_start = cod - dat;
+
+	// Get address of GetAmxBaseAddress_helper().
+	new fn_addr;
+	#emit const.pri GetAmxBaseAddress_helper
+	#emit stor.s.pri fn_addr
+
+	// Get absolute address from the CALL instruction.
+	new fn_addr_reloc, call_addr;
+	GetAmxBaseAddress_helper();
+	#emit lctrl 6
+	#emit stor.s.pri call_addr
+	call_addr = call_addr - 12 + code_start;
+	#emit lref.s.pri call_addr
+	#emit stor.s.pri fn_addr_reloc
+
+	return fn_addr_reloc - fn_addr - cod;
+}
+
 stock GetAmxBaseAddress() {
-	static amx_base = 0; // cached
-
+	static amx_base = 0;
 	if (amx_base == 0) {
-		new cod, dat;
-		#emit lctrl 0
-		#emit stor.s.pri cod
-		#emit lctrl 1
-		#emit stor.s.pri dat
-
-		// Get code section start address relative to data.
-		new code_start = cod - dat;
-
-		// Get address of GetAmxBaseAddress_helper().
-		new fn_addr;
-		#emit const.pri GetAmxBaseAddress_helper
-		#emit stor.s.pri fn_addr
-
-		// Get absolute address from the CALL instruction.
-		new fn_addr_reloc, call_addr;
-		GetAmxBaseAddress_helper();
-		#emit lctrl 6
-		#emit stor.s.pri call_addr
-		call_addr = call_addr - 12 + code_start;
-		#emit lref.s.pri call_addr
-		#emit stor.s.pri fn_addr_reloc
-
-		amx_base = fn_addr_reloc - fn_addr - cod;
+		amx_base = GetAmxBaseAddressNow();
 	}
-
 	return amx_base;
 }

@@ -190,7 +190,7 @@ static stock const insn_table[][DisasmInsnInfo] = {
 
 stock DisasmInit(ctx[DisasmContext], start = 0, end = 0) {
 	new hdr[AMX_HDR];
-	GetAmxHeaderStatic(hdr);
+	GetAmxHeader(hdr);
 
 	new dat = hdr[AMX_HDR_DAT];
 	new cod = hdr[AMX_HDR_COD];
@@ -350,7 +350,7 @@ stock DisasmDump(const out_filename[]) {
 	new base = GetAmxBaseAddress();
 
 	new hdr[AMX_HDR];
-	GetAmxHeader(hdr);
+	GetAmxHeaderNow(hdr);
 
 	new dat = hdr[AMX_HDR_DAT];
 	new cod = hdr[AMX_HDR_COD];

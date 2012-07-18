@@ -164,7 +164,7 @@ static stock new_pec(index, address, code_start) {
 
 stock ProfilerInit() {
 	new hdr[AMX_HDR];
-	GetAmxHeaderStatic(hdr);
+	GetAmxHeader(hdr);
 
 	new publics = hdr[AMX_HDR_PUBLICS] - hdr[AMX_HDR_DAT];
 	new defsize = hdr[AMX_HDR_DEFSIZE];
