@@ -83,7 +83,7 @@ static stock AsmError:AsmEmitOpcode(ctx[AsmContext], Opcode:opcode) {
 	if (opcode <= OP_NONE || opcode >= NUM_OPCODES) {
 		return AsmRaiseError(ctx, ASM_ERROR_OPCODE);
 	}
-	return AsmEmitCell(ctx, _:opcode);
+	return AsmEmitCell(ctx, _:RelocateOpcode(opcode));
 }
 
 static stock AsmError:AsmEmitOperand(ctx[AsmContext], value) {
