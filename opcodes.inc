@@ -191,7 +191,7 @@ static stock Opcode:ReadOpcodeNextToThis(offset = 0) {
 #define __ return ReadOpcodeNextToThis(4);
 
 // Based on this idea: http://forum.sa-mp.com/showthread.php?t=358084
-stock Opcode:RelocateOpcode(Opcode:opcode) {
+stock Opcode:RelocateOpcodeNow(Opcode:opcode) {
 	switch (opcode) {
 		case OP_LOAD_PRI: { __
 			#emit load.pri 0
@@ -583,11 +583,11 @@ static stock bool:opcode_list_is_ready = false;
 
 static stock InitOpcodeList() {
 	for (new i = 0; i < _:NUM_OPCODES; i++) {
-		opcode_list[i] = RelocateOpcode(Opcode:i);
+		opcode_list[i] = RelocateOpcodeNow(Opcode:i);
 	}
 }
 
-stock GetRelocatedOpcode(Opcode:opcode) {
+stock Opcode:RelocateOpcode(Opcode:opcode) {
 	if (!opcode_list_is_ready) {
 		InitOpcodeList();
 	}
