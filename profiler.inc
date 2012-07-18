@@ -26,6 +26,7 @@
 #include <a_samp>
 
 #include "amx_header"
+#include "opcode"
 #include "phys_memory"
 
 // Call stack size (maximum call depth).
@@ -136,25 +137,22 @@ static stock enter_public(index, address) {
 }
 
 static stock new_pec(index, address, code_start) {
-	static const OP_PUSH_C = 39;
-	static const OP_CALL = 49;
-
 	if (g_num_pecs < sizeof(g_pecs)) {
 		new pec[ProfEntryCode];
 
-		pec[pec_push_address][0] = OP_PUSH_C;
+		pec[pec_push_address][0] = RelocateOpcode(OP_PUSH_C);
 		pec[pec_push_address][1] = address;
 
-		pec[pec_push_index][0] = OP_PUSH_C;
+		pec[pec_push_index][0] = RelocateOpcode(OP_PUSH_C);
 		pec[pec_push_index][1] = index;
 
-		pec[pec_push_8][0] = OP_PUSH_C;
+		pec[pec_push_8][0] = RelocateOpcode(OP_PUSH_C);
 		pec[pec_push_8][1] = 8;
 
 		new enter_proc;
 		#emit const.pri enter_public
 		#emit stor.s.pri enter_proc
-		pec[pec_call_enter][0] = OP_CALL;
+		pec[pec_call_enter][0] = RelocateOpcode(OP_CALL);
 		pec[pec_call_enter][1] = code_start + enter_proc;
 
 		g_pecs[g_num_pecs] = pec;
