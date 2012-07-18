@@ -551,9 +551,6 @@ stock Opcode:RelocateOpcodeNow(Opcode:opcode) {
 		case OP_BOUNDS: { __
 			#emit bounds 0
 		}
-		case OP_SYSREQ_PRI: { __
-			#emit sysreq.pri
-		}
 		case OP_SYSREQ_C: { __
 			#emit sysreq.c 0
 		}
@@ -562,7 +559,7 @@ stock Opcode:RelocateOpcodeNow(Opcode:opcode) {
 		}
 		case OP_CASETBL: {
 			new x = 0;
-			switch (x) { default: return ReadOpcodeNextToThis(20); }
+			switch (x) { case 0: return ReadOpcodeNextToThis(20); }
 		}
 		case OP_SWAP_PRI: { __
 			#emit swap.pri
