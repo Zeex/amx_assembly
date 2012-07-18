@@ -210,7 +210,7 @@ stock DisasmInit(ctx[DisasmContext], start = 0, end = 0) {
 }
 
 stock bool:DisasmDecodeInsn(ctx[DisasmContext]) {
-	new Opcode:opcode = Opcode:@(ctx[DisasmContext_nip]);
+	new Opcode:opcode = UnrelocateOpcode(Opcode:@(ctx[DisasmContext_nip]));
 	if (opcode <= OP_NONE || opcode >= NUM_OPCODES) {
 		return false;
 	}
