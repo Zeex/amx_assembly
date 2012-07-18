@@ -9,9 +9,7 @@ AMX += dynamic_call-test.amx
 AMX += asm-test.amx
 AMX += phys_memory-test.amx
 
-SUBDIRS = windows linux
-
-all: clean $(AMX) $(SUBDIRS)
+all: clean $(AMX) windows
 
 disasm-test.amx: disasm-test.pwn
 	$(PAWNCC) $(PFLAGS) $(INCLUDE) $^ -o$@
@@ -32,6 +30,3 @@ clean: $(SUBDIRS)
 windows:
 	$(MAKE) -C $@
 
-.PHONY: linux
-linux:
-	$(MAKE) -C $@
