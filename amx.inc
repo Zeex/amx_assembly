@@ -37,6 +37,15 @@ const AMX_OFFSET_HLW = 28;
 const AMX_OFFSET_STK = 32;
 const AMX_OFFSET_STP = 36;
 const AMX_OFFSET_FLAGS = 40;
+const AMX_OFFSET_USERTAGS = 44;
+const AMX_OFFSET_USERDATA = 60;
+const AMX_OFFSET_ERROR = 76;
+const AMX_OFFSET_PARAMCOUNT = 80;
+const AMX_OFFSET_PRI = 84;
+const AMX_OFFSET_ALT = 88;
+const AMX_OFFSET_RESET_STK = 92;
+const AMX_OFFSET_RESET_HEA = 96;
+const AMX_OFFSET_SYSREQ_D = 100;
 
 // Returns address of the abstract machine (address of the AMX structur in memory).
 stock GetAmxAddress() {
