@@ -702,6 +702,20 @@ stock Opcode:RelocateOpcodeNow(Opcode:opcode) {
 			return ReadOpcodeNearThis(4);
 			#emit nop
 		}
+		case OP_SYSREQ_D: {
+			// Since there is no way to #emit SYSREQ.D we have to use this
+			// possibly unportable and ugly construct. I was having success
+			// running this code on the following server versions:
+			//  0.3c
+			//  0.3c R2-2
+			//  0.3c R4-1
+			//  0.3c R5
+			//  0.3d
+			//  0.3d R2
+			//  0.3e
+			//  0.3e R2
+			return RelocateOpcodeNow(OP_NOP) - Opcode:0x4F;
+		}
 		case OP_BREAK: {
 			return ReadOpcodeNearThis(4);
 			#emit break
