@@ -4,6 +4,7 @@
 forward HandleAsmError(ctx[AsmContext], AsmError:error);
 
 main() {
+	// Must use this native to make GetNativeAddress/IndexFromName go fine.
 	print("Doing #emit at runtime...");
 
 	new code[100];
@@ -23,7 +24,7 @@ main() {
 	AsmEmitProc(ctx);
 	AsmEmitPushS(ctx, 12);
 	AsmEmitPushC(ctx, 4);
-	AsmEmitSysreqC(ctx, GetNativeIndexFromName("print"));
+	AsmEmitSysreqD(ctx, GetNativeAddressFromName("print"));
 	AsmEmitStack(ctx, 8);
 	AsmEmitRetn(ctx);
 
