@@ -166,7 +166,7 @@ enum Opcode {
 	NUM_OPCODES
 };
 
-static stock Opcode:ReadOpcodeNextToThis(offset = 0) {
+static stock Opcode:ReadOpcodeNearThis(offset = 0) {
 	// Get return address + COD - DAT + offset.
 	#emit load.s.alt 4
 	#emit lctrl 0
@@ -188,392 +188,522 @@ static stock Opcode:ReadOpcodeNextToThis(offset = 0) {
 	return OP_NONE; // make compiler happy
 }
 
-#define __ return ReadOpcodeNextToThis(4);
+static stock bool:HaveToRelocateOpcodes() {
+	return ReadOpcodeNearThis(-8) != OP_CALL;
+}
 
 // Based on this idea: http://forum.sa-mp.com/showthread.php?t=358084
 stock Opcode:RelocateOpcodeNow(Opcode:opcode) {
+	if (!HaveToRelocateOpcodes()) {
+		return opcode;
+	}
 	switch (opcode) {
-		case OP_LOAD_PRI: { __
+		case OP_LOAD_PRI: {
+			return ReadOpcodeNearThis(4);
 			#emit load.pri 0
 		}
-		case OP_LOAD_ALT: { __
+		case OP_LOAD_ALT: {
+			return ReadOpcodeNearThis(4);
 			#emit load.alt 0
 		}
-		case OP_LOAD_S_PRI: { __
+		case OP_LOAD_S_PRI: {
+			return ReadOpcodeNearThis(4);
 			#emit load.s.pri 0
 		}
-		case OP_LOAD_S_ALT: { __
+		case OP_LOAD_S_ALT: {
+			return ReadOpcodeNearThis(4);
 			#emit load.s.alt 0
 		}
-		case OP_LREF_PRI: { __
+		case OP_LREF_PRI: {
+			return ReadOpcodeNearThis(4);
 			#emit lref.pri 0
 		}
-		case OP_LREF_ALT: { __
+		case OP_LREF_ALT: {
+			return ReadOpcodeNearThis(4);
 			#emit lref.alt 0
 		}
-		case OP_LREF_S_PRI: { __
+		case OP_LREF_S_PRI: {
+			return ReadOpcodeNearThis(4);
 			#emit lref.s.pri 0
 		}
-		case OP_LREF_S_ALT: { __
+		case OP_LREF_S_ALT: {
+			return ReadOpcodeNearThis(4);
 			#emit lref.s.alt 0
 		}
-		case OP_LOAD_I: { __
+		case OP_LOAD_I: {
+			return ReadOpcodeNearThis(4);
 			#emit load.i
 		}
-		case OP_LODB_I: { __
+		case OP_LODB_I: {
+			return ReadOpcodeNearThis(4);
 			#emit lodb.i 1
 		}
-		case OP_CONST_PRI: { __
+		case OP_CONST_PRI: {
+			return ReadOpcodeNearThis(4);
 			#emit const.pri 0
 		}
-		case OP_CONST_ALT: { __
+		case OP_CONST_ALT: {
+			return ReadOpcodeNearThis(4);
 			#emit const.alt 0
 		}
-		case OP_ADDR_PRI: { __
+		case OP_ADDR_PRI: {
+			return ReadOpcodeNearThis(4);
 			#emit addr.pri 0
 		}
-		case OP_ADDR_ALT: { __
+		case OP_ADDR_ALT: {
+			return ReadOpcodeNearThis(4);
 			#emit addr.alt 0
 		}
-		case OP_STOR_PRI: { __
+		case OP_STOR_PRI: {
+			return ReadOpcodeNearThis(4);
 			#emit stor.pri 0
 		}
-		case OP_STOR_ALT: { __
+		case OP_STOR_ALT: {
+			return ReadOpcodeNearThis(4);
 			#emit stor.alt 0
 		}
-		case OP_STOR_S_PRI: { __
+		case OP_STOR_S_PRI: {
+			return ReadOpcodeNearThis(4);
 			#emit stor.s.pri 0
 		}
-		case OP_STOR_S_ALT: { __
+		case OP_STOR_S_ALT: {
+			return ReadOpcodeNearThis(4);
 			#emit stor.s.alt 0
 		}
-		case OP_SREF_PRI: { __
+		case OP_SREF_PRI: {
+			return ReadOpcodeNearThis(4);
 			#emit sref.pri 0
 		}
-		case OP_SREF_ALT: { __
+		case OP_SREF_ALT: {
+			return ReadOpcodeNearThis(4);
 			#emit sref.alt 0
 		}
-		case OP_SREF_S_PRI: { __
+		case OP_SREF_S_PRI: {
+			return ReadOpcodeNearThis(4);
 			#emit sref.s.pri 0
 		}
-		case OP_SREF_S_ALT: { __
+		case OP_SREF_S_ALT: {
+			return ReadOpcodeNearThis(4);
 			#emit sref.s.alt 0
 		}
-		case OP_STOR_I: { __
+		case OP_STOR_I: {
+			return ReadOpcodeNearThis(4);
 			#emit stor.i
 		}
-		case OP_STRB_I: { __
+		case OP_STRB_I: {
+			return ReadOpcodeNearThis(4);
 			#emit strb.i 1
 		}
-		case OP_LIDX: { __
+		case OP_LIDX: {
+			return ReadOpcodeNearThis(4);
 			#emit lidx
 		}
-		case OP_LIDX_B: { __
+		case OP_LIDX_B: {
+			return ReadOpcodeNearThis(4);
 			#emit lidx.b 0
 		}
-		case OP_IDXADDR: { __
+		case OP_IDXADDR: {
+			return ReadOpcodeNearThis(4);
 			#emit idxaddr
 		}
-		case OP_IDXADDR_B: { __
+		case OP_IDXADDR_B: {
+			return ReadOpcodeNearThis(4);
 			#emit idxaddr.b 0
 		}
-		case OP_ALIGN_PRI: { __
+		case OP_ALIGN_PRI: {
+			return ReadOpcodeNearThis(4);
 			#emit align.pri 0
 		}
-		case OP_ALIGN_ALT: { __
+		case OP_ALIGN_ALT: {
+			return ReadOpcodeNearThis(4);
 			#emit align.alt 0
 		}
-		case OP_LCTRL: { __
+		case OP_LCTRL: {
+			return ReadOpcodeNearThis(4);
 			#emit lctrl 0
 		}
-		case OP_SCTRL: { __
+		case OP_SCTRL: {
+			return ReadOpcodeNearThis(4);
 			#emit sctrl 0
 		}
-		case OP_MOVE_PRI: { __
+		case OP_MOVE_PRI: {
+			return ReadOpcodeNearThis(4);
 			#emit move.pri
 		}
-		case OP_MOVE_ALT: { __
+		case OP_MOVE_ALT: {
+			return ReadOpcodeNearThis(4);
 			#emit move.alt
 		}
-		case OP_XCHG: { __
+		case OP_XCHG: {
+			return ReadOpcodeNearThis(4);
 			#emit xchg
 		}
-		case OP_PUSH_PRI: { __
+		case OP_PUSH_PRI: {
+			return ReadOpcodeNearThis(4);
 			#emit push.pri
 		}
-		case OP_PUSH_ALT: { __
+		case OP_PUSH_ALT: {
+			return ReadOpcodeNearThis(4);
 			#emit push.alt
 		}
-		case OP_PUSH_C: { __
+		case OP_PUSH_C: {
+			return ReadOpcodeNearThis(4);
 			#emit push.c 0
 		}
-		case OP_PUSH: { __
+		case OP_PUSH: {
+			return ReadOpcodeNearThis(4);
 			#emit push 0
 		}
-		case OP_PUSH_S: { __
+		case OP_PUSH_S: {
+			return ReadOpcodeNearThis(4);
 			#emit push.s 0
 		}
-		case OP_POP_PRI: { __
+		case OP_POP_PRI: {
+			return ReadOpcodeNearThis(4);
 			#emit pop.pri
 		}
-		case OP_POP_ALT: { __
+		case OP_POP_ALT: {
+			return ReadOpcodeNearThis(4);
 			#emit pop.alt
 		}
-		case OP_STACK: { __
+		case OP_STACK: {
+			return ReadOpcodeNearThis(4);
 			#emit stack 0
 		}
-		case OP_HEAP: { __
+		case OP_HEAP: {
+			return ReadOpcodeNearThis(4);
 			#emit heap 0
 		}
-		case OP_PROC: { __
+		case OP_PROC: {
+			return ReadOpcodeNearThis(4);
 			#emit proc
 		}
-		case OP_RET: { __
+		case OP_RET: {
+			return ReadOpcodeNearThis(4);
 			#emit ret
 		}
-		case OP_RETN: { __
+		case OP_RETN: {
+			return ReadOpcodeNearThis(4);
 			#emit retn
 		}
 		case OP_CALL: {
 			// We can't do just "#emit call 0" - this will crash compiler for some reason (bug?).
-			return ReadOpcodeNextToThis(-8);
+			return ReadOpcodeNearThis(-8);
 		}
-		case OP_JUMP: { __
+		case OP_JUMP: {
+			return ReadOpcodeNearThis(4);
 			#emit jump 0
 		}
-		case OP_JREL: { __
+		case OP_JREL: {
+			return ReadOpcodeNearThis(4);
 			#emit jrel 0
 		}
-		case OP_JZER: { __
+		case OP_JZER: {
+			return ReadOpcodeNearThis(4);
 			#emit jzer 0
 		}
-		case OP_JNZ: { __
+		case OP_JNZ: {
+			return ReadOpcodeNearThis(4);
 			#emit jnz 0
 		}
-		case OP_JEQ: { __
+		case OP_JEQ: {
+			return ReadOpcodeNearThis(4);
 			#emit jeq 0
 		}
-		case OP_JNEQ: { __
+		case OP_JNEQ: {
+			return ReadOpcodeNearThis(4);
 			#emit jneq 0
 		}
-		case OP_JLESS: { __
+		case OP_JLESS: {
+			return ReadOpcodeNearThis(4);
 			#emit jless 0
 		}
-		case OP_JLEQ: { __
+		case OP_JLEQ: {
+			return ReadOpcodeNearThis(4);
 			#emit jleq 0
 		}
-		case OP_JGRTR: { __
+		case OP_JGRTR: {
+			return ReadOpcodeNearThis(4);
 			#emit jgrtr 0
 		}
-		case OP_JGEQ: { __
+		case OP_JGEQ: {
+			return ReadOpcodeNearThis(4);
 			#emit jgeq 0
 		}
-		case OP_JSLESS: { __
+		case OP_JSLESS: {
+			return ReadOpcodeNearThis(4);
 			#emit jsless 0
 		}
-		case OP_JSLEQ: { __
+		case OP_JSLEQ: {
+			return ReadOpcodeNearThis(4);
 			#emit jsleq 0
 		}
-		case OP_JSGRTR: { __
+		case OP_JSGRTR: {
+			return ReadOpcodeNearThis(4);
 			#emit jsgrtr 0
 		}
-		case OP_JSGEQ: { __
+		case OP_JSGEQ: {
+			return ReadOpcodeNearThis(4);
 			#emit jsgeq 0
 		}
-		case OP_SHL: { __
+		case OP_SHL: {
+			return ReadOpcodeNearThis(4);
 			#emit shl
 		}
-		case OP_SHR: { __
+		case OP_SHR: {
+			return ReadOpcodeNearThis(4);
 			#emit shr
 		}
-		case OP_SSHR: { __
+		case OP_SSHR: {
+			return ReadOpcodeNearThis(4);
 			#emit sshr
 		}
-		case OP_SHL_C_PRI: { __
+		case OP_SHL_C_PRI: {
+			return ReadOpcodeNearThis(4);
 			#emit shl.c.pri 0
 		}
-		case OP_SHL_C_ALT: { __
+		case OP_SHL_C_ALT: {
+			return ReadOpcodeNearThis(4);
 			#emit shl.c.alt 0
 		}
-		case OP_SHR_C_PRI: { __
+		case OP_SHR_C_PRI: {
+			return ReadOpcodeNearThis(4);
 			#emit shr.c.pri 0
 		}
-		case OP_SHR_C_ALT: { __
+		case OP_SHR_C_ALT: {
+			return ReadOpcodeNearThis(4);
 			#emit shr.c.alt 0
 		}
-		case OP_SMUL: { __
+		case OP_SMUL: {
+			return ReadOpcodeNearThis(4);
 			#emit smul
 		}
-		case OP_SDIV: { __
+		case OP_SDIV: {
+			return ReadOpcodeNearThis(4);
 			#emit sdiv
 		}
-		case OP_SDIV_ALT: { __
+		case OP_SDIV_ALT: {
+			return ReadOpcodeNearThis(4);
 			#emit sdiv.alt
 		}
-		case OP_UMUL: { __
+		case OP_UMUL: {
+			return ReadOpcodeNearThis(4);
 			#emit umul
 		}
-		case OP_UDIV: { __
+		case OP_UDIV: {
+			return ReadOpcodeNearThis(4);
 			#emit udiv
 		}
-		case OP_UDIV_ALT: { __
+		case OP_UDIV_ALT: {
+			return ReadOpcodeNearThis(4);
 			#emit udiv.alt
 		}
-		case OP_ADD: { __
+		case OP_ADD: {
+			return ReadOpcodeNearThis(4);
 			#emit add
 		}
-		case OP_SUB: { __
+		case OP_SUB: {
+			return ReadOpcodeNearThis(4);
 			#emit sub
 		}
-		case OP_SUB_ALT: { __
+		case OP_SUB_ALT: {
+			return ReadOpcodeNearThis(4);
 			#emit sub.alt
 		}
-		case OP_AND: { __
+		case OP_AND: {
+			return ReadOpcodeNearThis(4);
 			#emit and
 		}
-		case OP_OR: { __
+		case OP_OR: {
+			return ReadOpcodeNearThis(4);
 			#emit or
 		}
-		case OP_XOR: { __
+		case OP_XOR: {
+			return ReadOpcodeNearThis(4);
 			#emit xor
 		}
-		case OP_NOT: { __
+		case OP_NOT: {
+			return ReadOpcodeNearThis(4);
 			#emit not
 		}
-		case OP_NEG: { __
+		case OP_NEG: {
+			return ReadOpcodeNearThis(4);
 			#emit neg
 		}
-		case OP_INVERT: { __
+		case OP_INVERT: {
+			return ReadOpcodeNearThis(4);
 			#emit invert
 		}
-		case OP_ADD_C: { __
+		case OP_ADD_C: {
+			return ReadOpcodeNearThis(4);
 			#emit add.c 0
 		}
-		case OP_SMUL_C: { __
+		case OP_SMUL_C: {
+			return ReadOpcodeNearThis(4);
 			#emit smul.c 0
 		}
-		case OP_ZERO_PRI: { __
+		case OP_ZERO_PRI: {
+			return ReadOpcodeNearThis(4);
 			#emit zero.pri
 		}
-		case OP_ZERO_ALT: { __
+		case OP_ZERO_ALT: {
+			return ReadOpcodeNearThis(4);
 			#emit zero.alt
 		}
-		case OP_ZERO: { __
+		case OP_ZERO: {
+			return ReadOpcodeNearThis(4);
 			#emit zero 0
 		}
-		case OP_ZERO_S: { __
+		case OP_ZERO_S: {
+			return ReadOpcodeNearThis(4);
 			#emit zero.s 0
 		}
-		case OP_SIGN_PRI: { __
+		case OP_SIGN_PRI: {
+			return ReadOpcodeNearThis(4);
 			#emit sign.pri
 		}
-		case OP_SIGN_ALT: { __
+		case OP_SIGN_ALT: {
+			return ReadOpcodeNearThis(4);
 			#emit sign.alt
 		}
-		case OP_EQ: { __
+		case OP_EQ: {
+			return ReadOpcodeNearThis(4);
 			#emit eq
 		}
-		case OP_NEQ: { __
+		case OP_NEQ: {
+			return ReadOpcodeNearThis(4);
 			#emit neq
 		}
-		case OP_LESS: { __
+		case OP_LESS: {
+			return ReadOpcodeNearThis(4);
 			#emit less
 		}
-		case OP_LEQ: { __
+		case OP_LEQ: {
+			return ReadOpcodeNearThis(4);
 			#emit leq
 		}
-		case OP_GRTR: { __
+		case OP_GRTR: {
+			return ReadOpcodeNearThis(4);
 			#emit grtr
 		}
-		case OP_GEQ: { __
+		case OP_GEQ: {
+			return ReadOpcodeNearThis(4);
 			#emit geq
 		}
-		case OP_SLESS: { __
+		case OP_SLESS: {
+			return ReadOpcodeNearThis(4);
 			#emit sless
 		}
-		case OP_SLEQ: { __
+		case OP_SLEQ: {
+			return ReadOpcodeNearThis(4);
 			#emit sleq
 		}
-		case OP_SGRTR: { __
+		case OP_SGRTR: {
+			return ReadOpcodeNearThis(4);
 			#emit sgrtr
 		}
-		case OP_SGEQ: { __
+		case OP_SGEQ: {
+			return ReadOpcodeNearThis(4);
 			#emit sgeq
 		}
-		case OP_EQ_C_PRI: { __
+		case OP_EQ_C_PRI: {
+			return ReadOpcodeNearThis(4);
 			#emit eq.c.pri 0
 		}
-		case OP_EQ_C_ALT: { __
+		case OP_EQ_C_ALT: {
+			return ReadOpcodeNearThis(4);
 			#emit eq.c.alt 0
 		}
-		case OP_INC_PRI: { __
+		case OP_INC_PRI: {
+			return ReadOpcodeNearThis(4);
 			#emit inc.pri
 		}
-		case OP_INC_ALT: { __
+		case OP_INC_ALT: {
+			return ReadOpcodeNearThis(4);
 			#emit inc.alt
 		}
-		case OP_INC: { __
+		case OP_INC: {
+			return ReadOpcodeNearThis(4);
 			#emit inc 0
 		}
-		case OP_INC_S: { __
+		case OP_INC_S: {
+			return ReadOpcodeNearThis(4);
 			#emit inc.s 0
 		}
-		case OP_INC_I: { __
+		case OP_INC_I: {
+			return ReadOpcodeNearThis(4);
 			#emit inc.i
 		}
-		case OP_DEC_PRI: { __
+		case OP_DEC_PRI: {
+			return ReadOpcodeNearThis(4);
 			#emit dec.pri
 		}
-		case OP_DEC_ALT: { __
+		case OP_DEC_ALT: {
+			return ReadOpcodeNearThis(4);
 			#emit dec.alt
 		}
-		case OP_DEC: { __
+		case OP_DEC: {
+			return ReadOpcodeNearThis(4);
 			#emit dec 0
 		}
-		case OP_DEC_S: { __
+		case OP_DEC_S: {
+			return ReadOpcodeNearThis(4);
 			#emit dec.s 0
 		}
-		case OP_DEC_I: { __
+		case OP_DEC_I: {
+			return ReadOpcodeNearThis(4);
 			#emit dec.i
 		}
-		case OP_MOVS: { __
+		case OP_MOVS: {
+			return ReadOpcodeNearThis(4);
 			#emit movs 0
 		}
-		case OP_CMPS: { __
+		case OP_CMPS: {
+			return ReadOpcodeNearThis(4);
 			#emit cmps 0
 		}
-		case OP_FILL: { __
+		case OP_FILL: {
+			return ReadOpcodeNearThis(4);
 			#emit fill 0
 		}
-		case OP_HALT: { __
+		case OP_HALT: {
+			return ReadOpcodeNearThis(4);
 			#emit halt 0
 		}
-		case OP_BOUNDS: { __
+		case OP_BOUNDS: {
+			return ReadOpcodeNearThis(4);
 			#emit bounds 0
 		}
-		case OP_SYSREQ_C: { __
+		case OP_SYSREQ_C: {
+			return ReadOpcodeNearThis(4);
 			#emit sysreq.c 0
 		}
-		case OP_SWITCH: { __
+		case OP_SWITCH: {
+			return ReadOpcodeNearThis(4);
 			#emit switch 0
 		}
 		case OP_CASETBL: {
 			new x = 0;
-			switch (x) { case 0: return ReadOpcodeNextToThis(20); }
+			switch (x) { case 0: return ReadOpcodeNearThis(20); }
 		}
-		case OP_SWAP_PRI: { __
+		case OP_SWAP_PRI: {
+			return ReadOpcodeNearThis(4);
 			#emit swap.pri
 		}
-		case OP_SWAP_ALT: { __
+		case OP_SWAP_ALT: {
+			return ReadOpcodeNearThis(4);
 			#emit swap.alt
 		}
-		case OP_PUSHADDR: { __
+		case OP_PUSHADDR: {
+			return ReadOpcodeNearThis(4);
 			#emit push.adr 0
 		}
-		case OP_NOP: { __
+		case OP_NOP: {
+			return ReadOpcodeNearThis(4);
 			#emit nop
 		}
-		case OP_BREAK: { __
+		case OP_BREAK: {
+			return ReadOpcodeNearThis(4);
 			#emit break
 		}
 	}
@@ -610,5 +740,3 @@ stock Opcode:UnrelocateOpcode(Opcode:opcode) {
 	}
 	return opcode;
 }
-
-#undef __
