@@ -23,11 +23,11 @@
 #endif
 #define ASM_INC
 
+#include "amx_base"
 #include "amx_header"
 #include "amx_memory"
 #include "dynamic_call"
 #include "opcode"
-#include "phys_memory"
 
 enum AsmError {
 	ASM_ERROR_NONE,

@@ -25,9 +25,9 @@
 
 #include <a_samp>
 
+#include "amx_base"
 #include "amx_header"
 #include "opcode"
-#include "phys_memory"
 
 // Call stack size (maximum call depth).
 #if !defined PROF_MAX_CALL_STACK

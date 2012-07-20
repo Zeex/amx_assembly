@@ -25,10 +25,10 @@
 
 #include <string>
 
+#include "amx_base"
 #include "amx_header"
 #include "amx_memory"
 #include "opcode"
-#include "phys_memory"
 
 #define MAX_INSN_NAME 15
 
