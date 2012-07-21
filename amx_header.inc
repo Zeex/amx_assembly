@@ -308,11 +308,6 @@ stock GetPublicAddressFromName(const name[]) {
 }
 
 stock bool:GetPublicNameFromIndex(index, name[], size = sizeof(name)) {
-	if (index == -1) {
-		strcpy(name, "main", size);
-		return true;
-	}
-
 	new info[AMX_FUNCSTUBNT];
 	if (!GetPublicInfo(index, info)) {
 		return false;
