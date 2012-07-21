@@ -4,21 +4,25 @@ endif
 
 INCLUDE = -i../
 
-AMX  = disasm-test.amx
-AMX += dynamic_call-test.amx
+AMX  = amx-test.amx
 AMX += asm-test.amx
+AMX += disasm-test.amx
+AMX += dynamic_call-test.amx
 AMX += phys_memory-test.amx
 AMX += stack_trace-test.amx
 
 all: clean $(AMX) windows
 
+amx-test.amx: amx-test.pwn
+	$(PAWNCC) $(PFLAGS) $(INCLUDE) $^ -o$@
+
+asm-test.amx: asm-test.pwn
+	$(PAWNCC) $(PFLAGS) $(INCLUDE) $^ -o$@
+
 disasm-test.amx: disasm-test.pwn
 	$(PAWNCC) $(PFLAGS) $(INCLUDE) $^ -o$@
 
 dynamic_call-test.amx: dynamic_call-test.pwn
-	$(PAWNCC) $(PFLAGS) $(INCLUDE) $^ -o$@
-
-asm-test.amx: asm-test.pwn
 	$(PAWNCC) $(PFLAGS) $(INCLUDE) $^ -o$@
 
 phys_memory-test.amx: phys_memory-test.pwn
