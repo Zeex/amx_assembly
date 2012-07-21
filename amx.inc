@@ -26,6 +26,7 @@
 #define AMX_INC
 
 #include "dynamic_call"
+#include "os"
 #include "phys_memory"
 
 const AMX_OFFSET_BASE = 0;
@@ -49,10 +50,10 @@ const AMX_OFFSET_RESET_STK = 92;
 const AMX_OFFSET_RESET_HEA = 96;
 const AMX_OFFSET_SYSREQ_D = 100;
 
-// Returns address of the abstract machine (address of the AMX structur in memory).
+// Returns address of the abstract machine (address of the AMX structure in memory).
 stock GetAmxAddress() {
+	assert(!IsLinux());
 	static address = 0;
-
 	if (address == 0) {
 		static const code[] = {
 			0x90909090, 0x90909090, 0x90909090, 0x90909090, // for alignment
@@ -60,7 +61,6 @@ stock GetAmxAddress() {
 		};
 		address = CallNativeCode(code);
 	}
-
 	return address;
 }
 
