@@ -8,6 +8,7 @@ AMX  = disasm-test.amx
 AMX += dynamic_call-test.amx
 AMX += asm-test.amx
 AMX += phys_memory-test.amx
+AMX += stack_trace-test.amx
 
 all: clean $(AMX) windows
 
@@ -21,6 +22,9 @@ asm-test.amx: asm-test.pwn
 	$(PAWNCC) $(PFLAGS) $(INCLUDE) $^ -o$@
 
 phys_memory-test.amx: phys_memory-test.pwn
+	$(PAWNCC) $(PFLAGS) $(INCLUDE) $^ -o$@
+
+stack_trace-test.amx: stack_trace-test.pwn
 	$(PAWNCC) $(PFLAGS) $(INCLUDE) $^ -o$@
 
 clean: $(SUBDIRS)
