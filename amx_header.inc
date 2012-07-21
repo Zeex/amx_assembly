@@ -88,6 +88,7 @@ forward bool:GetPubVarNameFromAddress(address, name[], size = sizeof(name));
 forward GetRawAmxHeader(plain_amxhdr[AMX_HDR_CELLS]);
 forward GetAmxHeaderNow(amxhdr[AMX_HDR]);
 forward GetAmxHeader(amxhdr[AMX_HDR]);
+forward GetAmxHeaderComponent(AMX_HDR:comp);
 forward PrintAmxHeader();
 
 stock GetRawAmxHeader(plain_amxhdr[AMX_HDR_CELLS]) {
@@ -156,6 +157,15 @@ stock GetAmxHeader(amxhdr[AMX_HDR]) {
 		GetAmxHeaderNow(hdr);
 	}
 	amxhdr = hdr;
+}
+
+stock GetAmxHeaderComponent(AMX_HDR:comp) {
+	static hdr[AMX_HDR];
+	static bool:initialized = false;
+	if (!initialized) {
+		GetAmxHeaderNow(hdr);
+	}
+	return hdr[comp];
 }
 
 stock PrintAmxHeader() {
@@ -312,12 +322,8 @@ stock bool:GetPublicNameFromIndex(index, name[], size = sizeof(name)) {
 	if (!GetPublicInfo(index, info)) {
 		return false;
 	}
-
-	new dat;
-	#emit lctrl 1
-	#emit stor.s.pri dat
-
-	return (CopyNtNameToString(info[AMX_FUNCSTUBNT_NAMEOFS] - dat, name, size) > 0);
+	return (CopyNtNameToString(info[AMX_FUNCSTUBNT_NAMEOFS]
+	        - GetAmxHeaderComponent(AMX_HDR_DAT), name, size) > 0);
 }
 
 stock bool:GetPublicNameFromAddress(address, name[], size = sizeof(name)) {
@@ -417,12 +423,8 @@ stock bool:GetNativeNameFromIndex(index, name[], size = sizeof(name)) {
 	if (!GetNativeInfo(index, info)) {
 		return false;
 	}
-
-	new dat;
-	#emit lctrl 1
-	#emit stor.s.pri dat
-
-	return (CopyNtNameToString(info[AMX_FUNCSTUBNT_NAMEOFS] - dat, name, size) > 0);
+	return (CopyNtNameToString(info[AMX_FUNCSTUBNT_NAMEOFS]
+	        - GetAmxHeaderComponent(AMX_HDR_DAT), name, size) > 0);
 }
 
 stock bool:GetNativeNameFromAddress(address, name[], size = sizeof(name)) {
@@ -531,12 +533,8 @@ stock bool:GetPubVarNameFromIndex(index, name[], size = sizeof(name)) {
 	if (!GetPubVarInfo(index, info)) {
 		return false;
 	}
-
-	new dat;
-	#emit lctrl 1
-	#emit stor.s.pri dat
-
-	return (CopyNtNameToString(info[AMX_FUNCSTUBNT_NAMEOFS] - dat, name, size) > 0);
+	return (CopyNtNameToString(info[AMX_FUNCSTUBNT_NAMEOFS]
+	        - GetAmxHeaderComponent(AMX_HDR_DAT), name, size) > 0);
 }
 
 stock bool:GetPubVarNameFromAddress(address, name[], size = sizeof(name)) {
