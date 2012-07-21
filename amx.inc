@@ -25,9 +25,9 @@
 #endif
 #define AMX_INC
 
-#include "dynamic_call"
 #include "os"
 #include "phys_memory"
+#include "shellcode"
 
 const AMX_OFFSET_BASE = 0;
 const AMX_OFFSET_DATA = 4;
@@ -59,7 +59,7 @@ stock GetAmxAddress() {
 			0x90909090, 0x90909090, 0x90909090, 0x90909090, // for alignment
 			0x0424448b, 0xC3C3C3C3
 		};
-		address = CallNativeCode(code);
+		address = RunShellcode(code);
 	}
 	return address;
 }

@@ -384,32 +384,3 @@ stock CallNativeByAddress(address, {Float,_}:...) {
 	// Pop locals and return
 	return retval;
 }
-
-#tryinclude "phys_memory"
-#if defined PHYS_MEMORY_INC
-
-// Calls machine code stored in the specified buffer. The code should be preceeded with
-// at least 15 NOPs (e.g. opcode 0x90) if the "align" parameter is true.
-stock CallNativeCode(const code[], bool:align = true) {
-	static index = -1;
-
-	if (index < 0) {
-		fopen("<>");
-		index = GetNativeIndexFromName("fopen");
-	}
-
-	new address = refabs(code);
-	if (align) {
-		while (address % 16 != 0) {
-			address++;
-		}
-	}
-
-	new old = HookNative(index, address);
-	new retval = SysreqC(index);
-	HookNative(index, old);
-
-	return retval;
-}
-
-#endif // PHYS_MEMORY_INC

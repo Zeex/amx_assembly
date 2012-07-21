@@ -23,6 +23,8 @@
 #endif
 #define PHYS_MEMORY_INC
 
+#include <core>
+
 #include "amx_base"
 
 // Converts a real address to DAT-relative.

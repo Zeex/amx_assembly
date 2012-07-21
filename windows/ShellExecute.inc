@@ -21,6 +21,7 @@
 #include "../amx_header"
 #include "../dynamic_call"
 #include "../phys_memory"
+#include "../shellcode"
 
 // http://msdn.microsoft.com/en-us/library/windows/desktop/bb762153%28v=vs.85%29.aspx
 
@@ -111,5 +112,5 @@ stock ShellExecute(const Operation[], const File[], const Parameters[], ShowCmd)
 	Push(refabs(Parameters)); // LPCTSTR lpParameters
 	Push(0);                  // LPCTSTR lpDirectory
 	Push(ShowCmd);            // INT nShowCmd
-	return CallNativeCode(asm);
+	return RunShellcode(asm);
 }
