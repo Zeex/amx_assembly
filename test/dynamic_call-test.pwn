@@ -16,12 +16,12 @@ main() {
 	Call(GetPublicAddressFromName("test"));
 
 	print("native - method #1");
-	CallNative(GetNativeIndexFromName("printf"), ref("Hello, %s!"), ref("World"));
+	CallNativeByAddress(GetNativeAddressFromName("printf"), ref("Hello, %s!"), ref("World"));
 
 	print("native - method #2");
 	Push(ref("Hello, %s!"));
 	Push(ref("World"));
-	SysreqC(GetNativeIndexFromName("printf"));
+	SysreqD(GetNativeAddressFromName("printf"));
 }
 
 public test(i, &j, s[], t[]) {

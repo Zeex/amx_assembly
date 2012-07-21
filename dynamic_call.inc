@@ -27,6 +27,7 @@
 
 #include "amx_header"
 #include "amx_memory"
+#include "opcode"
 
 #if !defined DYNAMIC_CALL_MAX_ARGS
 	#define DYNAMIC_CALL_MAX_ARGS 256
@@ -190,6 +191,7 @@ stock SysreqD(address, bool:auto_pop = true) {
 	new i = g_nargs;
 	new bytes = g_nargs * 4;
 	new tmp;
+	new Opcode:sysreq_d = RelocateOpcode(OP_SYSREQ_D);
 
 	while (--i >= 0) {
 		arg = g_args[i];
@@ -211,7 +213,7 @@ stock SysreqD(address, bool:auto_pop = true) {
 	#emit stor.s.pri tmp
 
 	// nop #1 = sysreq.d
-	#emit const.pri 135
+	#emit load.s.pri sysreq_d
 	#emit sref.s.pri tmp
 
 	// tmp += 4
@@ -311,6 +313,7 @@ stock CallNative(index, {Float,_}:...) {
 // Unlike CallNative(), this funciton calls natives directly via SYSREQ.D.
 stock CallNativeByAddress(address, {Float,_}:...) {
 	new arg_bytes, arg_begin, arg_end;
+	new Opcode:sysreq_d = RelocateOpcode(OP_SYSREQ_D);
 
 	// Get number of bytes passed
 	#emit load.s.pri 0x8
@@ -356,7 +359,7 @@ stock CallNativeByAddress(address, {Float,_}:...) {
 	#emit stor.s.pri tmp
 
 	// nop #1 = sysreq.d
-	#emit const.pri 135
+	#emit load.s.pri sysreq_d
 	#emit sref.s.pri tmp
 
 	// tmp += 4
