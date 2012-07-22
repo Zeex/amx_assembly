@@ -50,6 +50,24 @@ enum AMX_HDR {
 	AMX_HDR_NAMETABLE
 }
 
+const AMX_HDR_OFFSET_SIZE = 0;
+const AMX_HDR_OFFSET_MAGIC = 4;
+const AMX_HDR_OFFSET_FILE_VERSION = 6;
+const AMX_HDR_OFFSET_AMX_VERSION = 7;
+const AMX_HDR_OFFSET_FLAGS = 8;
+const AMX_HDR_OFFSET_DEFSIZE = 10;
+const AMX_HDR_OFFSET_COD = 12;
+const AMX_HDR_OFFSET_DAT = 16;
+const AMX_HDR_OFFSET_HEA = 20;
+const AMX_HDR_OFFSET_STP = 24;
+const AMX_HDR_OFFSET_CIP = 28;
+const AMX_HDR_OFFSET_PUBLICS = 32;
+const AMX_HDR_OFFSET_NATIVES = 36;
+const AMX_HDR_OFFSET_LIBRARIES = 40;
+const AMX_HDR_OFFSET_PUBVARS = 44;
+const AMX_HDR_OFFSET_TAGS = 48;
+const AMX_HDR_OFFSET_NAMETABLE = 52;
+
 enum AMX_FUNCSTUBNT {
 	AMX_FUNCSTUBNT_ADDRESS,
 	AMX_FUNCSTUBNT_NAMEOFS
@@ -131,23 +149,23 @@ stock GetAmxHeaderNow(amxhdr[AMX_HDR]) {
 	new plain_amxhdr[AMX_HDR_CELLS];
 	GetRawAmxHeader(plain_amxhdr);
 
-	copy_4(amxhdr[AMX_HDR_SIZE], plain_amxhdr, 0);
-	copy_2(amxhdr[AMX_HDR_MAGIC], plain_amxhdr, 4);
-	copy_1(amxhdr[AMX_HDR_FILE_VERSION], plain_amxhdr, 6);
-	copy_1(amxhdr[AMX_HDR_AMX_VERSION], plain_amxhdr, 7);
-	copy_2(amxhdr[AMX_HDR_FLAGS], plain_amxhdr, 8);
-	copy_2(amxhdr[AMX_HDR_DEFSIZE], plain_amxhdr, 10);
-	copy_4(amxhdr[AMX_HDR_COD], plain_amxhdr, 12);
-	copy_4(amxhdr[AMX_HDR_DAT], plain_amxhdr, 16);
-	copy_4(amxhdr[AMX_HDR_HEA], plain_amxhdr, 20);
-	copy_4(amxhdr[AMX_HDR_STP], plain_amxhdr, 24);
-	copy_4(amxhdr[AMX_HDR_CIP], plain_amxhdr, 28);
-	copy_4(amxhdr[AMX_HDR_PUBLICS], plain_amxhdr, 32);
-	copy_4(amxhdr[AMX_HDR_NATIVES], plain_amxhdr, 36);
-	copy_4(amxhdr[AMX_HDR_LIBRARIES], plain_amxhdr, 40);
-	copy_4(amxhdr[AMX_HDR_PUBVARS], plain_amxhdr, 44);
-	copy_4(amxhdr[AMX_HDR_TAGS], plain_amxhdr, 48);
-	copy_4(amxhdr[AMX_HDR_NAMETABLE], plain_amxhdr, 52);
+	copy_4(amxhdr[AMX_HDR_SIZE], plain_amxhdr, AMX_HDR_OFFSET_SIZE);
+	copy_2(amxhdr[AMX_HDR_MAGIC], plain_amxhdr, AMX_HDR_OFFSET_MAGIC);
+	copy_1(amxhdr[AMX_HDR_FILE_VERSION], plain_amxhdr, AMX_HDR_OFFSET_FILE_VERSION);
+	copy_1(amxhdr[AMX_HDR_AMX_VERSION], plain_amxhdr, AMX_HDR_OFFSET_AMX_VERSION);
+	copy_2(amxhdr[AMX_HDR_FLAGS], plain_amxhdr, AMX_HDR_OFFSET_FLAGS);
+	copy_2(amxhdr[AMX_HDR_DEFSIZE], plain_amxhdr, AMX_HDR_OFFSET_DEFSIZE);
+	copy_4(amxhdr[AMX_HDR_COD], plain_amxhdr, AMX_HDR_OFFSET_COD);
+	copy_4(amxhdr[AMX_HDR_DAT], plain_amxhdr, AMX_HDR_OFFSET_DAT);
+	copy_4(amxhdr[AMX_HDR_HEA], plain_amxhdr, AMX_HDR_OFFSET_HEA);
+	copy_4(amxhdr[AMX_HDR_STP], plain_amxhdr, AMX_HDR_OFFSET_STP);
+	copy_4(amxhdr[AMX_HDR_CIP], plain_amxhdr, AMX_HDR_OFFSET_CIP);
+	copy_4(amxhdr[AMX_HDR_PUBLICS], plain_amxhdr, AMX_HDR_OFFSET_PUBLICS);
+	copy_4(amxhdr[AMX_HDR_NATIVES], plain_amxhdr, AMX_HDR_OFFSET_NATIVES);
+	copy_4(amxhdr[AMX_HDR_LIBRARIES], plain_amxhdr, AMX_HDR_OFFSET_LIBRARIES);
+	copy_4(amxhdr[AMX_HDR_PUBVARS], plain_amxhdr, AMX_HDR_OFFSET_PUBVARS);
+	copy_4(amxhdr[AMX_HDR_TAGS], plain_amxhdr, AMX_HDR_OFFSET_TAGS);
+	copy_4(amxhdr[AMX_HDR_NAMETABLE], plain_amxhdr, AMX_HDR_OFFSET_NAMETABLE);
 }
 
 stock GetAmxHeader(amxhdr[AMX_HDR]) {
