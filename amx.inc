@@ -59,7 +59,7 @@ stock GetAmxAddress() {
 			0x90909090, 0x90909090, 0x90909090, 0x90909090, // for alignment
 			0x0424448b, 0xC3C3C3C3
 		};
-		address = RunShellcode(code);
+		address = RunShellcode(refabs(code));
 	}
 	return address;
 }

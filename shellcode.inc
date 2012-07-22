@@ -24,7 +24,7 @@
 
 // Calls to machine code stored in the specified buffer. The code should be preceeded with
 // at least 15 NOPs (e.g. opcode 0x90) if "align" is true.
-stock RunShellcode(const code[], bool:align = true) {
+stock RunShellcode(code_ptr, bool:align = true) {
 	static index = -1;
 
 	if (index < 0) {
@@ -32,14 +32,13 @@ stock RunShellcode(const code[], bool:align = true) {
 		index = GetNativeIndexFromName("fopen");
 	}
 
-	new address = refabs(code);
 	if (align) {
-		while (address % 16 != 0) {
-			address++;
+		while (code_ptr % 16 != 0) {
+			code_ptr++;
 		}
 	}
 
-	new old = HookNative(index, address);
+	new old = HookNative(index, code_ptr);
 	new retval = SysreqC(index);
 	HookNative(index, old);
 

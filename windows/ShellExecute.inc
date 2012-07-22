@@ -112,5 +112,5 @@ stock ShellExecute(const Operation[], const File[], const Parameters[], ShowCmd)
 	Push(refabs(Parameters)); // LPCTSTR lpParameters
 	Push(0);                  // LPCTSTR lpDirectory
 	Push(ShowCmd);            // INT nShowCmd
-	return RunShellcode(asm);
+	return RunShellcode(refabs(asm));
 }
