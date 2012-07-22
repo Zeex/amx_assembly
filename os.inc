@@ -25,10 +25,26 @@
 
 #include "opcode"
 
+enum OS {
+	OS_UNKNOWN,
+	OS_LINUX,
+	OS_WINDOWS
+};
+
+stock OS:GetOS() {
+	static OS:os = OS_UNKNOWN;
+	if (os == OS_UNKNOWN) {
+		os = RelocateOpcode(OP_LOAD_PRI) == OP_LOAD_PRI
+			? OS_WINDOWS
+			: OS_LINUX;
+	}
+	return os;
+}
+
 stock bool:IsWindows() {
-	return RelocateOpcode(OP_LOAD_PRI) == OP_LOAD_PRI;
+	return GetOS() == OS_WINDOWS;
 }
 
 stock bool:IsLinux() {
-	return !IsWindows();
+	return GetOS() == OS_LINUX;
 }
