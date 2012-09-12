@@ -21,6 +21,20 @@
 #include <a_samp>
 #include <phys_memory>
 
+// Helpful resources:
+//
+//  o  Peering Inside the PE: A Tour of the Win32 Portable Executable File Format
+//
+//       http://msdn.microsoft.com/en-us/library/ms809762.aspx
+//
+//  o  Understanding the Import Address Table
+//
+//       http://sandsprite.com/CodeStuff/Understanding_imports.html
+//
+//  o  Microsoft PE and COFF Specification
+//
+//       http://msdn.microsoft.com/en-us/windows/hardware/gg463119.aspx
+
 static stock const DefaultImageBase = 0x00400000;
 
 static stock const SizeOfFileHeader = 0x14;
