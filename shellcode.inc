@@ -25,22 +25,10 @@
 // Calls to machine code stored in the specified buffer. The code should be preceeded with
 // at least 15 NOPs (e.g. opcode 0x90) if "align" is true.
 stock RunShellcode(code_ptr, bool:align = true) {
-	static index = -1;
-
-	if (index < 0) {
-		fopen("<>");
-		index = GetNativeIndexFromName("fopen");
-	}
-
 	if (align) {
 		while (code_ptr % 16 != 0) {
 			code_ptr++;
 		}
 	}
-
-	new old = HookNative(index, code_ptr);
-	new retval = SysreqC(index);
-	HookNative(index, old);
-
-	return retval;
+	return SysreqD(code_ptr);
 }
