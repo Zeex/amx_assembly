@@ -28,7 +28,7 @@ stock RunShellcode(code_ptr, bool:align = true) {
 	static index = -1;
 
 	if (index < 0) {
-		fopen(":::");
+		fopen("<>");
 		index = GetNativeIndexFromName("fopen");
 	}
 
