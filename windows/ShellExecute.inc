@@ -18,7 +18,9 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+#include "import_table"
 #include "../amx_header"
+#include "../amx_memory"
 #include "../dynamic_call"
 #include "../phys_memory"
 #include "../shellcode"
@@ -37,16 +39,6 @@
 #define SW_SHOWNA (8)
 #define SW_SHOWNOACTIVATE (4)
 #define SW_SHOWNORMAL (1)
-
-#define asm1(%0)          (0x90909000 | (%0))
-#define asm2(%0,%1)       (0x90900000 | ((%1) << 8) | (%0))
-#define asm3(%0,%1,%2)    (0x90000000 | ((%2) << 16) | ((%1) << 8) | %0)
-#define asm4(%0,%1,%2,%3) (0x00000000 | ((%3) << 24) | ((%2) << 16) | (%1 << 8) | (%0))
-
-#define asm5(%0,%1,%2,%3,%4)          asm4(%0,%1,%2,%3), asm1(%4)
-#define asm6(%0,%1,%2,%3,%4,%5)       asm4(%0,%1,%2,%3), asm2(%4,%5)
-#define asm7(%0,%1,%2,%3,%4,%5,%6)    asm4(%0,%1,%2,%3), asm3(%4,%5,%6)
-#define asm8(%0,%1,%2,%3,%4,%5,%6,%7) asm4(%0,%1,%2,%3), asm4(%4,%5,%6,%7)
 
 // NOTE: string arguments must be prepared with ToCharString() or similar function.
 stock ShellExecute(const Operation[], const File[], const Parameters[], ShowCmd) {
@@ -76,35 +68,33 @@ stock ShellExecute(const Operation[], const File[], const Parameters[], ShowCmd)
 	.text:10001034 C3                                retn
 	*/
 
+	#define __(%0,%1,%2,%3) (((0x%3) << 24) | ((0x%2) << 16) | (0x%1 << 8) | (0x%0))
+
 	static const asm[] = {
-		asm4(0x90, 0x90, 0x90, 0x90),
-		asm4(0x90, 0x90, 0x90, 0x90),
-		asm4(0x90, 0x90, 0x90, 0x90),
-		asm4(0x90, 0x90, 0x90, 0x90),
-		asm1(0x55),
-		asm2(0x8B, 0xEC),
-		asm3(0x8B, 0x45, 0x0C),
-		asm3(0x8B, 0x48, 0x18),
-		asm1(0x51),
-		asm3(0x8B, 0x55, 0x0C),
-		asm3(0x8B, 0x42, 0x14),
-		asm1(0x50),
-		asm3(0x8B, 0x4D, 0x0C),
-		asm3(0x8B, 0x51, 0x10),
-		asm1(0x52),
-		asm3(0x8B, 0x45, 0x0C),
-		asm3(0x8B, 0x48, 0x0C),
-		asm1(0x51),
-		asm3(0x8B, 0x55, 0x0C),
-		asm3(0x8B, 0x42, 0x08),
-		asm1(0x50),
-		asm3(0x8B, 0x4D, 0x0C),
-		asm3(0x8B, 0x51, 0x04),
-		asm1(0x52),
-		asm6(0xFF, 0x15, 0x14, 0x52, 0x4A, 0x00), // 0.3e
-		asm1(0x5D),
-		asm1(0xC3)
+		__(90,90,90,90),
+		__(90,90,90,90),
+		__(90,90,90,90),
+		__(90,90,90,90),
+		__(55,8B,EC,8B),
+		__(45,0C,8B,48),
+		__(18,51,8B,55),
+		__(0C,8B,42,14),
+		__(50,8B,4D,0C),
+		__(8B,51,10,52),
+		__(8B,45,0C,8B),
+		__(48,0C,51,8B),
+		__(55,0C,8B,42),
+		__(08,50,8B,4D),
+		__(0C,8B,51,04),
+		__(52,FF,15,00),
+		__(00,00,00,5D),
+		__(C3,CC,CC,CC)
 	};
+
+	#undef __
+
+	new address = GetImportAddress("ShellExecuteA")
+	WriteAmxMemory(ref(asm) + 63, refabs(address));
 
 	Push(0);                  // HWND hwnd
 	Push(refabs(Operation));  // LPCTSTR lpOperation
@@ -112,5 +102,6 @@ stock ShellExecute(const Operation[], const File[], const Parameters[], ShowCmd)
 	Push(refabs(Parameters)); // LPCTSTR lpParameters
 	Push(0);                  // LPCTSTR lpDirectory
 	Push(ShowCmd);            // INT nShowCmd
+
 	return RunShellcode(refabs(asm));
 }
