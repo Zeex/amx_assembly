@@ -724,31 +724,32 @@ stock Opcode:RelocateOpcodeNow(Opcode:opcode) {
 	return opcode;
 }
 
-static stock Opcode:opcode_list[_:NUM_OPCODES];
-static stock bool:opcode_list_is_ready = false;
+static stock Opcode:opcode_table[_:NUM_OPCODES];
+static stock bool:opcode_table_is_ready = false;
 
-static stock InitOpcodeList() {
+static stock InitOpcodeTable() {
 	for (new i = 0; i < _:NUM_OPCODES; i++) {
-		opcode_list[i] = RelocateOpcodeNow(Opcode:i);
+		opcode_table[i] = RelocateOpcodeNow(Opcode:i);
 	}
+	opcode_table_is_ready = true;
 }
 
 stock Opcode:RelocateOpcode(Opcode:opcode) {
-	if (!opcode_list_is_ready) {
-		InitOpcodeList();
+	if (!opcode_table_is_ready) {
+		InitOpcodeTable();
 	}
-	return opcode_list[_:opcode];
+	return opcode_table[_:opcode];
 }
 
 stock Opcode:UnrelocateOpcode(Opcode:opcode) {
-	if (!opcode_list_is_ready) {
-		InitOpcodeList();
+	if (!opcode_table_is_ready) {
+		InitOpcodeTable();
 	}
 	if (opcode >= OP_NONE && opcode < NUM_OPCODES) {
 		return opcode;
 	}
 	for (new i = 0; i < _:NUM_OPCODES; i++) {
-		if (opcode_list[i] == opcode) {
+		if (opcode_table[i] == opcode) {
 			return Opcode:i;
 		}
 	}
