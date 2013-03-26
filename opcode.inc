@@ -76,6 +76,8 @@ enum Opcode {
 const NUM_OPCODES = _:OP_LAST_;
 
 static stock Opcode:ReadOpcodeNearThis(offset = 0) {
+	new ret_addr;
+
 	// Get return address + COD - DAT + offset.
 	#emit load.s.alt 4
 	#emit lctrl 0
@@ -87,7 +89,6 @@ static stock Opcode:ReadOpcodeNearThis(offset = 0) {
 	#emit load.s.alt offset
 	#emit add
 
-	new ret_addr;
 	#emit stor.s.pri ret_addr
 	#emit lref.s.pri ret_addr
 
@@ -654,7 +655,7 @@ stock Opcode:UnrelocateOpcode(Opcode:opcode) {
 	if (!opcode_table_is_ready) {
 		InitOpcodeTable();
 	}
-	if (opcode >= OP_NONE && opcode < NUM_OPCODES) {
+	if (opcode >= OP_NONE && _:opcode < NUM_OPCODES) {
 		return opcode;
 	}
 	for (new i = 0; i < _:NUM_OPCODES; i++) {
