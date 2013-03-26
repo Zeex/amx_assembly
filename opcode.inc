@@ -634,11 +634,11 @@ stock Opcode:RelocateOpcodeNow(Opcode:opcode) {
 	return opcode;
 }
 
-static stock Opcode:opcode_table[_:NUM_OPCODES];
+static stock Opcode:opcode_table[NUM_OPCODES];
 static stock bool:opcode_table_is_ready = false;
 
 static stock InitOpcodeTable() {
-	for (new i = 0; i < _:NUM_OPCODES; i++) {
+	for (new i = 0; i < NUM_OPCODES; i++) {
 		opcode_table[i] = RelocateOpcodeNow(Opcode:i);
 	}
 	opcode_table_is_ready = true;
@@ -658,7 +658,7 @@ stock Opcode:UnrelocateOpcode(Opcode:opcode) {
 	if (opcode >= OP_NONE && _:opcode < NUM_OPCODES) {
 		return opcode;
 	}
-	for (new i = 0; i < _:NUM_OPCODES; i++) {
+	for (new i = 0; i < NUM_OPCODES; i++) {
 		if (opcode_table[i] == opcode) {
 			return Opcode:i;
 		}
