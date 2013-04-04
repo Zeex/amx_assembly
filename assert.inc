@@ -25,6 +25,8 @@
 
 #include <a_samp>
 
+// The ASSERT() macro is basically the same as "assert" but also prints the
+// expression that failed, like "x > 0" for "ASSERT(x > 0)".
 #if debug > 0
     #define ASSERT(%0); \
         if (!(%0)) AssertionFailure(#%0);

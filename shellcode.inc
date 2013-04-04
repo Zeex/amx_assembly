@@ -22,8 +22,8 @@
 #include "dynamic_call"
 #include "phys_memory"
 
-// Calls to machine code stored in the specified buffer. The code should be preceeded with
-// at least 15 NOPs (e.g. opcode 0x90) if "align" is true.
+// Calls to machine code stored in buffer. The code should be preceded with
+// at least 15 NOPs (e.g. opcode 0x90) if align is true.
 stock RunShellcode(code_ptr, bool:align = true) {
 	if (align) {
 		while (code_ptr % 16 != 0) {

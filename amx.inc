@@ -18,8 +18,6 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-// NOTE: GetAmxAddress() works only on Windows!
-
 #if defined AMX_INC
 	#endinput
 #endif
@@ -50,7 +48,8 @@ const AMX_OFFSET_RESET_STK = 92;
 const AMX_OFFSET_RESET_HEA = 96;
 const AMX_OFFSET_SYSREQ_D = 100;
 
-// Returns address of the abstract machine (address of the AMX structure in memory).
+// Returns the address of the AMX struct instance in memory that corresponds
+// to this script. This function works only on Windows!
 stock GetAmxAddress() {
 	assert(!IsLinux());
 	static address = 0;
@@ -64,13 +63,13 @@ stock GetAmxAddress() {
 	return address;
 }
 
-// Writes a cell to the AMX structure instance of this script.
+// Reads a cell from the AMX struct.
 stock ReadAmxCell(offset) {
 	new amx = GetAmxAddress();
 	return ReadPhysMemoryCell(amx + offset);
 }
 
-// Writes a cell to the AMX structure instance of this script.
+// Writes a cell to the AMX struct.
 stock WriteAmxCell(offset, value) {
 	new amx = GetAmxAddress();
 	WritePhysMemoryCell(amx + offset, value);

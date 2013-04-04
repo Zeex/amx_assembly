@@ -27,7 +27,7 @@
 
 #include "amx_base"
 
-// Converts a real address to DAT-relative.
+// Computes the DAT-relative address.
 static stock AbsToRel(addr) {
 	new dat;
 	#emit lctrl 1
@@ -35,7 +35,7 @@ static stock AbsToRel(addr) {
 	return addr - (GetAmxBaseAddress() + dat);
 }
 
-// Copy num cells from physical memory starting at addr to dest.
+// Copy num cells from addr to dest.
 stock ReadPhysMemory(addr, dest[], num = sizeof(dest)) {
 	new rel_addr = AbsToRel(addr);
 
@@ -58,7 +58,7 @@ stock ReadPhysMemory(addr, dest[], num = sizeof(dest)) {
 	return 0;
 }
 
-// Copy num cells from src to physical memory starting at addr.
+// Copy num cells from src to addr.
 stock WritePhysMemory(addr, src[], num = sizeof(src)) {
 	new rel_addr = AbsToRel(addr);
 
@@ -122,7 +122,7 @@ stock ToCharString(s[], size = sizeof(s)) {
 	}
 }
 
-// Returns an absolute address of a variable/array.
+// Returns the absolute address of a variable/array.
 stock refabs(...) {
 	assert(numargs() == 1);
 

@@ -25,7 +25,7 @@
 
 #include <core>
 
-// Read a cell at a given location
+// Reads a cell at the specified address.
 stock ReadAmxMemory(address) {
 	#emit lref.s.pri address
 	#emit retn
@@ -35,7 +35,7 @@ stock ReadAmxMemory(address) {
 #define read@ ReadAmxMemory // compatibility
 #define @ read@
 
-// Returns address of a variable/array.
+// Returns the address of a variable/array.
 stock ref(...) {
 	assert(numargs() == 1);
 	#emit load.s.pri 12 // first argument
@@ -43,7 +43,7 @@ stock ref(...) {
 	return 0;
 }
 
-// Writes to AMX data section at the sepcified address.
+// Writes a cell at the specified address.
 stock WriteAmxMemory(address, value) {
 	#emit load.s.pri value
 	#emit sref.s.pri address

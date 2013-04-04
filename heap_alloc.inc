@@ -38,7 +38,7 @@ stock HeapAllocCells(ncells) {
 	return HeapAlloc(ncells * 4);
 }
 
-// Releases memory previously allocated with HeapAlloc().
+// Releases memory allocated with HeapAlloc().
 stock HeapRelease(address) {
 	#emit load.s.pri address
 	#emit sctrl 2
