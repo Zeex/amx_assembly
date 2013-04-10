@@ -2,7 +2,7 @@ ifndef PAWNCC
 PAWNCC=pawncc
 endif
 
-INCLUDE=-i../../ -i../../windows
+INCLUDE = -i$(SAMP_SERVER_ROOT)/pawno/include -i../../ -i../../windows
 
 AMX = ShellExecute-test.amx
 
