@@ -23,8 +23,10 @@
 #endif
 #define HEAP_ALLOC_INC
 
-// Allocates a chunk of (uninitialized) memory on the heap.
-stock HeapAlloc(nbytes) {
+#define HeapAlloc HeapAllocCells
+
+// Allocates a continuous block of (uninitialized) memory on the heap.
+stock HeapAllocBytes(nbytes) {
 	new address;
 	#emit lctrl 2
 	#emit stor.s.pri address
@@ -34,8 +36,9 @@ stock HeapAlloc(nbytes) {
 	return address;
 }
 
+// Same as HeapAllocBytes() but operates on cells.
 stock HeapAllocCells(ncells) {
-	return HeapAlloc(ncells * 4);
+	return HeapAllocBytes(ncells * 4);
 }
 
 // Releases memory allocated with HeapAlloc().
