@@ -24,12 +24,16 @@
 #define STACK_ALLOC_INC
 
 // Allocate a continuous block of (uninitialized) memory on the stack.
+//   StackAllocBytes(nbytes);
+//   StackAllocCells(ncells)
+//   StackAlloc(ncells)
 #define StackAllocBytes(%0) StackAlloc_SetStackPtr(StackAlloc_GetStackPtr() - (%0))
 #define StackAllocCells(%0) StackAllocBytes((%0) * 4)
 #define StackAlloc StackAllocCells
 
 // Releases memory allocated with StackAllocXXX().
-#define StackRelease(%0) StackAlloc_SetStackPtr(%0)
+//   StackRelease(address size);
+#define StackRelease(%0,%1) StackAlloc_SetStackPtr((%0) + (%1))
 
 stock StackAlloc_SetStackPtr(address) {
 	static arg_size;
