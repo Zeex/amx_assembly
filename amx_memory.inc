@@ -25,15 +25,12 @@
 
 #include <core>
 
-// Reads a cell at the specified address.
-stock ReadAmxMemory(address) {
-	#emit lref.s.pri address
-	#emit retn
-	return 0;
-}
-
+#define @  read@
+#define r@ read@
 #define read@ ReadAmxMemory // compatibility
-#define @ read@
+
+#define w@ write@
+#define write@ WriteAmxMemory // compatibility
 
 // Returns the address of a variable/array.
 stock ref(...) {
@@ -41,6 +38,20 @@ stock ref(...) {
 	#emit load.s.pri 12 // first argument
 	#emit retn
 	return 0;
+}
+
+// Reads a cell at the specified address.
+stock ReadAmxMemory(address) {
+	#emit lref.s.pri address
+	#emit retn
+	return 0;
+}
+
+// Same as ReadAmxMemory() but for arrays.
+stock ReadAmxMemoryArray(address, values[], size = sizeof(values)) {
+	for (new i = 0; i < size; i++) {
+		values[i] = ReadAmxMemory(address + i * 4);
+	}
 }
 
 // Writes a cell at the specified address.
@@ -51,6 +62,9 @@ stock WriteAmxMemory(address, value) {
 	return 0;
 }
 
-#define write@ WriteAmxMemory // compatibility
-#define w@ write@
-#define r@ read@
+// Same as WriteAmxMemory() but for arrays.
+stock WriteAmxMemoryArray(address, const values[], size = sizeof(values)) {
+	for (new i = 0; i < size; i++) {
+		WriteAmxMemory(address + i * 4, values[i]);
+	}
+}
