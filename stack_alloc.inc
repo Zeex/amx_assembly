@@ -32,8 +32,12 @@
 #define StackAlloc StackAllocCells
 
 // Releases memory allocated with StackAllocXXX().
-//   StackRelease(address, size);
-#define StackRelease(%0,%1) StackAlloc_SetStackPtr((%0) + (%1))
+//   StackReleaseBytes(address, nbytes);
+//   StacKReleaseCells(address, ncells);
+//   StackRelease(address, ncells);
+#define StackReleaseBytes(%0,%1) StackAlloc_SetStackPtr((%0) + (%1))
+#define StackReleaseCells(%0,%1) StackReleaseBytes((%0), (%1) * 4)
+#define StackRelease StackReleaseCells
 
 stock StackAlloc_SetStackPtr(address) {
 	static arg_size;
