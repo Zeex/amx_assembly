@@ -25,14 +25,14 @@
 
 // Allocate a continuous block of (uninitialized) memory on the stack.
 //   StackAllocBytes(nbytes);
-//   StackAllocCells(ncells)
-//   StackAlloc(ncells)
+//   StackAllocCells(ncells);
+//   StackAlloc(ncells);
 #define StackAllocBytes(%0) StackAlloc_SetStackPtr(StackAlloc_GetStackPtr() - (%0))
 #define StackAllocCells(%0) StackAllocBytes((%0) * 4)
 #define StackAlloc StackAllocCells
 
 // Releases memory allocated with StackAllocXXX().
-//   StackRelease(address size);
+//   StackRelease(address, size);
 #define StackRelease(%0,%1) StackAlloc_SetStackPtr((%0) + (%1))
 
 stock StackAlloc_SetStackPtr(address) {
@@ -65,12 +65,7 @@ stock StackAlloc_SetStackPtr(address) {
 	#emit load.pri old_frm
 	#emit stor.s.pri 0
 
-	// Compute address of the newly allocated block.
-	#emit lctrl 4
-	#emit add.c 0xfffffff4
-	#emit retn
-
-	return 0; // make compiler happy
+	return address;
 }
 
 stock StackAlloc_GetStackPtr() {
