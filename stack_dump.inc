@@ -69,10 +69,11 @@ stock DumpStack()
 	print("Stack dump:");
 	print("------------------------");
 
-	stk += 20; // Skip locals + FRM + RETN address + paramcount
-	while (stk <= stp) {
-		printf("[0x%08x]: 0x%08x", stk, @(stk));
-		stk += 4;
+	// Skip locals + FRM + RETN address + paramcount.
+	stk += 20;
+
+	for (new i = stp; i >= stk; i -= 4) {
+		printf("[0x%08x]: 0x%08x", i, @(i));
 	}
 
 	print("------------------------");
