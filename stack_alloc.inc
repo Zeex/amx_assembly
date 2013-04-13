@@ -69,7 +69,12 @@ stock StackAlloc_SetStackPtr(address) {
 	#emit load.pri old_frm
 	#emit stor.s.pri 0
 
-	return address;
+	// Compute address of the newly allocated block.
+	#emit lctrl 4
+	#emit add.c 0xfffffff4
+	#emit retn
+
+	return 0; // make compiler happy
 }
 
 stock StackAlloc_GetStackPtr() {
