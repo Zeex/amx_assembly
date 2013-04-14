@@ -217,11 +217,6 @@ stock PrintAmxHeader() {
 	printf("------------------------");
 }
 
-static stock strcpy(dest[], const source[], size = sizeof(dest)) {
-	dest[0] = '\0';
-	return strcat(dest, source, size);
-}
-
 // Compares a string stored in the name table starting at "s1" (packed)
 // with an ordinary string "s2" (not packed).
 // The address in s1 should be relative to DAT.
