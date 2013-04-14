@@ -171,7 +171,9 @@ stock GetAmxHeaderNow(amxhdr[AMX_HDR]) {
 static gHdr[AMX_HDR];
 static bool:gInitialized = false;
 
-stock ResetStaticAmxHeader() {
+forward ResetStaticAmxHeader();
+
+public ResetStaticAmxHeader() {
 	GetAmxHeaderNow(gHdr);
 	gInitialized = true;
 }
