@@ -122,7 +122,7 @@ static stock AsmGetJumpAddressFromOffset(ctx[AsmContext], offset) {
 	return base + dest;
 }
 
-static stock AsmEmitJumpInstruction(ctx[AsmContext], opcode, offset) {
+static stock AsmError:AsmEmitJumpInstruction(ctx[AsmContext], Opcode:opcode, offset) {
 	return AsmEmitInstruction(ctx, opcode, AsmGetJumpAddressFromOffset(ctx, offset));
 }
 
