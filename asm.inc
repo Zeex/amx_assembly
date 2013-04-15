@@ -115,7 +115,7 @@
 #define asm_emit_pop_pri     AsmEmitPopPri
 #define asm_emit_proc        AsmEmitProc
 #define asm_emit_push        AsmEmitPush
-#define asm_emit_push_addr   AsmEmitPushAddr
+#define asm_emit_push_adr    AsmEmitPushAdr
 #define asm_emit_push_alt    AsmEmitPushAlt
 #define asm_emit_push_c      AsmEmitPushC
 #define asm_emit_push_pri    AsmEmitPushPri
@@ -645,8 +645,8 @@ stock AsmError:AsmEmitProc(ctx[AsmContext]) {
 	return AsmEmitInstruction(ctx, OP_PROC);
 }
 
-stock AsmError:AsmEmitPushAddr(ctx[AsmContext], offset) {
-	return AsmEmitInstruction(ctx, OP_PUSH_ADDR, offset);
+stock AsmError:AsmEmitPushAdr(ctx[AsmContext], offset) {
+	return AsmEmitInstruction(ctx, OP_PUSH_ADR, offset);
 }
 
 stock AsmError:AsmEmitPushAlt(ctx[AsmContext]) {
