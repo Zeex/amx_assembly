@@ -213,15 +213,9 @@ stock PrintAmxHeader() {
 	printf("------------------------");
 }
 
-static stock strcpy(dest[], const source[], size = sizeof(dest)) {
-	dest[0] = '\0';
-	return strcat(dest, source, size);
-}
-
 // Compares a string stored in the name table starting at "s1" (packed)
-// with an ordinary string "s2" (not packed).
-// The address in s1 should be relative to DAT.
-static stock NtNameVsString(s1, const s2[]) {
+// with another string "s2" (unpacked).
+static stock NtCompare(s1, const s2[]) {
 	new index;
 	new c1, c2;
 	new diff;
@@ -238,10 +232,9 @@ static stock NtNameVsString(s1, const s2[]) {
 	return diff;
 }
 
-// Copies a name from the name table to a usual string.
-// The address in src should be relative to DAT.
-// Returns the number of characters that were copied.
-static stock CopyNtNameToString(src, dest[], size = sizeof(dest)) {
+// Copies a name from the name table to a string. Returns the number
+// of characters copied.
+static stock NtCopy(src, dest[], size = sizeof(dest)) {
 	new i = 0;
 	new c;
 
@@ -312,7 +305,7 @@ stock GetPublicIndexFromName(const name[]) {
 		new off = amxhdr[AMX_HDR_PUBLICS] - amxhdr[AMX_HDR_DAT] + mid * amxhdr[AMX_HDR_DEFSIZE];
 		new nameofs = @(off + 4) - amxhdr[AMX_HDR_DAT];
 
-		new diff = NtNameVsString(nameofs, name);
+		new diff = NtCompare(nameofs, name);
 		if (diff < 0) {
 			first = mid + 1;
 		} else if (diff > 0) {
@@ -340,7 +333,7 @@ stock bool:GetPublicNameFromIndex(index, name[], size = sizeof(name)) {
 	if (!GetPublicInfo(index, info)) {
 		return false;
 	}
-	return (CopyNtNameToString(info[AMX_FUNCSTUBNT_NAMEOFS]
+	return (NtCopy(info[AMX_FUNCSTUBNT_NAMEOFS]
 	        - GetAmxHeaderComponent(AMX_HDR_DAT), name, size) > 0);
 }
 
@@ -415,7 +408,7 @@ stock GetNativeIndexFromName(const name[]) {
 	for (new i = 0; i < num_natives; i++) {
 		new nameofs = @(off + 4) - amxhdr[AMX_HDR_DAT];
 
-		new diff = NtNameVsString(nameofs, name);
+		new diff = NtCompare(nameofs, name);
 		if (diff == 0) {
 			return i;
 		}
@@ -441,7 +434,7 @@ stock bool:GetNativeNameFromIndex(index, name[], size = sizeof(name)) {
 	if (!GetNativeInfo(index, info)) {
 		return false;
 	}
-	return (CopyNtNameToString(info[AMX_FUNCSTUBNT_NAMEOFS]
+	return (NtCopy(info[AMX_FUNCSTUBNT_NAMEOFS]
 	        - GetAmxHeaderComponent(AMX_HDR_DAT), name, size) > 0);
 }
 
@@ -504,7 +497,7 @@ stock GetPubVarIndexFromName(const name[]) {
 		new off = amxhdr[AMX_HDR_PUBVARS] - amxhdr[AMX_HDR_DAT] + mid * amxhdr[AMX_HDR_DEFSIZE];
 		new nameofs = @(off + 4) - amxhdr[AMX_HDR_DAT];
 
-		new diff = NtNameVsString(nameofs, name);
+		new diff = NtCompare(nameofs, name);
 		if (diff < 0) {
 			first = mid + 1;
 		} else if (diff > 0) {
@@ -551,7 +544,7 @@ stock bool:GetPubVarNameFromIndex(index, name[], size = sizeof(name)) {
 	if (!GetPubVarInfo(index, info)) {
 		return false;
 	}
-	return (CopyNtNameToString(info[AMX_FUNCSTUBNT_NAMEOFS]
+	return (NtCopy(info[AMX_FUNCSTUBNT_NAMEOFS]
 	        - GetAmxHeaderComponent(AMX_HDR_DAT), name, size) > 0);
 }
 
