@@ -254,7 +254,11 @@ static stock AsmEmitJumpInstruction(ctx[AsmContext], opcode, offset) {
 // Core functions:
 
 stock AsmError:AsmInit(ctx[AsmContext], buffer[], size = sizeof(buffer)) {
-	ctx[AsmContext_buffer] = ref(buffer);
+	AsmInitPtr(ctx, ref(buffer), size)
+}
+
+stock AsmError:AsmInitPtr(ctx[AsmContext], buffer, size) {
+	ctx[AsmContext_buffer] = buffer;
 	ctx[AsmContext_buffer_size] = size;
 	ctx[AsmContext_buffer_offset] = 0;
 	ctx[AsmContext_error_handler] = 0;
