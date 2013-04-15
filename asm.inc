@@ -63,18 +63,31 @@
 #define asm_emit_inc_s       AsmEmitIncS
 #define asm_emit_invert      AsmEmitInvert
 #define asm_emit_jeq         AsmEmitJeq
+#define asm_emit_jeq_rel     AsmEmitJeqRel
 #define asm_emit_jgeq        AsmEmitJgeq
+#define asm_emit_jgeq_rel    AsmEmitJgeqRel
 #define asm_emit_jgrtr       AsmEmitJgrtr
+#define asm_emit_jgrtr_rel   AsmEmitJgrtrRel
 #define asm_emit_jleq        AsmEmitJleq
+#define asm_emit_jleq_rel    AsmEmitJleqRel
 #define asm_emit_jless       AsmEmitJless
+#define asm_emit_jless_rel   AsmEmitJlessRel
 #define asm_emit_jneq        AsmEmitJneq
+#define asm_emit_jneq_rel    AsmEmitJneqRel
 #define asm_emit_jnz         AsmEmitJnz
+#define asm_emit_jnz_rel     AsmEmitJnzRel
 #define asm_emit_jsgeq       AsmEmitJsgeq
+#define asm_emit_jsgeq_rel   AsmEmitJsgeqRel
 #define asm_emit_jsgrtr      AsmEmitJsgrtr
+#define asm_emit_jsgrtr_rel  AsmEmitJsgrtrRel
 #define asm_emit_jsleq       AsmEmitJsleq
+#define asm_emit_jsleq_rel   AsmEmitJsleqRel
 #define asm_emit_jsless      AsmEmitJsless
+#define asm_emit_jsless_rel  AsmEmitJslessRel
 #define asm_emit_jump        AsmEmitJump
+#define asm_emit_jump_rel    AsmEmitJumpRel
 #define asm_emit_jzer        AsmEmitJzer
+#define asm_emit_jzer_rel    AsmEmitJzerRel
 #define asm_emit_lctrl       AsmEmitLctrl
 #define asm_emit_leq         AsmEmitLeq
 #define asm_emit_less        AsmEmitLess
@@ -418,6 +431,94 @@ stock AsmError:AsmEmitInvert(ctx[AsmContext]) {
 	return AsmEmitInstruction(ctx, OP_INVERT);
 }
 
+stock AsmError:AsmEmitJeq(ctx[AsmContext], address) {
+	return AsmEmitInstruction(ctx, OP_JEQ, address);
+}
+
+stock AsmError:AsmEmitJeqRel(ctx[AsmContext], offset) {
+	return AsmEmitJumpInstruction(ctx, OP_JEQ, offset);
+}
+
+stock AsmError:AsmEmitJgeq(ctx[AsmContext], address) {
+	return AsmEmitInstruction(ctx, OP_JGEQ, address);
+}
+
+stock AsmError:AsmEmitJgeqRel(ctx[AsmContext], offset) {
+	return AsmEmitJumpInstruction(ctx, OP_JGEQ, offset);
+}
+
+stock AsmError:AsmEmitJgrtr(ctx[AsmContext], address) {
+	return AsmEmitInstruction(ctx, OP_JGRTR, address);
+}
+
+stock AsmError:AsmEmitJgrtrRel(ctx[AsmContext], offset) {
+	return AsmEmitJumpInstruction(ctx, OP_JGRTR, offset);
+}
+
+stock AsmError:AsmEmitJleq(ctx[AsmContext], address) {
+	return AsmEmitInstruction(ctx, OP_JLEQ, address);
+}
+
+stock AsmError:AsmEmitJleqRel(ctx[AsmContext], offset) {
+	return AsmEmitJumpInstruction(ctx, OP_JLEQ, offset);
+}
+
+stock AsmError:AsmEmitJless(ctx[AsmContext], address) {
+	return AsmEmitInstruction(ctx, OP_JLESS, address);
+}
+
+stock AsmError:AsmEmitJlessRel(ctx[AsmContext], offset) {
+	return AsmEmitJumpInstruction(ctx, OP_JLESS, offset);
+}
+
+stock AsmError:AsmEmitJneq(ctx[AsmContext], address) {
+	return AsmEmitInstruction(ctx, OP_JNEQ, address);
+}
+
+stock AsmError:AsmEmitJneqRel(ctx[AsmContext], offset) {
+	return AsmEmitJumpInstruction(ctx, OP_JNEQ, offset);
+}
+
+stock AsmError:AsmEmitJnz(ctx[AsmContext], address) {
+	return AsmEmitInstruction(ctx, OP_JNZ, address);
+}
+
+stock AsmError:AsmEmitJnzRel(ctx[AsmContext], offset) {
+	return AsmEmitJumpInstruction(ctx, OP_JNZ, offset);
+}
+
+stock AsmError:AsmEmitJsgeq(ctx[AsmContext], address) {
+	return AsmEmitInstruction(ctx, OP_JSGEQ, address);
+}
+
+stock AsmError:AsmEmitJsgeqRel(ctx[AsmContext], offset) {
+	return AsmEmitJumpInstruction(ctx, OP_JSGEQ, offset);
+}
+
+stock AsmError:AsmEmitJsgrtr(ctx[AsmContext], address) {
+	return AsmEmitInstruction(ctx, OP_JSTRTR, address);
+}
+
+stock AsmError:AsmEmitJsgrtrRel(ctx[AsmContext], offset) {
+	return AsmEmitJumpInstruction(ctx, OP_JSTRTR, offset);
+}
+
+stock AsmError:AsmEmitJsleq(ctx[AsmContext], address) {
+	return AsmEmitInstruction(ctx, OP_JSLEQ, address);
+}
+
+stock AsmError:AsmEmitJsleqRel(ctx[AsmContext], offset) {
+	return AsmEmitJumpInstruction(ctx, OP_JSLEQ, offset);
+}
+
+stock AsmError:AsmEmitJsless(ctx[AsmContext], address) {
+	return AsmEmitInstruction(ctx, OP_JSLESS, address);
+}
+
+stock AsmError:AsmEmitJslessRel(ctx[AsmContext], offset) {
+	return AsmEmitJumpInstruction(ctx, OP_JSLESS, offset);
+}
+
 stock AsmError:AsmEmitJump(ctx[AsmContext], address) {
 	return AsmEmitInstruction(ctx, OP_JUMP, address);
 }
@@ -432,94 +533,6 @@ stock AsmError:AsmEmitJzer(ctx[AsmContext], address) {
 
 stock AsmError:AsmEmitJzerRel(ctx[AsmContext], offset) {
 	return AsmEmitJumpInstruction(ctx, OP_JZER, offset);
-}
-
-stock AsmError:AsmEmitJnz(ctx[AsmContext], address) {
-	return AsmEmitInstruction(ctx, OP_JNZ, address);
-}
-
-stock AsmError:AsmEmitJnzRel(ctx[AsmContext], offset) {
-	return AsmEmitJumpInstruction(ctx, OP_JNZ, offset);
-}
-
-stock AsmError:AsmEmitJeq(ctx[AsmContext], address) {
-	return AsmEmitInstruction(ctx, OP_JEQ, address);
-}
-
-stock AsmError:AsmEmitJeqRel(ctx[AsmContext], offset) {
-	return AsmEmitJumpInstruction(ctx, OP_JEQ, offset);
-}
-
-stock AsmError:AsmEmitJneq(ctx[AsmContext], address) {
-	return AsmEmitInstruction(ctx, OP_JNEQ, address);
-}
-
-stock AsmError:AsmEmitJneqRel(ctx[AsmContext], offset) {
-	return AsmEmitJumpInstruction(ctx, OP_JNEQ, offset);
-}
-
-stock AsmError:AsmEmitJless(ctx[AsmContext], address) {
-	return AsmEmitInstruction(ctx, OP_JLESS, address);
-}
-
-stock AsmError:AsmEmitJlessRel(ctx[AsmContext], offset) {
-	return AsmEmitJumpInstruction(ctx, OP_JLESS, offset);
-}
-
-stock AsmError:AsmEmitJleq(ctx[AsmContext], address) {
-	return AsmEmitInstruction(ctx, OP_JLEQ, address);
-}
-
-stock AsmError:AsmEmitJleqRel(ctx[AsmContext], offset) {
-	return AsmEmitJumpInstruction(ctx, OP_JLEQ, offset);
-}
-
-stock AsmError:AsmEmitJgrtr(ctx[AsmContext], address) {
-	return AsmEmitInstruction(ctx, OP_JGRTR, address);
-}
-
-stock AsmError:AsmEmitJgrtrRel(ctx[AsmContext], offset) {
-	return AsmEmitJumpInstruction(ctx, OP_JGRTR, offset);
-}
-
-stock AsmError:AsmEmitJgeq(ctx[AsmContext], address) {
-	return AsmEmitInstruction(ctx, OP_JGEQ, address);
-}
-
-stock AsmError:AsmEmitJgeqRel(ctx[AsmContext], offset) {
-	return AsmEmitJumpInstruction(ctx, OP_JGEQ, offset);
-}
-
-stock AsmError:AsmEmitJsless(ctx[AsmContext], address) {
-	return AsmEmitInstruction(ctx, OP_JSLESS, address);
-}
-
-stock AsmError:AsmEmitJslessRel(ctx[AsmContext], offset) {
-	return AsmEmitJumpInstruction(ctx, OP_JSLESS, offset);
-}
-
-stock AsmError:AsmEmitJsleq(ctx[AsmContext], address) {
-	return AsmEmitInstruction(ctx, OP_JSLEQ, address);
-}
-
-stock AsmError:AsmEmitJsleqRel(ctx[AsmContext], offset) {
-	return AsmEmitJumpInstruction(ctx, OP_JSLEQ, offset);
-}
-
-stock AsmError:AsmEmitJsgrtr(ctx[AsmContext], address) {
-	return AsmEmitInstruction(ctx, OP_JSTRTR, address);
-}
-
-stock AsmError:AsmEmitJsgrtrRel(ctx[AsmContext], offset) {
-	return AsmEmitJumpInstruction(ctx, OP_JSTRTR, offset);
-}
-
-stock AsmError:AsmEmitJsgeq(ctx[AsmContext], address) {
-	return AsmEmitInstruction(ctx, OP_JSGEQ, address);
-}
-
-stock AsmError:AsmEmitJsgeqRel(ctx[AsmContext], offset) {
-	return AsmEmitJumpInstruction(ctx, OP_JSGEQ, offset);
 }
 
 stock AsmError:AsmEmitLctrl(ctx[AsmContext], index) {
