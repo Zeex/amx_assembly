@@ -37,6 +37,7 @@
 #define asm_emit_align_pri   AsmEmitAlignPri
 #define asm_emit_and         AsmEmitAnd
 #define asm_emit_bounds      AsmEmitBounds
+#define asm_emit_break       AsmEmitBreak
 #define asm_emit_call        AsmEmitCall
 #define asm_emit_cmps        AsmEmitCmps
 #define asm_emit_const_alt   AsmEmitConstAlt
@@ -329,6 +330,10 @@ stock AsmError:AsmEmitAnd(ctx[AsmContext]) {
 
 stock AsmError:AsmEmitBounds(ctx[AsmContext], bound) {
 	return AsmEmitInstruction(ctx, OP_BOUDNS, bound);
+}
+
+stock AsmError:AsmEmitBreak(ctx[AsmContext]) {
+	return AsmEmitInstruction(ctx, OP_BREAK);
 }
 
 stock AsmError:AsmEmitCall(ctx[AsmContext], address) {
