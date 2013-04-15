@@ -205,7 +205,7 @@ stock AsmError:AsmEmitConstPri(ctx[AsmContext], value) {
 	return AsmEmitInstruction(ctx, OP_CONST_PRI, value);
 }
 
-stock AsmError:AsmEmitDec(ctx[AsmContext], addess) {
+stock AsmError:AsmEmitDec(ctx[AsmContext], address) {
 	return AsmEmitInstruction(ctx, OP_DEC, address);
 }
 
@@ -265,7 +265,7 @@ stock AsmError:AsmEmitIdxaddrB(ctx[AsmContext], shift) {
 	return AsmEmitInstruction(ctx, OP_IDXADDR_B, shift);
 }
 
-stock AsmError:AsmEmitInc(ctx[AsmContext], addess) {
+stock AsmError:AsmEmitInc(ctx[AsmContext], address) {
 	return AsmEmitInstruction(ctx, OP_INC, address);
 }
 
