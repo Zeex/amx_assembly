@@ -168,48 +168,54 @@ stock GetAmxHeaderNow(amxhdr[AMX_HDR]) {
 	copy_4(amxhdr[AMX_HDR_NAMETABLE], plain_amxhdr, AMX_HDR_OFFSET_NAMETABLE);
 }
 
+static gHdr[AMX_HDR];
+static bool:gInitialized = false;
+
+forward ResetStaticAmxHeader();
+
+public ResetStaticAmxHeader() {
+	GetAmxHeaderNow(gHdr);
+	gInitialized = true;
+}
+
 stock GetAmxHeader(amxhdr[AMX_HDR]) {
-	static hdr[AMX_HDR];
-	static bool:initialized = false;
-	if (!initialized) {
-		GetAmxHeaderNow(hdr);
+	if (!gInitialized) {
+		ResetStaticAmxHeader();
 	}
-	amxhdr = hdr;
+	amxhdr = gHdr;
 }
 
 stock GetAmxHeaderComponent(AMX_HDR:comp) {
-	static hdr[AMX_HDR];
-	static bool:initialized = false;
-	if (!initialized) {
-		GetAmxHeaderNow(hdr);
+	if (!gInitialized) {
+		ResetStaticAmxHeader();
 	}
-	return hdr[comp];
+	return gHdr[comp];
 }
 
 stock PrintAmxHeader() {
-	new amxhdr[AMX_HDR];
-	GetAmxHeaderNow(amxhdr);
-
+	if (!gInitialized) {
+		ResetStaticAmxHeader();
+	}
 	printf("------------------------");
 	printf("AMX Header:");
 	printf("------------------------");
-	printf("size         %d", amxhdr[AMX_HDR_SIZE]);
-	printf("magic        %x", amxhdr[AMX_HDR_MAGIC]);
-	printf("file_version %d", amxhdr[AMX_HDR_FILE_VERSION]);
-	printf("amx_version  %d", amxhdr[AMX_HDR_AMX_VERSION]);
-	printf("flags        %d", amxhdr[AMX_HDR_FLAGS]);
-	printf("defsize      %d", amxhdr[AMX_HDR_DEFSIZE]);
-	printf("cod          0x%08x", amxhdr[AMX_HDR_COD]);
-	printf("dat          0x%08x", amxhdr[AMX_HDR_DAT]);
-	printf("hea          0x%08x", amxhdr[AMX_HDR_HEA]);
-	printf("stp          0x%08x", amxhdr[AMX_HDR_STP]);
-	printf("cip          0x%08x", amxhdr[AMX_HDR_CIP]);
-	printf("publics      0x%08x", amxhdr[AMX_HDR_PUBLICS]);
-	printf("natives      0x%08x", amxhdr[AMX_HDR_NATIVES]);
-	printf("libraries    0x%08x", amxhdr[AMX_HDR_LIBRARIES]);
-	printf("pubvars      0x%08x", amxhdr[AMX_HDR_PUBVARS]);
-	printf("tags         0x%08x", amxhdr[AMX_HDR_TAGS]);
-	printf("nametable    0x%08x", amxhdr[AMX_HDR_NAMETABLE]);
+	printf("size         %d", gHdr[AMX_HDR_SIZE]);
+	printf("magic        %x", gHdr[AMX_HDR_MAGIC]);
+	printf("file_version %d", gHdr[AMX_HDR_FILE_VERSION]);
+	printf("amx_version  %d", gHdr[AMX_HDR_AMX_VERSION]);
+	printf("flags        %d", gHdr[AMX_HDR_FLAGS]);
+	printf("defsize      %d", gHdr[AMX_HDR_DEFSIZE]);
+	printf("cod          0x%08x", gHdr[AMX_HDR_COD]);
+	printf("dat          0x%08x", gHdr[AMX_HDR_DAT]);
+	printf("hea          0x%08x", gHdr[AMX_HDR_HEA]);
+	printf("stp          0x%08x", gHdr[AMX_HDR_STP]);
+	printf("cip          0x%08x", gHdr[AMX_HDR_CIP]);
+	printf("publics      0x%08x", gHdr[AMX_HDR_PUBLICS]);
+	printf("natives      0x%08x", gHdr[AMX_HDR_NATIVES]);
+	printf("libraries    0x%08x", gHdr[AMX_HDR_LIBRARIES]);
+	printf("pubvars      0x%08x", gHdr[AMX_HDR_PUBVARS]);
+	printf("tags         0x%08x", gHdr[AMX_HDR_TAGS]);
+	printf("nametable    0x%08x", gHdr[AMX_HDR_NAMETABLE]);
 	printf("------------------------");
 }
 

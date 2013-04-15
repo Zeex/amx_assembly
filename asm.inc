@@ -261,15 +261,11 @@ static stock AsmGetJumpAddressFromOffset(ctx[AsmContext], offset) {
 	return base + dest;
 }
 
-static stock AsmError:AsmEmitJumpInstruction(ctx[AsmContext], opcode, offset) {
+static stock AsmError:AsmEmitJumpInstruction(ctx[AsmContext], Opcode:opcode, offset) {
 	return AsmEmitInstruction(ctx, opcode, AsmGetJumpAddressFromOffset(ctx, offset));
 }
 
 // Core functions:
-
-stock AsmError:AsmInit(ctx[AsmContext], buffer[], size = sizeof(buffer)) {
-	AsmInitPtr(ctx, ref(buffer), size)
-}
 
 stock AsmError:AsmInitPtr(ctx[AsmContext], buffer, size) {
 	ctx[AsmContext_buffer] = buffer;
@@ -277,6 +273,10 @@ stock AsmError:AsmInitPtr(ctx[AsmContext], buffer, size) {
 	ctx[AsmContext_buffer_offset] = 0;
 	ctx[AsmContext_error_handler] = 0;
 	return ASM_ERROR_NONE;
+}
+
+stock AsmError:AsmInit(ctx[AsmContext], buffer[], size = sizeof(buffer)) {
+	AsmInitPtr(ctx, ref(buffer), size)
 }
 
 stock AsmError:AsmSetErrorHandler(ctx[AsmContext], error_handler) {
@@ -352,7 +352,7 @@ stock AsmError:AsmEmitConstPri(ctx[AsmContext], value) {
 	return AsmEmitInstruction(ctx, OP_CONST_PRI, value);
 }
 
-stock AsmError:AsmEmitDec(ctx[AsmContext], addess) {
+stock AsmError:AsmEmitDec(ctx[AsmContext], address) {
 	return AsmEmitInstruction(ctx, OP_DEC, address);
 }
 
@@ -412,7 +412,7 @@ stock AsmError:AsmEmitIdxaddrB(ctx[AsmContext], shift) {
 	return AsmEmitInstruction(ctx, OP_IDXADDR_B, shift);
 }
 
-stock AsmError:AsmEmitInc(ctx[AsmContext], addess) {
+stock AsmError:AsmEmitInc(ctx[AsmContext], address) {
 	return AsmEmitInstruction(ctx, OP_INC, address);
 }
 
