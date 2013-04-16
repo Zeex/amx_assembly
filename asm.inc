@@ -869,7 +869,7 @@ stock AsmError:AsmEmitZeroS(ctx[AsmContext], offset) {
 
 // Higher level functions:
 
-stock AsmError:AsmEmitCallNative(ctx[AsmContext], const name[]) {
+stock AsmError:AsmEmitSysreq(ctx[AsmContext], const name[]) {
 	return AsmEmitSysreqD(ctx, GetNativeAddressFromName(name));
 }
 

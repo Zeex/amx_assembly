@@ -37,7 +37,7 @@ main() {
 	AsmEmitProc(ctx);
 	AsmEmitPushArg(ctx, 0);
 	AsmEmitPushNumArgs(ctx, 1);
-	AsmEmitCallNative(ctx, "print");
+	AsmEmitSysreq(ctx, "print");
 	AsmEmitPopArgs(ctx, 1);
 	AsmEmitRetn(ctx);
 
