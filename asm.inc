@@ -171,6 +171,11 @@
 #define asm_emit_zero_pri    AsmEmitZeroPri
 #define asm_emit_zero_s      AsmEmitZeroS
 
+#define asm_emit_sysreq        AsmEmitSysreq
+#define asm_emit_pop_args      AsmEmitPopArgs
+#define asm_emit_push_arg      AsmEmitPushArg
+#define asm_emit_push_num_args AsmEmitPushNumArgs
+
 enum AsmError {
 	ASM_ERROR_NONE,
 	ASM_ERROR_OPCODE,
@@ -877,12 +882,12 @@ stock AsmError:AsmEmitPopArgs(ctx[AsmContext], n) {
 	return AsmEmitStack(ctx, (n + 1) * 4);
 }
 
-stock AsmError:AsmEmitPushNumArgs(ctx[AsmContext], n) {
-	return AsmEmitPushC(ctx, 4 * n);
-}
-
 stock AsmError:AsmEmitPushArg(ctx[AsmContext], n) {
 	return AsmEmitPushS(ctx, AsmGetArgOffset(n));
+}
+
+stock AsmError:AsmEmitPushNumArgs(ctx[AsmContext], n) {
+	return AsmEmitPushC(ctx, 4 * n);
 }
 
 // Helpers:

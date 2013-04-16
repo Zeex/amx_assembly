@@ -34,12 +34,12 @@ main() {
 	// Same code as above but using some high-level functions:
 	AsmInit(ctx, code);
 
-	AsmEmitProc(ctx);
-	AsmEmitPushArg(ctx, 0);
-	AsmEmitPushNumArgs(ctx, 1);
-	AsmEmitSysreq(ctx, "print");
-	AsmEmitPopArgs(ctx, 1);
-	AsmEmitRetn(ctx);
+	@emit proc          ;
+	@emit push_arg      0;
+	@emit push_num_args 1;
+	@emit sysreq        "print";
+	@emit pop_args      1;
+	@emit retn          ;
 
 	CallFunction(AsmGetCode(ctx), ref("Hello again!"));
 }
