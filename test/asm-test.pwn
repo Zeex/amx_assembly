@@ -21,16 +21,17 @@ main() {
 	//
 	// NOTE: "print" must be called somwhere else in order to for this work!
 
-	AsmEmitProc(ctx);
-	AsmEmitPushS(ctx, 12);
-	AsmEmitPushC(ctx, 4);
-	AsmEmitSysreqD(ctx, GetNativeAddressFromName("print"));
-	AsmEmitStack(ctx, 8);
-	AsmEmitRetn(ctx);
+	emit proc      1;
+	emit push_s    12;
+	emit push_c    4;
+	emit sysreq_d  GetNativeAddressFromName("print");
+	emit stack     8;
+	emit retn      ;
 
 	CallFunction(AsmGetCode(ctx), ref("Hello!"));
 
-	// Same as above but using some helper functions:
+	// ------------------------------------------------------
+	// Same code as above but using some high-level functions:
 	AsmInit(ctx, code);
 
 	AsmEmitProc(ctx);
