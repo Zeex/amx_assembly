@@ -21,7 +21,7 @@ main() {
 	//
 	// NOTE: "print" must be called somwhere else in order to for this work!
 
-	@emit proc      1;
+	@emit proc      ;
 	@emit push_s    12;
 	@emit push_c    4;
 	@emit sysreq_d  GetNativeAddressFromName("print");
