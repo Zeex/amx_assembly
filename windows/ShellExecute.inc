@@ -93,7 +93,7 @@ stock ShellExecute(const Operation[], const File[], const Parameters[], ShowCmd)
 
 	#undef __
 
-	new address = GetImportAddress("ShellExecuteA")
+	new address = GetImportAddress("ShellExecuteA");
 	WriteAmxMemory(ref(asm) + 63, refabs(address));
 
 	Push(0);                  // HWND hwnd

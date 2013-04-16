@@ -276,7 +276,7 @@ stock AsmError:AsmInitPtr(ctx[AsmContext], buffer, size) {
 }
 
 stock AsmError:AsmInit(ctx[AsmContext], buffer[], size = sizeof(buffer)) {
-	AsmInitPtr(ctx, ref(buffer), size)
+	AsmInitPtr(ctx, ref(buffer), size);
 }
 
 stock AsmError:AsmSetErrorHandler(ctx[AsmContext], error_handler) {
