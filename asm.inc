@@ -30,7 +30,7 @@
 #include "opcode"
 
 #define ctx,) ctx)
-#define emit%0\32;%1\32;%2; asm_emit_%1(ctx, %2);
+#define @emit%0\32;%1\32;%2; asm_emit_%1(ctx, %2);
 
 #define asm_emit_add         AsmEmitAdd
 #define asm_emit_add_c       AsmEmitAddC

@@ -21,12 +21,12 @@ main() {
 	//
 	// NOTE: "print" must be called somwhere else in order to for this work!
 
-	emit proc      1;
-	emit push_s    12;
-	emit push_c    4;
-	emit sysreq_d  GetNativeAddressFromName("print");
-	emit stack     8;
-	emit retn      ;
+	@emit proc      1;
+	@emit push_s    12;
+	@emit push_c    4;
+	@emit sysreq_d  GetNativeAddressFromName("print");
+	@emit stack     8;
+	@emit retn      ;
 
 	CallFunction(AsmGetCode(ctx), ref("Hello!"));
 
