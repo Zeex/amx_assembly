@@ -165,76 +165,13 @@
 #define asm_emit_zero_alt AsmEmitZeroAlt
 #define asm_emit_zero_pri AsmEmitZeroPri
 #define asm_emit_zero_s AsmEmitZeroS
-
+// Custom.
 #define asm_emit_sysreq AsmEmitSysreq
 #define asm_emit_pop_args AsmEmitPopArgs
 #define asm_emit_push_arg AsmEmitPushArg
 #define asm_emit_push_num_args AsmEmitPushNumArgs
 
 // All UPPER case.
-#define asm_emit_ADD AsmEmitAdd
-#define asm_emit_AND AsmEmitAnd
-#define asm_emit_BOUNDS AsmEmitBounds
-#define asm_emit_BREAK AsmEmitBreak
-#define asm_emit_CALL AsmEmitCall
-#define asm_emit_CMPS AsmEmitCmps
-#define asm_emit_DEC AsmEmitDec
-#define asm_emit_EQ AsmEmitEq
-#define asm_emit_FILL AsmEmitFill
-#define asm_emit_GEQ AsmEmitGeq
-#define asm_emit_GRTR AsmEmitGrtr
-#define asm_emit_HALT AsmEmitHalt
-#define asm_emit_HEAP AsmEmitHeap
-#define asm_emit_IDXADDR AsmEmitIdxaddr
-#define asm_emit_INC AsmEmitInc
-#define asm_emit_INVERT AsmEmitInvert
-#define asm_emit_JEQ AsmEmitJeq
-#define asm_emit_JGEQ AsmEmitJgeq
-#define asm_emit_JGRTR AsmEmitJgrtr
-#define asm_emit_JLEQ AsmEmitJleq
-#define asm_emit_JLESS AsmEmitJless
-#define asm_emit_JNEQ AsmEmitJneq
-#define asm_emit_JNZ AsmEmitJnz
-#define asm_emit_JSGEQ AsmEmitJsgeq
-#define asm_emit_JSGRTR AsmEmitJsgrtr
-#define asm_emit_JSLEQ AsmEmitJsleq
-#define asm_emit_JSLESS AsmEmitJsless
-#define asm_emit_JUMP AsmEmitJump
-#define asm_emit_JZER AsmEmitJzer
-#define asm_emit_LCTRL AsmEmitLctrl
-#define asm_emit_LEQ AsmEmitLeq
-#define asm_emit_LESS AsmEmitLess
-#define asm_emit_LIDX AsmEmitLidx
-#define asm_emit_MOVS AsmEmitMovs
-#define asm_emit_NEG AsmEmitNeg
-#define asm_emit_NEQ AsmEmitNeq
-#define asm_emit_NOP AsmEmitNop
-#define asm_emit_NOT AsmEmitNot
-#define asm_emit_OR AsmEmitOr
-#define asm_emit_PROC AsmEmitProc
-#define asm_emit_PUSH AsmEmitPush
-#define asm_emit_RET AsmEmitRet
-#define asm_emit_RETN AsmEmitRetn
-#define asm_emit_SCTRL AsmEmitSctrl
-#define asm_emit_SDIV AsmEmitSdiv
-#define asm_emit_SGEQ AsmEmitSgeq
-#define asm_emit_SGRTR AsmEmitSgrtr
-#define asm_emit_SHL AsmEmitShl
-#define asm_emit_SHR AsmEmitShr
-#define asm_emit_SLEQ AsmEmitSleq
-#define asm_emit_SLESS AsmEmitSless
-#define asm_emit_SMUL AsmEmitSmul
-#define asm_emit_SSHR AsmEmitSshr
-#define asm_emit_STACK AsmEmitStack
-#define asm_emit_SUB AsmEmitSub
-#define asm_emit_UDIV AsmEmitUdiv
-#define asm_emit_UMUL AsmEmitUmul
-#define asm_emit_XCHG AsmEmitXchg
-#define asm_emit_XOR AsmEmitXor
-#define asm_emit_ZERO AsmEmitZero
-#define asm_emit_SYSREQ AsmEmitSysreq
-
-// Some UPPER case.
 #define asm_emit_ADD AsmEmitAdd
 #define asm_emit_AND AsmEmitAnd
 #define asm_emit_BOUNDS AsmEmitBounds
@@ -401,7 +338,6 @@
 #define AsmEmitIncALT AsmEmitIncAlt
 #define AsmEmitInci AsmEmitIncI
 #define AsmEmitIncs AsmEmitIncS
-
 #define AsmEmitJeq.%0(%1) AsmEmitJeq%0(%1)
 #define AsmEmitJgeq.%0(%1) AsmEmitJgeq%0(%1)
 #define AsmEmitJgrtr.%0(%1) AsmEmitJgrtr%0(%1)
@@ -441,7 +377,6 @@
 #define AsmEmitJslessREL AsmEmitJslessRel
 #define AsmEmitJumpREL AsmEmitJumpRel
 #define AsmEmitJzerREL AsmEmitJzerRel
-
 #define AsmEmitLidx.%0(%1) AsmEmitLidx%0(%1)
 #define AsmEmitLidxb AsmEmitLidxB
 #define AsmEmitLoad.%0(%1) AsmEmitLoad%0(%1)
@@ -569,6 +504,7 @@
 
 // Certain OpCodes don't exist, but are the start of others - detect them here.
 
+// Lower-case.
 #define asm_emit_addr AsmEmitAddr
 #define asm_emit_align AsmEmitAlign
 #define asm_emit_const AsmEmitConst
@@ -581,7 +517,7 @@
 #define asm_emit_stor AsmEmitStor
 #define asm_emit_strb AsmEmitStrb
 #define asm_emit_swap AsmEmitSwap
-
+// Mixed-case.
 #define asm_emit_Addr AsmEmitAddr
 #define asm_emit_Align AsmEmitAlign
 #define asm_emit_Const AsmEmitConst
@@ -594,7 +530,7 @@
 #define asm_emit_Stor AsmEmitStor
 #define asm_emit_Strb AsmEmitStrb
 #define asm_emit_Swap AsmEmitSwap
-
+// Upper-case.
 #define asm_emit_ADDR AsmEmitAddr
 #define asm_emit_ALIGN AsmEmitAlign
 #define asm_emit_CONST AsmEmitConst
