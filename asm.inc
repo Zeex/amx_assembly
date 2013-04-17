@@ -26,18 +26,9 @@
 #include "amx_base"
 #include "amx_header"
 #include "amx_memory"
+#include "asm_macros"
 #include "dynamic_call"
 #include "opcode"
-#include "asm_macros"
-
-//#define @emit%0\32;%1\32;%2\10;%3 asm_emit_%1(ctx,%2);
-// Only detect ONE space, so you don't need a trailing space on opcodes with no
-// parameters.  Add a space on the end here incase there wasn't one already.
-#define @emit%0\32;%1\10;%3 asm_emit_(ctx,%1 );
-// NOW detect the second space and use it to extract the opcode name.
-#define asm_emit_(ctx,%1\32;%2); asm_emit_%1(ctx,%2);
-// Finally, detect zero parameters.
-#define ctx,) ctx)
 
 enum AsmError {
 	ASM_ERROR_NONE,
