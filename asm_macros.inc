@@ -22,7 +22,7 @@
 // parameters. Add a space on the end here incase there wasn't one already.
 #define @emit%0\32;%1\10;%3 asm_emit_(ctx,%1 );
 // NOW detect the second space and use it to extract the opcode name.
-#define asm_emit_(ctx,%1\32;%2); asm_emit_%1(ctx,%2);
+#define asm_emit_(ctx,%1\32;%2) asm_emit_%1(ctx,%2)
 // Finally, detect zero parameters.
 #define ctx,) ctx)
 
