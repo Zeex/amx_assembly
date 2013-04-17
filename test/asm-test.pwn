@@ -11,7 +11,7 @@ main() {
 	new ctx[AsmContext];
 
 	AsmInit(ctx, code);
-	AsmSetErrorHandler(ctx, GetPublicAddressFromName("HandleEmitError"));
+	AsmSetErrorHandler(ctx, GetPublicAddressFromName("HandleAsmError"));
 
 	// Build a function that prints a string and returns:
 	//
@@ -32,5 +32,5 @@ main() {
 }
 
 public HandleAsmError(ctx[AsmContext], AsmError:error) {
-	printf("EmitError(%x, %d)", ctx, _:error);
+	printf("AsmError: %d", _:error);
 }
