@@ -4,10 +4,10 @@
 forward HandleAsmError(ctx[AsmContext], AsmError:error);
 
 main() {
-	// Must use this native to make GetNativeAddress/IndexFromName go fine.
-	print("Doing #emit at runtime...");
+	// Have to use print() somewhere to make GetNativeAddressFromName() work.
+	print("Doing #emit at runtime!");
 
-	new code[100];
+	new code[10];
 	new ctx[AsmContext];
 
 	AsmInit(ctx, code);
@@ -22,26 +22,13 @@ main() {
 	// NOTE: "print" must be called somwhere else in order to for this work!
 
 	@emit proc
-	@emit push.s   12
-	@emit push.c   4
-	@emit sysreq.d GetNativeAddressFromName("print")
-	@emit stack    8
-	@emit retn
-
-	CallFunction(AsmGetCode(ctx), ref("Hello!"));
-
-	// ------------------------------------------------------
-	// Same code as above but using some high-level functions:
-	AsmInit(ctx, code);
-
-	@emit proc
 	@emit push.arg      0
 	@emit push.num.args 1
 	@emit sysreq        "print"
 	@emit pop.args      1
 	@emit retn
 
-	CallFunction(AsmGetCode(ctx), ref("Hello again!"));
+	CallFunction(AsmGetCode(ctx), ref("Hello!"));
 }
 
 public HandleAsmError(ctx[AsmContext], AsmError:error) {
