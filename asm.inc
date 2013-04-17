@@ -50,7 +50,8 @@ enum AsmContext {
 	AsmContext_buffer,
 	AsmContext_buffer_size,
 	AsmContext_buffer_offset,
-	AsmContext_error_handler  // ErrorHandler(ctx[AsmContext], AsmError:error)
+	AsmContext_error,
+	AsmContext_error_handler,  // ErrorHandler(ctx[AsmContext])
 };
 
 stock const ASM_ARGUMENTS_OFFSET    =  0x0C;
@@ -68,11 +69,11 @@ stock const ASM_CTRL_CIP = 6;
 
 // Internal functions:
 
-static stock AsmError:AsmRaiseError(const ctx[AsmContext], AsmError:error) {
+static stock AsmError:AsmRaiseError(ctx[AsmContext], AsmError:error) {
 	if (error != ASM_ERROR_NONE) {
-		new fn = ctx[AsmContext_error_handler];
-		if (fn != 0) {
-			CallFunction(ctx[AsmContext_error_handler], ref(ctx), _:error);
+		AsmSetError(ctx, error);
+		if (ctx[AsmContext_error_handler] != 0) {
+			CallFunction(ctx[AsmContext_error_handler], ref(ctx));
 		}
 	}
 	return error;
@@ -150,15 +151,6 @@ stock AsmError:AsmInit(ctx[AsmContext], buffer[], size = sizeof(buffer)) {
 	AsmInitPtr(ctx, ref(buffer), size * 4);
 }
 
-stock AsmError:AsmSetErrorHandler(ctx[AsmContext], error_handler) {
-	ctx[AsmContext_error_handler] = error_handler;
-	return ASM_ERROR_NONE;
-}
-
-stock AsmGetErrorHandler(const ctx[AsmContext]) {
-	return ctx[AsmContext_error_handler];
-}
-
 stock AsmGetCode(const ctx[AsmContext]) {
 	new amxhdr[AMX_HDR];
 	GetAmxHeader(amxhdr);
@@ -167,6 +159,27 @@ stock AsmGetCode(const ctx[AsmContext]) {
 
 stock AsmGetCodeSize(const ctx[AsmContext]) {
 	return ctx[AsmContext_buffer_offset];
+}
+
+stock AsmError:AsmGetError(ctx[AsmContext]) {
+	return AsmError:ctx[AsmContext_error];
+}
+
+stock AsmSetError(ctx[AsmContext], AsmError:error) {
+	ctx[AsmContext_error] = _:error;
+}
+
+stock AsmClearError(ctx[AsmContext]) {
+	AsmSetError(ctx, ASM_ERROR_NONE);
+}
+
+stock AsmGetErrorHandler(const ctx[AsmContext]) {
+	return ctx[AsmContext_error_handler];
+}
+
+stock AsmError:AsmSetErrorHandler(ctx[AsmContext], error_handler) {
+	ctx[AsmContext_error_handler] = error_handler;
+	return ASM_ERROR_NONE;
 }
 
 // Low level functions:

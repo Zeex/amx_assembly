@@ -28,9 +28,11 @@ main() {
 	@emit pop.args      1
 	@emit retn
 
-	CallFunction(AsmGetCode(ctx), ref("Hello!"));
+	if (AsmGetError(ctx) == ASM_ERROR_NONE) {
+		CallFunction(AsmGetCode(ctx), ref("Hello!"));
+	}
 }
 
-public HandleAsmError(ctx[AsmContext], AsmError:error) {
-	printf("AsmError: %d", _:error);
+public HandleAsmError(ctx[AsmContext]) {
+	printf("AsmError: %d", _:AsmGetError(ctx));
 }
