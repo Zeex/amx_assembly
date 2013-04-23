@@ -89,9 +89,9 @@ stock GetStackTrace(trace[], skip = 0, max = sizeof(trace)) {
 	return length;
 }
 
-stock PrintStackTrace(trace[], length = 0) {
+stock PrintStackTrace(trace[], max = sizeof(trace)) {
 	print("Stack trace:");
-	for (new i = 0; trace[i] != 0 && (i < length || length == 0); i++) {
+	for (new i = 0; trace[i] != 0 && i < max; i++) {
 		new name[32];
 		new address = GetFunctionFromReturnAddress(trace[i]);
 		if (GetPublicNameFromAddress(address, name)) {
