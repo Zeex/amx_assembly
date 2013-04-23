@@ -72,7 +72,11 @@ stock DumpStack()
 	// Skip locals + FRM + RETN address + paramcount.
 	stk += 20;
 
-	for (new i = stp; i >= stk; i -= 4) {
+	// Don't print above the top of the stack.
+	new i = stp;
+	printf("[0x%08x]: TOP", i);
+	i -= 4;
+	for ( ; i >= stk; i -= 4) {
 		printf("[0x%08x]: 0x%08x", i, @(i));
 	}
 

@@ -655,7 +655,7 @@ stock Opcode:UnrelocateOpcode(Opcode:opcode) {
 	if (!opcode_table_is_ready) {
 		InitOpcodeTable();
 	}
-	if (opcode >= OP_NONE && _:opcode < NUM_OPCODES) {
+	if (OP_NONE <= opcode < Opcode:NUM_OPCODES) {
 		return opcode;
 	}
 	for (new i = 0; i < NUM_OPCODES; i++) {
