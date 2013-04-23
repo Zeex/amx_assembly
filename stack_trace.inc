@@ -91,13 +91,18 @@ stock GetStackTrace(trace[], skip = 0, max = sizeof(trace)) {
 
 stock PrintStackTrace(trace[], max = sizeof(trace)) {
 	print("Stack trace:");
-	for (new i = 0; trace[i] != 0 && i < max; i++) {
+
+	new i = 0;
+
+	for (; trace[i] != 0 && i < max - 1; i++) {
 		new name[32];
-		new address = GetFunctionFromReturnAddress(trace[i]);
+		new address = GetFunctionFromReturnAddress(trace[i + 1]);
 		if (GetPublicNameFromAddress(address, name)) {
-			printf(" %s[%08x]", name, address);
+			printf(" %s[%08x]", name, trace[i]);
 		} else {
-			printf(" ??[%08x]", address);
+			printf(" ??[%08x]", trace[i]);
 		}
 	}
+
+	printf(" ??[%08x]", trace[i]);
 }
