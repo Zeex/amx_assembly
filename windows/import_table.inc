@@ -19,7 +19,7 @@
 // SOFTWARE.
 
 #include <a_samp>
-#include <phys_memory>
+#include "..\phys_memory"
 
 // Helpful resources:
 //
@@ -41,8 +41,7 @@ static stock const SizeOfFileHeader = 0x14;
 static stock const SizeOfOptionalHeader = 0xE0;
 static stock const SizeOfImportDirectory = 0x14;
 
-// Finds a function in the Import Table and returns its address or 0 if found nothing.
-stock GetImportAddress(const name[]) {
+stock GetImportPointer(const name[]) {
 	new DosHeader = DefaultImageBase;
 	new NtHeaders = DosHeader + ReadDword(DosHeader, 0x3C);
 
@@ -79,11 +78,22 @@ stock GetImportAddress(const name[]) {
 			ReadString(ImageBase, ImportByName + 2, iname);
 
 			if (strcmp(iname, name) == 0) {
-				return ReadDword(ImportAddressTable, j * 4);
+				return ImportAddressTable + j * 4;
 			}
 		}
 	}
 
+	return 0;
+}
+
+// Finds a function in the Import Table and returns its address or 0 if found nothing.
+stock GetImportAddress(const name[]) {
+	new ImportPointer = GetImportPointer(name);
+	
+	if (ImportPointer != 0) {
+		return ReadDword(ImportPointer, 0);
+	}
+	
 	return 0;
 }
 
