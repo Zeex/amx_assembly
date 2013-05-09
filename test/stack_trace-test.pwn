@@ -3,7 +3,8 @@
 #include "../amx_header"
 #include "../stack_trace"
 
-forward public f2();
+forward f1();
+forward f3();
 
 main() {
 	f1();
@@ -13,7 +14,7 @@ public f1() {
 	f2();
 }
 
-public f2() {
+f2() {
 	f3();
 }
 
