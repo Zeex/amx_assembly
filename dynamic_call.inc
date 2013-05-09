@@ -135,7 +135,8 @@ stock CallFunction(address, {Float,_}:...) {
 	// Pop locals and return
 	#emit stack 0x10
 	#emit retn
-	return 0;
+
+	return 0; // make compiler happy
 }
 
 stock SysreqC(index, bool:auto_pop = true) {

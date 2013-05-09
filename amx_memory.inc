@@ -30,14 +30,14 @@ stock ref(...) {
 	assert(numargs() == 1);
 	#emit load.s.pri 12 // first argument
 	#emit retn
-	return 0;
+	return 0; // make compiler happy
 }
 
 // Reads a cell at the specified address.
 stock ReadAmxMemory(address) {
 	#emit lref.s.pri address
 	#emit retn
-	return 0;
+	return 0; // make compiler happy
 }
 
 // Same as ReadAmxMemory() but for arrays.
@@ -52,7 +52,7 @@ stock WriteAmxMemory(address, value) {
 	#emit load.s.pri value
 	#emit sref.s.pri address
 	#emit retn
-	return 0;
+	return 0; // make compiler happy
 }
 
 // Same as WriteAmxMemory() but for arrays.

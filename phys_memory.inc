@@ -55,7 +55,8 @@ stock ReadPhysMemory(addr, dest[], num = sizeof(dest)) {
 
 	#emit stack 12
 	#emit retn
-	return 0;
+
+	return 0; // make compiler happy
 }
 
 // Copy num cells from src to addr.
@@ -78,7 +79,8 @@ stock WritePhysMemory(addr, src[], num = sizeof(src)) {
 
 	#emit stack 12
 	#emit retn
-	return 0;
+
+	return 0; // make compiler happy
 }
 
 // Reads a single cell from memory and returns it.
@@ -87,7 +89,7 @@ stock ReadPhysMemoryCell(addr) {
 	#emit lref.s.pri rel_addr
 	#emit stack 4
 	#emit retn
-	return 0;
+	return 0; // make compiler happy
 }
 
 // Writes a single cell to memory.
@@ -97,7 +99,7 @@ stock WritePhysMemoryCell(addr, what) {
 	#emit sref.s.pri rel_addr
 	#emit stack 8
 	#emit retn
-	return 0;
+	return 0; // make compiler happy
 }
 
 // Swaps all bytes in a cell.
