@@ -77,7 +77,7 @@ stock DumpStack()
 	printf("[0x%08x]: TOP", i);
 	i -= 4;
 	for ( ; i >= stk; i -= 4) {
-		printf("[0x%08x]: 0x%08x", i, @(i));
+		printf("[0x%08x]: 0x%08x", i, ReadAmxMemory(i));
 	}
 
 	print("------------------------");

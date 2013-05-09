@@ -215,7 +215,7 @@ stock bool:DisasmDecodeInsn(ctx[DisasmContext]) {
 		return false;
 	}
 
-	new Opcode:opcode = UnrelocateOpcode(Opcode:@(ctx[DisasmContext_nip]));
+	new Opcode:opcode = UnrelocateOpcode(Opcode:ReadAmxMemory(ctx[DisasmContext_nip]));
 	if (opcode <= OP_NONE || _:opcode >= NUM_OPCODES) {
 		return false;
 	}
@@ -227,7 +227,7 @@ stock bool:DisasmDecodeInsn(ctx[DisasmContext]) {
 	ip += 4;
 
 	if (opcode == OP_CASETBL) {
-		new n = @(ip);
+		new n = ReadAmxMemory(ip);
 		ip += 4;
 		ip += (2 * n + 1) * 4;
 		ctx[DisasmContext_insn][DisasmInsnInfo_num_opers] = n;
@@ -244,7 +244,7 @@ stock Opcode:DisasmGetOpcode(ctx[DisasmContext]) {
 }
 
 stock DisasmGetOperand(ctx[DisasmContext], index = 0) {
-	return @(ctx[DisasmContext_cip] + (index + 1) * 4);
+	return ReadAmxMemory(ctx[DisasmContext_cip] + (index + 1) * 4);
 }
 
 stock DisasmGetNumOperands(ctx[DisasmContext]) {
@@ -305,7 +305,7 @@ static stock DumpDataRowChar(File:file, start, num, max) {
 
 	while (cur < max) {
 		new p[4 char + 1];
-		p[0] = @(cur);
+		p[0] = ReadAmxMemory(cur);
 
 		new u[4 + 1];
 		u[0] = ToPrintableAscii(p{0});
@@ -329,7 +329,7 @@ static stock DumpDataRowHex(File:file, start, num, max) {
 
 	while (cur < max) {
 		if (cur < end) {
-			fwrite(file, ToHexStr(@(cur)));
+			fwrite(file, ToHexStr(ReadAmxMemory(cur)));
 		} else {
 			fwrite(file, "        ");
 		}
@@ -396,11 +396,11 @@ stock DisasmDump(const out_filename[]) {
 			new num = DisasmGetNumOperands(ctx);
 			for (new i = 0; i < num; i++) {
 				fwrite(file, "\n         ");
-				new addr = @(cip + 4 * i * 2);
+				new addr = ReadAmxMemory(cip + 4 * i * 2);
 				new rel_addr = addr - (base + cod) + (cip - 4 + dat - cod);
 				fwrite(file, ToHexStr(rel_addr));
 				fwrite(file, " ");
-				new val = @(cip + 4 * i * 2 + 4);
+				new val = ReadAmxMemory(cip + 4 * i * 2 + 4);
 				fwrite(file, ToHexStr(val));
 			}
 			goto next;
@@ -409,7 +409,7 @@ stock DisasmDump(const out_filename[]) {
 		switch (opcode) {
 			case OP_CALL: {
 				new name[32];
-				new address = @(cip) - base - cod;
+				new address = ReadAmxMemory(cip) - base - cod;
 				if (address == hdr[AMX_HDR_CIP]) {
 					strcat(name, "main");
 				} else {

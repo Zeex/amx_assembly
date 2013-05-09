@@ -25,13 +25,6 @@
 
 #include <core>
 
-#define @  read@
-#define r@ read@
-#define read@ ReadAmxMemory // compatibility
-
-#define w@ write@
-#define write@ WriteAmxMemory // compatibility
-
 // Returns the address of a variable/array.
 stock ref(...) {
 	assert(numargs() == 1);

@@ -116,7 +116,7 @@ stock GetRawAmxHeader(plain_amxhdr[AMX_HDR_CELLS]) {
 	#emit stor.s.pri address
 
 	for (new i = 0; i < AMX_HDR_CELLS; i++) {
-		plain_amxhdr[i] = @(address);
+		plain_amxhdr[i] = ReadAmxMemory(address);
 		address += 4;
 	}
 }
@@ -225,7 +225,7 @@ static stock NtCompare(s1, const s2[]) {
 	new diff;
 
 	do {
-		c1 = @(s1++) & 0xFF;
+		c1 = ReadAmxMemory(s1++) & 0xFF;
 		c2 = s2[index++];
 		diff = c1 - c2;
 		if (diff != 0) {
@@ -243,7 +243,7 @@ static stock NtCopy(src, dest[], size = sizeof(dest)) {
 	new c;
 
 	do {
-		c = @(src++) & 0xFF;
+		c = ReadAmxMemory(src++) & 0xFF;
 		dest[i++] = c;
 	} while (c != '\0' && i <= size);
 
@@ -266,7 +266,7 @@ stock GetPublicIndexFromAddress(address) {
 
 	// Linear search
 	for (new i = 0; i < num_publics; i++) {
-		if (@(off) == address) {
+		if (ReadAmxMemory(off) == address) {
 			return i;
 		}
 		off += amxhdr[AMX_HDR_DEFSIZE];
@@ -286,8 +286,8 @@ stock bool:GetPublicInfo(index, info[AMX_FUNCSTUBNT]) {
 	}
 
 	new off = amxhdr[AMX_HDR_PUBLICS] - amxhdr[AMX_HDR_DAT] + index * amxhdr[AMX_HDR_DEFSIZE];
-	info[AMX_FUNCSTUBNT_ADDRESS] = @(off);
-	info[AMX_FUNCSTUBNT_NAMEOFS] = @(off + 4);
+	info[AMX_FUNCSTUBNT_ADDRESS] = ReadAmxMemory(off);
+	info[AMX_FUNCSTUBNT_NAMEOFS] = ReadAmxMemory(off + 4);
 
 	return true;
 }
@@ -307,7 +307,7 @@ stock GetPublicIndexFromName(const name[]) {
 		mid = (first + last) / 2;
 
 		new off = amxhdr[AMX_HDR_PUBLICS] - amxhdr[AMX_HDR_DAT] + mid * amxhdr[AMX_HDR_DEFSIZE];
-		new nameofs = @(off + 4) - amxhdr[AMX_HDR_DAT];
+		new nameofs = ReadAmxMemory(off + 4) - amxhdr[AMX_HDR_DAT];
 
 		new diff = NtCompare(nameofs, name);
 		if (diff < 0) {
@@ -356,8 +356,8 @@ stock HookPublic(index, address) {
 	}
 
 	new off = amxhdr[AMX_HDR_PUBLICS] - amxhdr[AMX_HDR_DAT] + index * amxhdr[AMX_HDR_DEFSIZE];
-	new old_address = @(off);
-	write@(off, address);
+	new old_address = ReadAmxMemory(off);
+	WriteAmxMemory(off, address);
 
 	return old_address;
 }
@@ -375,7 +375,7 @@ stock GetNativeIndexFromAddress(address) {
 
 	// Linear search
 	for (new i = 0; i < num_natives; i++) {
-		if (@(off) == address) {
+		if (ReadAmxMemory(off) == address) {
 			return i;
 		}
 		off += amxhdr[AMX_HDR_DEFSIZE];
@@ -395,8 +395,8 @@ stock bool:GetNativeInfo(index, info[AMX_FUNCSTUBNT]) {
 	}
 
 	new off = amxhdr[AMX_HDR_NATIVES] - amxhdr[AMX_HDR_DAT] + index * amxhdr[AMX_HDR_DEFSIZE];
-	info[AMX_FUNCSTUBNT_ADDRESS] = @(off);
-	info[AMX_FUNCSTUBNT_NAMEOFS] = @(off + 4);
+	info[AMX_FUNCSTUBNT_ADDRESS] = ReadAmxMemory(off);
+	info[AMX_FUNCSTUBNT_NAMEOFS] = ReadAmxMemory(off + 4);
 
 	return true;
 }
@@ -410,7 +410,7 @@ stock GetNativeIndexFromName(const name[]) {
 
 	// Linear search
 	for (new i = 0; i < num_natives; i++) {
-		new nameofs = @(off + 4) - amxhdr[AMX_HDR_DAT];
+		new nameofs = ReadAmxMemory(off + 4) - amxhdr[AMX_HDR_DAT];
 
 		new diff = NtCompare(nameofs, name);
 		if (diff == 0) {
@@ -457,8 +457,8 @@ stock HookNative(index, address) {
 	}
 
 	new off = amxhdr[AMX_HDR_NATIVES] - amxhdr[AMX_HDR_DAT] + index * amxhdr[AMX_HDR_DEFSIZE];
-	new old_address = @(off);
-	write@(off, address);
+	new old_address = ReadAmxMemory(off);
+	WriteAmxMemory(off, address);
 
 	return old_address;
 }
@@ -478,8 +478,8 @@ stock bool:GetPubVarInfo(index, info[AMX_FUNCSTUBNT]) {
 	}
 
 	new off = amxhdr[AMX_HDR_PUBVARS] - amxhdr[AMX_HDR_DAT] + index * amxhdr[AMX_HDR_DEFSIZE];
-	info[AMX_FUNCSTUBNT_ADDRESS] = @(off);
-	info[AMX_FUNCSTUBNT_NAMEOFS] = @(off + 4);
+	info[AMX_FUNCSTUBNT_ADDRESS] = ReadAmxMemory(off);
+	info[AMX_FUNCSTUBNT_NAMEOFS] = ReadAmxMemory(off + 4);
 
 	return true;
 }
@@ -499,7 +499,7 @@ stock GetPubVarIndexFromName(const name[]) {
 		mid = (first + last) / 2;
 
 		new off = amxhdr[AMX_HDR_PUBVARS] - amxhdr[AMX_HDR_DAT] + mid * amxhdr[AMX_HDR_DEFSIZE];
-		new nameofs = @(off + 4) - amxhdr[AMX_HDR_DAT];
+		new nameofs = ReadAmxMemory(off + 4) - amxhdr[AMX_HDR_DAT];
 
 		new diff = NtCompare(nameofs, name);
 		if (diff < 0) {
@@ -523,7 +523,7 @@ stock GetPubVarIndexFromAddress(address) {
 
 	// Linear search
 	for (new i = 0; i < num_pubvars; i++) {
-		if (@(off) == address) {
+		if (ReadAmxMemory(off) == address) {
 			return i;
 		}
 		off += amxhdr[AMX_HDR_DEFSIZE];
