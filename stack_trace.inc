@@ -25,6 +25,7 @@
 
 #include "amx_base"
 #include "amx_header"
+#include "frame_info"
 
 stock GetFunctionFromReturnAddress(ret_addr) {
 	new addr = ret_addr - 4;
@@ -45,26 +46,6 @@ stock GetFunctionFromReturnAddress(ret_addr) {
 	return addr - GetAmxBaseAddress();
 }
 
-stock GetReturnAddress(frm_addr) {
-	#emit load.s.pri frm_addr
-	#emit add.c 4
-
-	#emit push.pri
-	#emit lref.s.pri 0xfffffffc
-
-	#emit stack 4
-	#emit retn
-
-	return 0; // make compiler happy
-}
-
-stock GetPreviousFrame(frm_addr) {
-	#emit lref.s.pri frm_addr
-	#emit retn
-
-	return 0; // make compiler happy
-}
-
 stock GetStackTrace(trace[], skip = 0, max = sizeof(trace)) {
 	new frm_addr;
 	#emit lctrl 5
@@ -72,14 +53,14 @@ stock GetStackTrace(trace[], skip = 0, max = sizeof(trace)) {
 
 	new length = 0;
 	while (length < max) {
-		new ret_addr = GetReturnAddress(frm_addr);
+		new ret_addr = GetFrameReturn(frm_addr);
 		if (length >= skip) {
 			trace[length] = ret_addr;
 		}
 		if (ret_addr == 0) {
 			break;
 		}
-		frm_addr = GetPreviousFrame(frm_addr);
+		frm_addr = GetFramePreviousFrame(frm_addr);
 		if (frm_addr == 0) {
 			break;
 		}
