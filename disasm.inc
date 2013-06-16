@@ -196,16 +196,17 @@ stock DisasmInit(ctx[DisasmContext], start = 0, end = 0) {
 	new cod = hdr[AMX_HDR_COD];
 
 	new code_base = cod - dat;
-	new code_size = dat - cod;
 
-	ctx[DisasmContext_nip] = code_base;
-	ctx[DisasmContext_cip] = code_base;
+	start += code_base;
 
-	ctx[DisasmContext_start_ip] = code_base + start;
+	ctx[DisasmContext_nip] = start;
+	ctx[DisasmContext_cip] = start;
+
+	ctx[DisasmContext_start_ip] = start;
 	if (end != 0) {
 		ctx[DisasmContext_end_ip] = code_base + end;
 	} else {
-		ctx[DisasmContext_end_ip] = code_base + code_size;
+		ctx[DisasmContext_end_ip] = code_base + (dat - cod);
 	}
 }
 
