@@ -54,6 +54,18 @@ stock GetFrameReturn(frm_addr) {
 	return 0; // make compiler happy
 }
 
+stock SetFrameReturn(frm_addr, addr) {
+	#emit load.s.pri frm_addr
+	#emit add.c 4
+
+	#emit push.pri
+	#emit load.s.alt addr
+	#emit sref.s.alt 0xfffffffc
+
+	#emit stack 4
+	#emit retn
+}
+
 stock GetFrameTotalSize(frm_addr) {
 	return GetFrameLocalSize(frm_addr) + GetFrameHeaderSize(frm_addr) + GetFrameParameterSize(frm_addr);
 }
@@ -139,10 +151,9 @@ stock GetFrameParameter(frm_addr, param, idx = -1) {
 		#emit add.c 12
 
 		#emit push.pri
-		#emit lref.s.pri 0xfffffffc
+		#emit lref.s.alt 0xfffffffc
 		
-		#emit load.s.alt idx
-		#emit xchg
+		#emit load.s.pri idx
 		#emit lidx
 
 		#emit stack 4
@@ -176,6 +187,82 @@ stock GetFrameLocal(frm_addr, param) {
 
 		#emit push.pri
 		#emit lref.s.pri 0xfffffffc
+
+		#emit stack 4
+		#emit retn
+	}
+
+	return 0; // make compiler happy
+}
+
+stock SetFrameParameter(frm_addr, param, value, idx = -1) {
+	if (idx == -1) {
+		#emit load.s.pri param
+		#emit shl.c.pri 2
+
+		#emit load.s.alt frm_addr
+		#emit add
+
+		#emit add.c 12
+
+		#emit push.pri
+		#emit load.s.pri value
+		#emit sref.s.pri 0xfffffffc
+
+		#emit stack 4
+		#emit retn
+	} else {
+		#emit load.s.pri param
+		#emit shl.c.pri 2
+
+		#emit load.s.alt frm_addr
+		#emit add
+
+		#emit add.c 12
+
+		#emit push.pri
+		#emit lref.s.alt 0xfffffffc
+
+		#emit load.s.pri idx
+		#emit idxaddr
+
+		#emit load.s.alt value
+		#emit xchg
+		#emit stor.i
+
+		#emit stack 4
+		#emit retn
+	}
+
+	return 0; // make compiler happy
+}
+
+stock SetFrameLocal(frm_addr, param, value) {
+	if (param < 0) {
+		// probably in correct format for negative offsets
+		#emit load.s.pri param
+		#emit load.s.alt frm_addr
+		#emit add
+
+		#emit push.pri
+		#emit load.s.pri value
+		#emit sref.s.pri 0xfffffffc
+
+		#emit stack 4
+		#emit retn
+	} else {
+		#emit load.s.pri param
+		#emit shl.c.pri 2
+
+		#emit const.alt 0xfffffffc
+		#emit sub.alt
+
+		#emit load.s.alt frm_addr
+		#emit add
+
+		#emit push.pri
+		#emit load.s.pri value
+		#emit sref.s.pri 0xfffffffc
 
 		#emit stack 4
 		#emit retn
@@ -245,4 +332,8 @@ stock GetCurrentFrameLocal(param) {
 
 stock GetCurrentFrameParameterCount() {
 	return GetFrameParameterCount(GetCallerFrame());
+}
+
+stock SetCurrentFrameReturn(addr) {
+	SetFrameReturn(GetCallerFrame(), addr);
 }
