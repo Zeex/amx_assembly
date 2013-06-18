@@ -138,6 +138,10 @@ stock AsmError:AsmInitPtr(ctx[AsmContext], buffer, size) {
 	return ASM_ERROR_NONE;
 }
 
+stock AsmGetBufferSize(ctx[AsmContext]) {
+	return ctx[AsmContext_buffer_size] - ctx[AsmContext_buffer_offset];
+}
+
 stock AsmError:AsmInit(ctx[AsmContext], buffer[], size = sizeof(buffer)) {
 	AsmInitPtr(ctx, ref(buffer), size * 4);
 }
@@ -408,7 +412,7 @@ stock AsmError:AsmEmitJumpRel(ctx[AsmContext], offset) {
 }
 
 stock AsmError:AsmEmitJzer(ctx[AsmContext], address) {
-	return AsmEmitInstruction(ctx, OP_JZER, offset);
+	return AsmEmitInstruction(ctx, OP_JZER, address);
 }
 
 stock AsmError:AsmEmitJzerRel(ctx[AsmContext], offset) {

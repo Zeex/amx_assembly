@@ -515,6 +515,7 @@
 #define asm_emit_pop AsmEmitPop
 #define asm_emit_sign AsmEmitSign
 #define asm_emit_stor AsmEmitStor
+#define asm_emit_sref AsmEmitSref
 #define asm_emit_strb AsmEmitStrb
 #define asm_emit_swap AsmEmitSwap
 // Mixed-case.
@@ -528,6 +529,7 @@
 #define asm_emit_Pop AsmEmitPop
 #define asm_emit_Sign AsmEmitSign
 #define asm_emit_Stor AsmEmitStor
+#define asm_emit_Sref AsmEmitSref
 #define asm_emit_Strb AsmEmitStrb
 #define asm_emit_Swap AsmEmitSwap
 // Upper-case.
@@ -541,5 +543,6 @@
 #define asm_emit_POP AsmEmitPop
 #define asm_emit_SIGN AsmEmitSign
 #define asm_emit_STOR AsmEmitStor
+#define asm_emit_SREF AsmEmitSref
 #define asm_emit_STRB AsmEmitStrb
 #define asm_emit_SWAP AsmEmitSwap
