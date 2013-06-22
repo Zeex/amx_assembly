@@ -459,11 +459,13 @@ stock GetFrameFunction(frm_addr) {
 				return ReadAmxMemory(ReadAmxMemory(ret_addr - 4));
 			} else if (opcode == OP_LOAD_S_PRI) {
 				return GetFrameVariable(prev_frm, ReadAmxMemory(ret_addr - 4));
+			} else if (opcode == OP_CONST_PRI) {
+				return ReadAmxMemory(ret_addr - 4);
 			}
 		}
 
 		// guess!
-		new end = amxhdr[AMX_HDR_COD] - amxhdr[AMX_HDR_DAT];
+		new end = amxhdr[AMX_HDR_COD] - amxhdr[AMX_HDR_DAT] + 8; // "halt"
 		ret_addr = GetFrameReturn(GetFrameNextFrame(frm_addr)) + end;
 
 		opcode = RelocateOpcode(OP_RETN);
