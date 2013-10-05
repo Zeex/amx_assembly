@@ -97,7 +97,7 @@ stock WritePhysMemoryCell(addr, what) {
 	new rel_addr = AbsToRel(addr);
 	#emit load.s.pri what
 	#emit sref.s.pri rel_addr
-	#emit stack 8
+	#emit stack 4
 	#emit retn
 	return 0; // make compiler happy
 }
