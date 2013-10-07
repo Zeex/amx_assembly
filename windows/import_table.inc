@@ -19,7 +19,7 @@
 // SOFTWARE.
 
 #include <a_samp>
-#include "..\phys_memory"
+#include "../phys_memory"
 
 // Helpful resources:
 //
@@ -89,11 +89,11 @@ stock GetImportPointer(const name[]) {
 // Finds a function in the Import Table and returns its address or 0 if found nothing.
 stock GetImportAddress(const name[]) {
 	new ImportPointer = GetImportPointer(name);
-	
+
 	if (ImportPointer != 0) {
 		return ReadDword(ImportPointer, 0);
 	}
-	
+
 	return 0;
 }
 
