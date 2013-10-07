@@ -1,22 +1,22 @@
 // Copyright (C) 2011-2012 Zeex
 //
-// Permission is hereby granted, free of charge, to any person obtaining a copy of
-// this software and associated documentation files (the "Software"), to deal in
-// the Software without restriction, including without limitation the rights to
-// use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies
-// of the Software, and to permit persons to whom the Software is furnished to do
-// so, subject to the following conditions:
+// Permission is hereby granted, free of charge, to any person obtaining a
+// copy of this software and associated documentation files (the "Software"),
+// to deal in the Software without restriction, including without limitation
+// the rights to use, copy, modify, merge, publish, distribute, sublicense,
+// and/or sell copies of the Software, and to permit persons to whom the
+// Software is furnished to do so, subject to the following conditions:
 //
-// The above copyright notice and this permission notice shall be included in all
-// copies or substantial portions of the Software.
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
 //
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 // FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
 // AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-// SOFTWARE.
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+// FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+// DEALINGS IN THE SOFTWARE.
 
 #if defined PHYS_MEMORY_INC
 	#endinput
@@ -27,7 +27,6 @@
 
 #include "amx_base"
 
-// Computes the DAT-relative address.
 static stock AbsToRel(addr) {
 	new dat;
 	#emit lctrl 1
@@ -35,7 +34,6 @@ static stock AbsToRel(addr) {
 	return addr - (GetAmxBaseAddress() + dat);
 }
 
-// Copy num cells from addr to dest.
 stock ReadPhysMemory(addr, dest[], num = sizeof(dest)) {
 	new rel_addr = AbsToRel(addr);
 
@@ -59,7 +57,6 @@ stock ReadPhysMemory(addr, dest[], num = sizeof(dest)) {
 	return 0; // make compiler happy
 }
 
-// Copy num cells from src to addr.
 stock WritePhysMemory(addr, src[], num = sizeof(src)) {
 	new rel_addr = AbsToRel(addr);
 
@@ -83,7 +80,6 @@ stock WritePhysMemory(addr, src[], num = sizeof(src)) {
 	return 0; // make compiler happy
 }
 
-// Reads a single cell from memory and returns it.
 stock ReadPhysMemoryCell(addr) {
 	new rel_addr = AbsToRel(addr);
 	#emit lref.s.pri rel_addr
@@ -92,7 +88,6 @@ stock ReadPhysMemoryCell(addr) {
 	return 0; // make compiler happy
 }
 
-// Writes a single cell to memory.
 stock WritePhysMemoryCell(addr, what) {
 	new rel_addr = AbsToRel(addr);
 	#emit load.s.pri what
@@ -117,7 +112,8 @@ stock SwapBytes(c) {
 	return a;
 }
 
-// Converts a packed string to a null-terminated string of one-byte characters.
+// Converts a packed string to a null-terminated string of
+// (one-byte) characters (char* in C++).
 stock ToCharString(s[], size = sizeof(s)) {
 	for (new i = 0; i < size; i++) {
 		s[i] = SwapBytes(s[i]);
@@ -127,13 +123,11 @@ stock ToCharString(s[], size = sizeof(s)) {
 // Returns the absolute address of a variable/array.
 stock refabs(...) {
 	assert(numargs() == 1);
-
 	new offset;
 	#emit load.s.alt 12
 	#emit lctrl 1
 	#emit add
 	#emit move.alt
 	#emit stor.s.pri offset
-
 	return offset + GetAmxBaseAddress();
 }
