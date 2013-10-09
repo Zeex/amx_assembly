@@ -97,6 +97,12 @@ stock GetImportAddress(const name[]) {
 	return 0;
 }
 
+static stock ToCharString(s[], size = sizeof(s)) {
+	for (new i = 0; i < size; i++) {
+		s[i] = swapchars(s[i]);
+	}
+}
+
 static stock ReadDword(base, offset = 0) {
 	return ReadPhysMemoryCell(base + offset);
 }

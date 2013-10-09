@@ -1,5 +1,11 @@
 #include <ShellExecute>
 
+ToCharString(s[], size = sizeof(s)) {
+	for (new i = 0; i < size; i++) {
+		s[i] = swapchars(s[i]);
+	}
+}
+
 main() {
 	new File[] = !"notepad.exe";
 	new Operation[] = !"open";

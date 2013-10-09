@@ -3,6 +3,12 @@
 #include "amx"
 #include "phys_memory"
 
+ToCharString(s[], size = sizeof(s)) {
+	for (new i = 0; i < size; i++) {
+		s[i] = swapchars(s[i]);
+	}
+}
+
 main() {
 	printf("AMX address: %x", GetAmxAddress());
 	printf("AMX base address: %x", GetAmxBaseAddress());

@@ -97,29 +97,6 @@ stock WritePhysMemoryCell(addr, what) {
 	return 0; // make compiler happy
 }
 
-// Swaps all bytes in a cell.
-stock SwapBytes(c) {
-	new a = 0x00000000;
-
-	// Swap the highest and the lowest bytes.
-	a |= (c & 0xff000000) >> 24;
-	a |= (c & 0x000000ff) << 24;
-
-	// Swap the other two.
-	a |= (c & 0x00ff0000) >> 8;
-	a |= (c & 0x0000ff00) << 8;
-
-	return a;
-}
-
-// Converts a packed string to a null-terminated string of
-// (one-byte) characters (char* in C++).
-stock ToCharString(s[], size = sizeof(s)) {
-	for (new i = 0; i < size; i++) {
-		s[i] = SwapBytes(s[i]);
-	}
-}
-
 // Returns the absolute address of a variable/array.
 stock refabs(...) {
 	assert(numargs() == 1);
