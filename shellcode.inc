@@ -24,9 +24,7 @@
 
 stock RunShellcode(code_ptr, bool:align = true) {
 	if (align) {
-		while (code_ptr % 16 != 0) {
-			code_ptr++;
-		}
+		code_ptr = ((code_ptr + 15) >>> 4) << 4;
 	}
 	return SysreqD(code_ptr);
 }
