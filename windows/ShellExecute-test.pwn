@@ -1,4 +1,4 @@
-#include "windows/ShellExecute"
+#include "ShellExecute"
 
 ToCharString(s[], size = sizeof(s)) {
 	for (new i = 0; i < size; i++) {

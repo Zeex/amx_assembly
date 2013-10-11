@@ -2,7 +2,7 @@ ifndef PAWNCC
 PAWNCC = pawncc
 endif
 
-INCLUDE = -i$(SAMP_SERVER_ROOT)/pawno/include -i../
+INCLUDE = -i$(SAMP_SERVER_ROOT)/pawno/include
 
 AMX  = amx-test.amx
 AMX += asm-test.amx
