@@ -18,6 +18,11 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 // DEALINGS IN THE SOFTWARE.
 
+#if defined SHELLCODE_INC
+	#endinput
+#endif
+#define SHELLCODE_INC
+
 #include "amx_header"
 #include "dynamic_call"
 #include "phys_memory"
