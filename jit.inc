@@ -23,7 +23,7 @@
 #endif
 #define JIT_INC
 
-stock bool:IsJitPresent() {
+stock bool:IsJITPresent() {
 	#emit zero.pri
 	#emit lctrl 7
 	#emit retn
