@@ -376,38 +376,37 @@ stock DisasmDump(const out_filename[]) {
 		fwrite(file, insn_name);
 		fwrite(file, " ");
 
-		if (opcode == OP_PROC) {
-			new name[32];
-			new address = cip + dat - cod;
-			if (address == hdr[AMX_HDR_CIP]) {
-				strcat(name, "main");
-			} else {
-				new index = GetPublicIndexFromAddress(address);
-				if (index >= 0) {
-					GetPublicNameFromIndex(index, name);
-				}
-			}
-			if (strlen(name) != 0) {
-				fwrite(file, "; ");
-				fwrite(file, name);
-			}
-		}
-
-		if (opcode == OP_CASETBL) {
-			new num = DisasmGetNumOperands(ctx);
-			for (new i = 0; i < num; i++) {
-				fwrite(file, "\n         ");
-				new addr = ReadAmxMemory(cip + 4 * i * 2);
-				new rel_addr = addr - (base + cod) + (cip - 4 + dat - cod);
-				fwrite(file, ToHexStr(rel_addr));
-				fwrite(file, " ");
-				new val = ReadAmxMemory(cip + 4 * i * 2 + 4);
-				fwrite(file, ToHexStr(val));
-			}
-			goto next;
-		}
 
 		switch (opcode) {
+			case OP_PROC: {
+				new name[32];
+				new address = cip + dat - cod;
+				if (address == hdr[AMX_HDR_CIP]) {
+					strcat(name, "main");
+				} else {
+					new index = GetPublicIndexFromAddress(address);
+					if (index >= 0) {
+						GetPublicNameFromIndex(index, name);
+					}
+				}
+				if (strlen(name) != 0) {
+					fwrite(file, "; ");
+					fwrite(file, name);
+				}
+			}
+			case OP_CASETBL: {
+				new num = DisasmGetNumOperands(ctx);
+				for (new i = 0; i < num; i++) {
+					fwrite(file, "\n         ");
+					new addr = ReadAmxMemory(cip + 4 * i * 2);
+					new rel_addr = addr - (base + cod) + (cip - 4 + dat - cod);
+					fwrite(file, ToHexStr(rel_addr));
+					fwrite(file, " ");
+					new val = ReadAmxMemory(cip + 4 * i * 2 + 4);
+					fwrite(file, ToHexStr(val));
+				}
+				goto next;
+			}
 			case OP_CALL: {
 				new name[32];
 				new address = ReadAmxMemory(cip) - base - cod;
