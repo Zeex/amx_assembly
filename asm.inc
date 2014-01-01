@@ -571,7 +571,7 @@ stock AsmError:AsmEmitRetn(ctx[AsmContext]) {
 }
 
 stock AsmError:AsmEmitSctrl(ctx[AsmContext], index) {
-	assert(index == 2 || index == 4 || index == 6);
+	assert(index == 2 || 4 <= index <= 6);
 	return AsmEmitInstruction(ctx, OP_SCTRL, index);
 }
 
