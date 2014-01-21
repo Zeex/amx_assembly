@@ -105,7 +105,7 @@ stock CallN(address, args_to_push, bool:auto_pop = true) {
 	// Like "Call", but doesn't pass all parameters.
 	new arg = 0;
 	new index = g_nargs;
-	new bytes = g_nargs * 4;
+	new bytes = args_to_push * 4;
 	new end = g_nargs - args_to_push;
 	new retval;
 
@@ -188,6 +188,7 @@ stock SysreqC(index, bool:auto_pop = true) {
 	new i = g_nargs;
 	new bytes = g_nargs * 4;
 	new tmp;
+	new Opcode:sysreq_c = RelocateOpcode(OP_SYSREQ_C);
 	new retval;
 
 	while (--i >= 0) {
@@ -206,14 +207,24 @@ stock SysreqC(index, bool:auto_pop = true) {
 	#emit move.alt
 	#emit lctrl 1  // DAT
 	#emit sub.alt
-	#emit add.c 0x38
+	#emit add.c 0x5c
 	#emit stor.s.pri tmp
 
-	// Change native index in the following SYSREQ.C instruction.
+	// nop #1 = sysreq.c
+	#emit load.s.pri sysreq_c
+	#emit sref.s.pri tmp
+
+	// tmp += 4
+	#emit load.s.pri tmp
+	#emit add.c 4
+	#emit stor.s.pri tmp
+
+	// nop #2 = index
 	#emit load.s.pri index
 	#emit sref.s.pri tmp
 
-	#emit sysreq.c 0xFFFFFFFF
+	#emit nop
+	#emit nop
 
 	#emit stor.s.pri retval
 
@@ -293,8 +304,9 @@ stock SysreqD(address, bool:auto_pop = true) {
 stock SysreqCN(index, args_to_push, bool:auto_pop = true) {
 	new arg = 0;
 	new i = g_nargs;
-	new bytes = g_nargs * 4;
+	new bytes = args_to_push * 4;
 	new tmp;
+	new Opcode:sysreq_c = RelocateOpcode(OP_SYSREQ_C);
 	new end = g_nargs - args_to_push;
 	new retval;
 
@@ -306,7 +318,6 @@ stock SysreqCN(index, args_to_push, bool:auto_pop = true) {
 		arg = g_args[i];
 		#emit push.s arg
 	}
-
 	#emit load.s.pri bytes
 	#emit push.pri
 
@@ -318,14 +329,24 @@ stock SysreqCN(index, args_to_push, bool:auto_pop = true) {
 	#emit move.alt
 	#emit lctrl 1  // DAT
 	#emit sub.alt
-	#emit add.c 0x38
+	#emit add.c 0x5c
 	#emit stor.s.pri tmp
 
-	// Change native index in the following SYSREQ.C instruction.
+	// nop #1 = sysreq.c
+	#emit load.s.pri sysreq_c
+	#emit sref.s.pri tmp
+
+	// tmp += 4
+	#emit load.s.pri tmp
+	#emit add.c 4
+	#emit stor.s.pri tmp
+
+	// nop #2 = index
 	#emit load.s.pri index
 	#emit sref.s.pri tmp
 
-	#emit sysreq.c 0xFFFFFFFF
+	#emit nop
+	#emit nop
 
 	#emit stor.s.pri retval
 
@@ -348,7 +369,7 @@ stock SysreqCN(index, args_to_push, bool:auto_pop = true) {
 stock SysreqDN(address, args_to_push, bool:auto_pop = true) {
 	new arg = 0;
 	new i = g_nargs;
-	new bytes = g_nargs * 4;
+	new bytes = args_to_push * 4;
 	new tmp;
 	new Opcode:sysreq_d = RelocateOpcode(OP_SYSREQ_D);
 	new end = g_nargs - args_to_push;
