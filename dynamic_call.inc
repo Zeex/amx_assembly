@@ -434,6 +434,7 @@ stock SysreqDN(address, args_to_push, bool:auto_pop = true) {
 
 stock CallNative(index, {Float,_}:...) {
 	new arg_bytes, arg_begin, arg_end;
+	new Opcode:sysreq_c = RelocateOpcode(OP_SYSREQ_C);
 
 	// Get number of bytes passed.
 	#emit load.s.pri 0x8
@@ -466,22 +467,32 @@ stock CallNative(index, {Float,_}:...) {
 	// Push number of arguments * 4 (which is params[0]).
 	#emit push.s arg_bytes
 
-	// tmp = cod + cip - dat + <distance to SYSREQ.C's operand>
+	// tmp = cod + cip - dat + <distance to nop #1>
 	#emit lctrl 0  // COD
 	#emit move.alt
 	#emit lctrl 6  // CIP
 	#emit add
 	#emit move.alt
-	#emit lctrl 1  // DAT
+	#emit lctrl 1 // DAT
 	#emit sub.alt
-	#emit add.c 0x38
+	#emit add.c 0x5c
 	#emit stor.s.pri tmp
 
-	// Change native index in the following SYSREQ.C instruction.
+	// nop #1 = sysreq.c
+	#emit load.s.pri sysreq_c
+	#emit sref.s.pri tmp
+
+	// tmp += 4
+	#emit load.s.pri tmp
+	#emit add.c 4
+	#emit stor.s.pri tmp
+
+	// nop #2 = index
 	#emit load.s.pri index
 	#emit sref.s.pri tmp
 
-	#emit sysreq.c 0xFFFFFFFF
+	#emit nop
+	#emit nop
 
 	new retval;
 	#emit stor.s.pri retval
@@ -569,6 +580,5 @@ stock CallNativeByAddress(address, {Float,_}:...) {
 	#emit add.c 4
 	#emit sctrl 4
 
-	// Pop locals and return.
 	return retval;
 }
