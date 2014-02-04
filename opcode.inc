@@ -616,6 +616,7 @@ stock Opcode:RelocateOpcodeNow(Opcode:opcode) {
 			// Since there's no way to #emit sysreq.d we have to compute its
 			// address using a relative offset to another opcode, e.g. nop.
 			new bool:is_crashdetect;
+			#emit zero.pri
 			#emit lctrl 0xFF
 			#emit stor.s.pri is_crashdetect
 			if (is_crashdetect) {
