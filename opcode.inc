@@ -23,6 +23,8 @@
 #endif
 #define OPCODE_INC
 
+#include "amx_memory"
+
 enum Opcode {
   OP_NONE,         OP_LOAD_PRI,     OP_LOAD_ALT,
   OP_LOAD_S_PRI,   OP_LOAD_S_ALT,   OP_LREF_PRI,
@@ -75,594 +77,243 @@ enum Opcode {
 
 const NUM_OPCODES = _:OP_LAST_;
 
-static stock Opcode:ReadOpcodeNearThis(offset = 0) {
-	new ret_addr;
-
-	// Get return address + COD - DAT + offset.
-	#emit load.s.alt 4
-	#emit lctrl 0
-	#emit add
-	#emit move.alt
+stock GetOpcodeTable() {
 	#emit lctrl 1
-	#emit xchg
+	#emit move.alt
+	#emit lctrl 0
 	#emit sub
-	#emit load.s.alt offset
+	#emit move.alt
+	#emit lctrl 6
 	#emit add
-
-	#emit stor.s.pri ret_addr
-	#emit lref.s.pri ret_addr
-
-	#emit stack 4
+	#emit add.c 16
 	#emit retn
-
-	return OP_NONE; // make compiler happy
+	// --- BEGIN OPCODE TABLE ---
+	#emit nop // none
+	#emit nop
+	#emit load.pri 0
+	#emit load.alt 0
+	#emit load.s.pri 0
+	#emit load.s.alt 0
+	#emit lref.pri 0
+	#emit lref.alt 0
+	#emit lref.s.pri 0
+	#emit lref.s.alt 0
+	#emit load.i
+	#emit nop
+	#emit lodb.i 1
+	#emit const.pri 0
+	#emit const.alt 0
+	#emit addr.pri 0
+	#emit addr.alt 0
+	#emit stor.pri 0
+	#emit stor.alt 0
+	#emit stor.s.pri 0
+	#emit stor.s.alt 0
+	#emit sref.pri 0
+	#emit sref.alt 0
+	#emit sref.s.pri 0
+	#emit sref.s.alt 0
+	#emit stor.i
+	#emit nop
+	#emit strb.i 1
+	#emit lidx
+	#emit nop
+	#emit lidx.b 0
+	#emit idxaddr
+	#emit nop
+	#emit idxaddr.b 0
+	#emit align.pri 0
+	#emit align.alt 0
+	#emit lctrl 0
+	#emit sctrl 0
+	#emit move.pri
+	#emit nop
+	#emit move.alt
+	#emit nop
+	#emit xchg
+	#emit nop
+	#emit push.pri
+	#emit nop
+	#emit push.alt
+	#emit nop
+	#emit nop // push.r (obsolete)
+	#emit nop
+	#emit push.c 0
+	#emit push 0
+	#emit push.s 0
+	#emit pop.pri
+	#emit nop
+	#emit pop.alt
+	#emit nop
+	#emit stack 0
+	#emit heap 0
+	#emit proc
+	#emit nop
+	#emit ret
+	#emit nop
+	#emit retn
+	#emit nop
+	#emit nop // call (compiler bug)
+	#emit nop
+	#emit nop // call.pri (obsolete)
+	#emit nop
+	#emit jump 0
+	#emit jrel 0
+	#emit jzer 0
+	#emit jnz 0
+	#emit jeq 0
+	#emit jneq 0
+	#emit jless 0
+	#emit jleq 0
+	#emit jgrtr 0
+	#emit jgeq 0
+	#emit jsless 0
+	#emit jsleq 0
+	#emit jsgrtr 0
+	#emit jsgeq 0
+	#emit shl
+	#emit nop
+	#emit shr
+	#emit nop
+	#emit sshr
+	#emit nop
+	#emit shl.c.pri 0
+	#emit shl.c.alt 0
+	#emit shr.c.pri 0
+	#emit shr.c.alt 0
+	#emit smul
+	#emit nop
+	#emit sdiv
+	#emit nop
+	#emit sdiv.alt
+	#emit nop
+	#emit umul
+	#emit nop
+	#emit udiv
+	#emit nop
+	#emit udiv.alt
+	#emit nop
+	#emit add
+	#emit nop
+	#emit sub
+	#emit nop
+	#emit sub.alt
+	#emit nop
+	#emit and
+	#emit nop
+	#emit or
+	#emit nop
+	#emit xor
+	#emit nop
+	#emit not
+	#emit nop
+	#emit neg
+	#emit nop
+	#emit invert
+	#emit nop
+	#emit add.c 0
+	#emit smul.c 0
+	#emit zero.pri
+	#emit nop
+	#emit zero.alt
+	#emit nop
+	#emit zero 0
+	#emit zero.s 0
+	#emit sign.pri
+	#emit nop
+	#emit sign.alt
+	#emit nop
+	#emit eq
+	#emit nop
+	#emit neq
+	#emit nop
+	#emit less
+	#emit nop
+	#emit leq
+	#emit nop
+	#emit grtr
+	#emit nop
+	#emit geq
+	#emit nop
+	#emit sless
+	#emit nop
+	#emit sleq
+	#emit nop
+	#emit sgrtr
+	#emit nop
+	#emit sgeq
+	#emit nop
+	#emit eq.c.pri 0
+	#emit eq.c.alt 0
+	#emit inc.pri
+	#emit nop
+	#emit inc.alt
+	#emit nop
+	#emit inc 0
+	#emit inc.s 0
+	#emit inc.i
+	#emit nop
+	#emit dec.pri
+	#emit nop
+	#emit dec.alt
+	#emit nop
+	#emit dec 0
+	#emit dec.s 0
+	#emit dec.i
+	#emit nop
+	#emit movs 0
+	#emit cmps 0
+	#emit fill 0
+	#emit halt 0
+	#emit bounds 0
+	#emit sysreq.pri
+	#emit nop
+	#emit sysreq.c 0
+	#emit nop // file (obsolete)
+	#emit nop
+	#emit nop // line (obsolete)
+	#emit nop
+	#emit nop // symbol (obsolete)
+	#emit nop
+	#emit nop // srange (obsolete)
+	#emit nop
+	#emit nop // jump.pri (obsolete)
+	#emit nop
+	#emit switch 0
+	#emit nop // casetbl (not emittable)
+	#emit nop
+	#emit swap.pri
+	#emit nop
+	#emit swap.alt
+	#emit nop
+	#emit push.adr 0
+	#emit nop // nop itself
+	#emit nop
+	#emit nop // sysreq.d (not emittable)
+	#emit nop
+	#emit nop // symtag (obsolete)
+	#emit nop
+	#emit break
+	#emit nop
+	// --- END OPCODE TABLE ---
+	return 0;
 }
 
-static stock bool:HaveToRelocateOpcodes() {
-	return ReadOpcodeNearThis(-8) != OP_CALL;
-}
-
-// Based on this idea: http://forum.sa-mp.com/showthread.php?t=358084
-stock Opcode:RelocateOpcodeNow(Opcode:opcode) {
-	if (!HaveToRelocateOpcodes()) {
-		return opcode;
-	}
-	switch (opcode) {
-		case OP_LOAD_PRI: {
-			return ReadOpcodeNearThis(4);
-			#emit load.pri 0
-		}
-		case OP_LOAD_ALT: {
-			return ReadOpcodeNearThis(4);
-			#emit load.alt 0
-		}
-		case OP_LOAD_S_PRI: {
-			return ReadOpcodeNearThis(4);
-			#emit load.s.pri 0
-		}
-		case OP_LOAD_S_ALT: {
-			return ReadOpcodeNearThis(4);
-			#emit load.s.alt 0
-		}
-		case OP_LREF_PRI: {
-			return ReadOpcodeNearThis(4);
-			#emit lref.pri 0
-		}
-		case OP_LREF_ALT: {
-			return ReadOpcodeNearThis(4);
-			#emit lref.alt 0
-		}
-		case OP_LREF_S_PRI: {
-			return ReadOpcodeNearThis(4);
-			#emit lref.s.pri 0
-		}
-		case OP_LREF_S_ALT: {
-			return ReadOpcodeNearThis(4);
-			#emit lref.s.alt 0
-		}
-		case OP_LOAD_I: {
-			return ReadOpcodeNearThis(4);
-			#emit load.i
-		}
-		case OP_LODB_I: {
-			return ReadOpcodeNearThis(4);
-			#emit lodb.i 1
-		}
-		case OP_CONST_PRI: {
-			return ReadOpcodeNearThis(4);
-			#emit const.pri 0
-		}
-		case OP_CONST_ALT: {
-			return ReadOpcodeNearThis(4);
-			#emit const.alt 0
-		}
-		case OP_ADDR_PRI: {
-			return ReadOpcodeNearThis(4);
-			#emit addr.pri 0
-		}
-		case OP_ADDR_ALT: {
-			return ReadOpcodeNearThis(4);
-			#emit addr.alt 0
-		}
-		case OP_STOR_PRI: {
-			return ReadOpcodeNearThis(4);
-			#emit stor.pri 0
-		}
-		case OP_STOR_ALT: {
-			return ReadOpcodeNearThis(4);
-			#emit stor.alt 0
-		}
-		case OP_STOR_S_PRI: {
-			return ReadOpcodeNearThis(4);
-			#emit stor.s.pri 0
-		}
-		case OP_STOR_S_ALT: {
-			return ReadOpcodeNearThis(4);
-			#emit stor.s.alt 0
-		}
-		case OP_SREF_PRI: {
-			return ReadOpcodeNearThis(4);
-			#emit sref.pri 0
-		}
-		case OP_SREF_ALT: {
-			return ReadOpcodeNearThis(4);
-			#emit sref.alt 0
-		}
-		case OP_SREF_S_PRI: {
-			return ReadOpcodeNearThis(4);
-			#emit sref.s.pri 0
-		}
-		case OP_SREF_S_ALT: {
-			return ReadOpcodeNearThis(4);
-			#emit sref.s.alt 0
-		}
-		case OP_STOR_I: {
-			return ReadOpcodeNearThis(4);
-			#emit stor.i
-		}
-		case OP_STRB_I: {
-			return ReadOpcodeNearThis(4);
-			#emit strb.i 1
-		}
-		case OP_LIDX: {
-			return ReadOpcodeNearThis(4);
-			#emit lidx
-		}
-		case OP_LIDX_B: {
-			return ReadOpcodeNearThis(4);
-			#emit lidx.b 0
-		}
-		case OP_IDXADDR: {
-			return ReadOpcodeNearThis(4);
-			#emit idxaddr
-		}
-		case OP_IDXADDR_B: {
-			return ReadOpcodeNearThis(4);
-			#emit idxaddr.b 0
-		}
-		case OP_ALIGN_PRI: {
-			return ReadOpcodeNearThis(4);
-			#emit align.pri 0
-		}
-		case OP_ALIGN_ALT: {
-			return ReadOpcodeNearThis(4);
-			#emit align.alt 0
-		}
-		case OP_LCTRL: {
-			return ReadOpcodeNearThis(4);
-			#emit lctrl 0
-		}
-		case OP_SCTRL: {
-			return ReadOpcodeNearThis(4);
-			#emit sctrl 0
-		}
-		case OP_MOVE_PRI: {
-			return ReadOpcodeNearThis(4);
-			#emit move.pri
-		}
-		case OP_MOVE_ALT: {
-			return ReadOpcodeNearThis(4);
-			#emit move.alt
-		}
-		case OP_XCHG: {
-			return ReadOpcodeNearThis(4);
-			#emit xchg
-		}
-		case OP_PUSH_PRI: {
-			return ReadOpcodeNearThis(4);
-			#emit push.pri
-		}
-		case OP_PUSH_ALT: {
-			return ReadOpcodeNearThis(4);
-			#emit push.alt
-		}
-		case OP_PUSH_C: {
-			return ReadOpcodeNearThis(4);
-			#emit push.c 0
-		}
-		case OP_PUSH: {
-			return ReadOpcodeNearThis(4);
-			#emit push 0
-		}
-		case OP_PUSH_S: {
-			return ReadOpcodeNearThis(4);
-			#emit push.s 0
-		}
-		case OP_POP_PRI: {
-			return ReadOpcodeNearThis(4);
-			#emit pop.pri
-		}
-		case OP_POP_ALT: {
-			return ReadOpcodeNearThis(4);
-			#emit pop.alt
-		}
-		case OP_STACK: {
-			return ReadOpcodeNearThis(4);
-			#emit stack 0
-		}
-		case OP_HEAP: {
-			return ReadOpcodeNearThis(4);
-			#emit heap 0
-		}
-		case OP_PROC: {
-			return ReadOpcodeNearThis(4);
-			#emit proc
-		}
-		case OP_RET: {
-			return ReadOpcodeNearThis(4);
-			#emit ret
-		}
-		case OP_RETN: {
-			return ReadOpcodeNearThis(4);
-			#emit retn
-		}
-		case OP_CALL: {
-			// We can't do just "#emit call 0" - this will crash compiler for some reason (bug?).
-			return ReadOpcodeNearThis(-8);
-		}
-		case OP_JUMP: {
-			return ReadOpcodeNearThis(4);
-			#emit jump 0
-		}
-		case OP_JREL: {
-			return ReadOpcodeNearThis(4);
-			#emit jrel 0
-		}
-		case OP_JZER: {
-			return ReadOpcodeNearThis(4);
-			#emit jzer 0
-		}
-		case OP_JNZ: {
-			return ReadOpcodeNearThis(4);
-			#emit jnz 0
-		}
-		case OP_JEQ: {
-			return ReadOpcodeNearThis(4);
-			#emit jeq 0
-		}
-		case OP_JNEQ: {
-			return ReadOpcodeNearThis(4);
-			#emit jneq 0
-		}
-		case OP_JLESS: {
-			return ReadOpcodeNearThis(4);
-			#emit jless 0
-		}
-		case OP_JLEQ: {
-			return ReadOpcodeNearThis(4);
-			#emit jleq 0
-		}
-		case OP_JGRTR: {
-			return ReadOpcodeNearThis(4);
-			#emit jgrtr 0
-		}
-		case OP_JGEQ: {
-			return ReadOpcodeNearThis(4);
-			#emit jgeq 0
-		}
-		case OP_JSLESS: {
-			return ReadOpcodeNearThis(4);
-			#emit jsless 0
-		}
-		case OP_JSLEQ: {
-			return ReadOpcodeNearThis(4);
-			#emit jsleq 0
-		}
-		case OP_JSGRTR: {
-			return ReadOpcodeNearThis(4);
-			#emit jsgrtr 0
-		}
-		case OP_JSGEQ: {
-			return ReadOpcodeNearThis(4);
-			#emit jsgeq 0
-		}
-		case OP_SHL: {
-			return ReadOpcodeNearThis(4);
-			#emit shl
-		}
-		case OP_SHR: {
-			return ReadOpcodeNearThis(4);
-			#emit shr
-		}
-		case OP_SSHR: {
-			return ReadOpcodeNearThis(4);
-			#emit sshr
-		}
-		case OP_SHL_C_PRI: {
-			return ReadOpcodeNearThis(4);
-			#emit shl.c.pri 0
-		}
-		case OP_SHL_C_ALT: {
-			return ReadOpcodeNearThis(4);
-			#emit shl.c.alt 0
-		}
-		case OP_SHR_C_PRI: {
-			return ReadOpcodeNearThis(4);
-			#emit shr.c.pri 0
-		}
-		case OP_SHR_C_ALT: {
-			return ReadOpcodeNearThis(4);
-			#emit shr.c.alt 0
-		}
-		case OP_SMUL: {
-			return ReadOpcodeNearThis(4);
-			#emit smul
-		}
-		case OP_SDIV: {
-			return ReadOpcodeNearThis(4);
-			#emit sdiv
-		}
-		case OP_SDIV_ALT: {
-			return ReadOpcodeNearThis(4);
-			#emit sdiv.alt
-		}
-		case OP_UMUL: {
-			return ReadOpcodeNearThis(4);
-			#emit umul
-		}
-		case OP_UDIV: {
-			return ReadOpcodeNearThis(4);
-			#emit udiv
-		}
-		case OP_UDIV_ALT: {
-			return ReadOpcodeNearThis(4);
-			#emit udiv.alt
-		}
-		case OP_ADD: {
-			return ReadOpcodeNearThis(4);
-			#emit add
-		}
-		case OP_SUB: {
-			return ReadOpcodeNearThis(4);
-			#emit sub
-		}
-		case OP_SUB_ALT: {
-			return ReadOpcodeNearThis(4);
-			#emit sub.alt
-		}
-		case OP_AND: {
-			return ReadOpcodeNearThis(4);
-			#emit and
-		}
-		case OP_OR: {
-			return ReadOpcodeNearThis(4);
-			#emit or
-		}
-		case OP_XOR: {
-			return ReadOpcodeNearThis(4);
-			#emit xor
-		}
-		case OP_NOT: {
-			return ReadOpcodeNearThis(4);
-			#emit not
-		}
-		case OP_NEG: {
-			return ReadOpcodeNearThis(4);
-			#emit neg
-		}
-		case OP_INVERT: {
-			return ReadOpcodeNearThis(4);
-			#emit invert
-		}
-		case OP_ADD_C: {
-			return ReadOpcodeNearThis(4);
-			#emit add.c 0
-		}
-		case OP_SMUL_C: {
-			return ReadOpcodeNearThis(4);
-			#emit smul.c 0
-		}
-		case OP_ZERO_PRI: {
-			return ReadOpcodeNearThis(4);
-			#emit zero.pri
-		}
-		case OP_ZERO_ALT: {
-			return ReadOpcodeNearThis(4);
-			#emit zero.alt
-		}
-		case OP_ZERO: {
-			return ReadOpcodeNearThis(4);
-			#emit zero 0
-		}
-		case OP_ZERO_S: {
-			return ReadOpcodeNearThis(4);
-			#emit zero.s 0
-		}
-		case OP_SIGN_PRI: {
-			return ReadOpcodeNearThis(4);
-			#emit sign.pri
-		}
-		case OP_SIGN_ALT: {
-			return ReadOpcodeNearThis(4);
-			#emit sign.alt
-		}
-		case OP_EQ: {
-			return ReadOpcodeNearThis(4);
-			#emit eq
-		}
-		case OP_NEQ: {
-			return ReadOpcodeNearThis(4);
-			#emit neq
-		}
-		case OP_LESS: {
-			return ReadOpcodeNearThis(4);
-			#emit less
-		}
-		case OP_LEQ: {
-			return ReadOpcodeNearThis(4);
-			#emit leq
-		}
-		case OP_GRTR: {
-			return ReadOpcodeNearThis(4);
-			#emit grtr
-		}
-		case OP_GEQ: {
-			return ReadOpcodeNearThis(4);
-			#emit geq
-		}
-		case OP_SLESS: {
-			return ReadOpcodeNearThis(4);
-			#emit sless
-		}
-		case OP_SLEQ: {
-			return ReadOpcodeNearThis(4);
-			#emit sleq
-		}
-		case OP_SGRTR: {
-			return ReadOpcodeNearThis(4);
-			#emit sgrtr
-		}
-		case OP_SGEQ: {
-			return ReadOpcodeNearThis(4);
-			#emit sgeq
-		}
-		case OP_EQ_C_PRI: {
-			return ReadOpcodeNearThis(4);
-			#emit eq.c.pri 0
-		}
-		case OP_EQ_C_ALT: {
-			return ReadOpcodeNearThis(4);
-			#emit eq.c.alt 0
-		}
-		case OP_INC_PRI: {
-			return ReadOpcodeNearThis(4);
-			#emit inc.pri
-		}
-		case OP_INC_ALT: {
-			return ReadOpcodeNearThis(4);
-			#emit inc.alt
-		}
-		case OP_INC: {
-			return ReadOpcodeNearThis(4);
-			#emit inc 0
-		}
-		case OP_INC_S: {
-			return ReadOpcodeNearThis(4);
-			#emit inc.s 0
-		}
-		case OP_INC_I: {
-			return ReadOpcodeNearThis(4);
-			#emit inc.i
-		}
-		case OP_DEC_PRI: {
-			return ReadOpcodeNearThis(4);
-			#emit dec.pri
-		}
-		case OP_DEC_ALT: {
-			return ReadOpcodeNearThis(4);
-			#emit dec.alt
-		}
-		case OP_DEC: {
-			return ReadOpcodeNearThis(4);
-			#emit dec 0
-		}
-		case OP_DEC_S: {
-			return ReadOpcodeNearThis(4);
-			#emit dec.s 0
-		}
-		case OP_DEC_I: {
-			return ReadOpcodeNearThis(4);
-			#emit dec.i
-		}
-		case OP_MOVS: {
-			return ReadOpcodeNearThis(4);
-			#emit movs 0
-		}
-		case OP_CMPS: {
-			return ReadOpcodeNearThis(4);
-			#emit cmps 0
-		}
-		case OP_FILL: {
-			return ReadOpcodeNearThis(4);
-			#emit fill 0
-		}
-		case OP_HALT: {
-			return ReadOpcodeNearThis(4);
-			#emit halt 0
-		}
-		case OP_BOUNDS: {
-			return ReadOpcodeNearThis(4);
-			#emit bounds 0
-		}
-		case OP_SYSREQ_C: {
-			return ReadOpcodeNearThis(4);
-			#emit sysreq.c 0
-		}
-		case OP_SWITCH: {
-			return ReadOpcodeNearThis(4);
-			#emit switch 0
-		}
-		case OP_CASETBL: {
-			new x = 0;
-			switch (x) { case 0: return ReadOpcodeNearThis(20); }
-		}
-		case OP_SWAP_PRI: {
-			return ReadOpcodeNearThis(4);
-			#emit swap.pri
-		}
-		case OP_SWAP_ALT: {
-			return ReadOpcodeNearThis(4);
-			#emit swap.alt
-		}
-		case OP_PUSH_ADR: {
-			return ReadOpcodeNearThis(4);
-			#emit push.adr 0
-		}
-		case OP_NOP: {
-			return ReadOpcodeNearThis(4);
-			#emit nop
-		}
-		case OP_SYSREQ_D: {
-			// Since there's no way to #emit sysreq.d we have to compute its
-			// address using a relative offset to another opcode, e.g. nop.
-			new bool:is_crashdetect;
-			#emit zero.pri
-			#emit lctrl 0xFF
-			#emit stor.s.pri is_crashdetect
-			if (is_crashdetect) {
-				// The offset is different when running under crashdetect as
-				// it uses its own (modified) version of the VM. This value
-				// value works only with crashdetect 4.13.
-				return RelocateOpcodeNow(OP_NOP) - Opcode:0x1EA;
-			} else {
-				return RelocateOpcodeNow(OP_NOP) - Opcode:0x4F;
-			}
-		}
-		case OP_BREAK: {
-			return ReadOpcodeNearThis(4);
-			#emit break
-		}
+stock Opcode:RelocateOpcode(Opcode:opcode) {
+	if (OP_NONE <= opcode < Opcode:NUM_OPCODES) {
+		new opcode_table = GetOpcodeTable();
+		return Opcode:ReadAmxMemory(opcode_table + _:opcode * 8);
 	}
 	return opcode;
 }
 
-static stock Opcode:opcode_table[NUM_OPCODES];
-static stock bool:opcode_table_is_ready = false;
-
-static stock InitOpcodeTable() {
-	for (new i = 0; i < NUM_OPCODES; i++) {
-		opcode_table[i] = RelocateOpcodeNow(Opcode:i);
-	}
-	opcode_table_is_ready = true;
-}
-
-stock Opcode:RelocateOpcode(Opcode:opcode) {
-	if (!opcode_table_is_ready) {
-		InitOpcodeTable();
-	}
-	return opcode_table[_:opcode];
-}
-
 stock Opcode:UnrelocateOpcode(Opcode:opcode) {
-	if (!opcode_table_is_ready) {
-		InitOpcodeTable();
-	}
-	if (OP_NONE <= opcode < Opcode:NUM_OPCODES) {
-		return opcode;
-	}
-	for (new i = 0; i < NUM_OPCODES; i++) {
-		if (opcode_table[i] == opcode) {
-			return Opcode:i;
+	if (opcode < OP_NONE || opcode >= Opcode:NUM_OPCODES) {
+		new opcode_table = GetOpcodeTable();
+		for (new i = 0; i < NUM_OPCODES; i++) {
+			if (Opcode:ReadAmxMemory(opcode_table + i * 8) == opcode) {
+				return Opcode:i;
+			}
 		}
 	}
 	return opcode;
