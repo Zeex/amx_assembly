@@ -177,7 +177,7 @@ static stock const insn_table[][DisasmInsnInfo] = {
 	{ "symbol",     -1, false }, // obsolete
 	{ "srange",     -1, false }, // obsolete
 	{ "jump.pri",    0, false },
-	{ "switch",      1, false },
+	{ "switch",      1, true },
 	{ "casetbl",    -1, true },
 	{ "swap.pri",    0, false },
 	{ "swap.alt",    0, false },
@@ -216,12 +216,12 @@ stock bool:DisasmDecodeInsn(ctx[DisasmContext]) {
 		return false;
 	}
 
-	new Opcode:opcode = UnrelocateOpcode(Opcode:ReadAmxMemory(ctx[DisasmContext_nip]));
+	new Opcode:opcode = UnrelocateOpcode(Opcode:ReadAmxMemory(ip));
 	if (opcode <= OP_NONE || _:opcode >= NUM_OPCODES) {
 		return false;
 	}
 
-	ctx[DisasmContext_cip] = ctx[DisasmContext_nip];
+	ctx[DisasmContext_cip] = ip;
 	ctx[DisasmContext_opcode] = opcode;
 	ctx[DisasmContext_insn] = insn_table[_:opcode];
 
@@ -238,6 +238,15 @@ stock bool:DisasmDecodeInsn(ctx[DisasmContext]) {
 
 	ctx[DisasmContext_nip] = ip;
 	return true;
+}
+
+stock Opcode:DisasmNextInsn(ctx[DisasmContext])
+{
+	if (DisasmDecodeInsn(ctx))
+	{
+		return ctx[DisasmContext_opcode];
+	}
+	return OP_NONE;
 }
 
 stock Opcode:DisasmGetOpcode(ctx[DisasmContext]) {
@@ -396,14 +405,17 @@ stock DisasmDump(const out_filename[]) {
 			}
 			case OP_CASETBL: {
 				new num = DisasmGetNumOperands(ctx);
-				for (new i = 0; i < num; i++) {
-					fwrite(file, "\n         ");
-					new addr = ReadAmxMemory(cip + 4 * i * 2);
-					new rel_addr = addr - (base + cod) + (cip - 4 + dat - cod);
-					fwrite(file, ToHexStr(rel_addr));
-					fwrite(file, " ");
-					new val = ReadAmxMemory(cip + 4 * i * 2 + 4);
+				fwrite(file, ToHexStr(num));
+				fwrite(file, " ");
+				new rel_addr = DisasmGetOperand(ctx, 1) - (base + cod);
+				fwrite(file, ToHexStr(rel_addr));
+				for (new i = 1; i <= num; i++) {
+					fwrite(file, "\n         case ");
+					new val = DisasmGetOperand(ctx, i * 2);
 					fwrite(file, ToHexStr(val));
+					fwrite(file, " ");
+					rel_addr = DisasmGetOperand(ctx, i * 2 + 1) - (base + cod);
+					fwrite(file, ToHexStr(rel_addr));
 				}
 				goto next;
 			}
