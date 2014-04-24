@@ -369,7 +369,19 @@ stock DisasmDump(const out_filename[]) {
 	// DISASSAMBLE CODE
 	fwrite(file, "; CODE\n\n");
 
-	while (DisasmDecodeInsn(ctx)) {
+	while (DisasmGetNextIp(ctx) < ctx[DisasmContext_end_ip])
+	{
+		if (!DisasmDecodeInsn(ctx)) {
+			// INVALID OPCODE
+			new cip = DisasmGetNextIp(ctx);
+			ctx[DisasmContext_nip] += 4;
+
+			fwrite(file, ToHexStr(cip + dat - cod));
+			fwrite(file, " ???? ");
+			fwrite(file, ToHexStr(ReadAmxMemory(cip)));
+			goto next;
+		}
+
 		new Opcode:opcode = DisasmGetOpcode(ctx);
 
 		if (opcode == OP_PROC) {
