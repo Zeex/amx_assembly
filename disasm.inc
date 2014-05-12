@@ -381,7 +381,7 @@ stock DisasmWriteCode(File:file) {
 			}
 			case OP_CALL: {
 				new name[DISASM_MAX_PUBLIC_NAME];
-				new address = ReadAmxMemory(cip) - base - cod;
+				new address = DisasmGetOperand(ctx) - base - cod;
 				if (address == hdr[AMX_HDR_CIP]) {
 					strcat(name, "main");
 				} else {
@@ -390,23 +390,27 @@ stock DisasmWriteCode(File:file) {
 						GetPublicNameFromIndex(index, name);
 					}
 				}
+				fwrite(file, ToHexStr(address));
 				if (strlen(name) > 0) {
+					fwrite(file, "; ");
 					fwrite(file, name);
 				}
 			}
 			case OP_SYSREQ_C, OP_SYSREQ_D: {
 				new name[DISASM_MAX_NATIVE_NAME];
+				new address = DisasmGetOperand(ctx);
 				if (opcode == OP_SYSREQ_C) {
 					new index = DisasmGetOperand(ctx);
 					GetNativeNameFromIndex(index, name);
 				} else {
-					new address = DisasmGetOperand(ctx);
 					new index = GetNativeIndexFromAddress(address);
 					if (index >= 0) {
 						GetNativeNameFromIndex(index, name);
 					}
 				}
+				fwrite(file, ToHexStr(address));
 				if (strlen(name) > 0) {
+					fwrite(file, "; ");
 					fwrite(file, name);
 				}
 			}
