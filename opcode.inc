@@ -304,10 +304,6 @@ stock Opcode:RelocateOpcodeNow(Opcode:opcode) {
 			return ReadOpcodeNearThis(4);
 			#emit jump 0
 		}
-		case OP_JREL: {
-			return ReadOpcodeNearThis(4);
-			#emit jrel 0
-		}
 		case OP_JZER: {
 			return ReadOpcodeNearThis(4);
 			#emit jzer 0
