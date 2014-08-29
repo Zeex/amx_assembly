@@ -158,7 +158,8 @@ stock GetOpcodeTable() {
 	#emit nop // call.pri (obsolete)
 	#emit nop
 	#emit jump 0
-	#emit jrel 0
+	#emit nop // jrel (obsolete)
+	#emit nop
 	#emit jzer 0
 	#emit jnz 0
 	#emit jeq 0
