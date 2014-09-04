@@ -23,6 +23,8 @@
 #endif
 #define JIT_INC
 
+forward OnJITCompile();
+
 stock bool:IsJITPresent() {
 	#emit zero.pri
 	#emit lctrl 7
