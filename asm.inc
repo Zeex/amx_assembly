@@ -755,7 +755,7 @@ stock AsmError:AsmEmitZeroS(ctx[AsmContext], offset) {
 // Higher level functions:
 
 stock AsmError:AsmEmitSysreq(ctx[AsmContext], const name[]) {
-	return AsmEmitSysreqD(ctx, GetNativeAddressFromName(name));
+	return AsmEmitSysreqC(ctx, GetNativeIndexFromName(name));
 }
 
 stock AsmError:AsmEmitPopArgs(ctx[AsmContext], n) {
