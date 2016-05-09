@@ -102,8 +102,7 @@ enum CodeScanMatcher {
 	CodeScanMatcher_func,     // A pointer to the callback.
 	CodeScanMatcher_code[CODE_SCAN_MAX_PATTERN_ARRAY], // The code to look for.
 	CodeScanMatcher_len,
-	CodeScanMatcher_offset_0,  // Where the current scanner is in this code.
-	CodeScanMatcher_offset_1,  // Where the current scanner is in this code.
+	CodeScanMatcher_offset[CODE_SCAN_MAX_PARALLEL], // Where the current scanner is in this code.
 	CodeScanMatcher_next,      // The next match array.
 	CodeScanMatcher_flags      // Customisation.
 }
@@ -195,10 +194,10 @@ static stock CodeScanAddSwitchTarget(dctx[DisasmContext], base, stk, hea, jumpTa
 }
 
 static stock CodeScanReset(cs[CodeScanMatcher], &next) {
-	// static
-		// lReset[CODE_SCAN_MAX_PARALLEL];
+	static
+		lReset[CODE_SCAN_MAX_PARALLEL];
 	next = cs[CodeScanMatcher_next],
-	cs[CodeScanMatcher_offset_0] = cs[CodeScanMatcher_offset_1] = 0;
+	cs[CodeScanMatcher_offset] = lReset;
 	if (!cs[CodeScanMatcher_func]) {
 		cs[CodeScanMatcher_len] = 0;
 	}
@@ -260,7 +259,7 @@ static stock CodeScanCheck(Opcode:op, dctx[DisasmContext], cs[CodeScanMatcher], 
 		return 0;
 	}
 	new
-		zero,
+		bool:zero = true,
 		off = cs[CodeScanMatcher_flags];
 	if (off) {
 		switch (op) {
@@ -281,106 +280,64 @@ static stock CodeScanCheck(Opcode:op, dctx[DisasmContext], cs[CodeScanMatcher], 
 			}
 		}
 	}
-	zero = off = cs[CodeScanMatcher_offset_0];
-	if (op == Opcode:cs[CodeScanMatcher_code][off++]) {
-		new
-			cnt = DisasmGetNumOperands(dctx),
-			len = cs[CodeScanMatcher_len];
-		// Check if there are enough parameters for this opcode.
-		if ((len - off) / 2 < cnt) {
-			goto CodeScanCheck_fail_0;
+	for (new idx = 0; idx != CODE_SCAN_MAX_PARALLEL; ++idx) {
+		off = cs[CodeScanMatcher_offset][idx];
+		// Ensure that only one of the parallel scanners starts from the
+		// beginning on each instruction.
+		if (off) {
+		} else if (zero) {
+			zero = false;
+		} else {
+			continue;
 		}
-		for (new i = 0; i != cnt; ++i) {
-			switch (cs[CodeScanMatcher_code][off++]) {
-				case OP_TYPE_INT_ : {
-					if (cs[CodeScanMatcher_code][off++] != DisasmGetOperand(dctx, i)) {
-						goto CodeScanCheck_fail_0;
+		if (op == Opcode:cs[CodeScanMatcher_code][off++]) {
+			new
+				cnt = DisasmGetNumOperands(dctx),
+				len = cs[CodeScanMatcher_len];
+			// Check if there are enough parameters for this opcode.
+			if ((len - off) / 2 < cnt) {
+				goto CodeScanCheck_fail;
+			}
+			for (new i = 0; i != cnt; ++i) {
+				switch (cs[CodeScanMatcher_code][off++]) {
+					case OP_TYPE_INT_ : {
+						if (cs[CodeScanMatcher_code][off++] != DisasmGetOperand(dctx, i)) {
+							goto CodeScanCheck_fail;
+						}
 					}
-				}
-				case OP_TYPE_UNK_ : {
-					// Ignore the parameter.
-					++off;
-				}
-				case OP_TYPE_FUNC_: {
-					// Do something with resolving addresses here maybe.
-					if (DisasmNeedReloc(dctx)) {
-						// Convert from an absolute address.
-					} else {
-						// Don't.
+					case OP_TYPE_UNK_ : {
+						// Ignore the parameter.
+						++off;
 					}
-					++off;
+					case OP_TYPE_FUNC_: {
+						// Do something with resolving addresses here maybe.
+						if (DisasmNeedReloc(dctx)) {
+							// Convert from an absolute address.
+						} else {
+							// Don't.
+						}
+						++off;
+					}
 				}
 			}
-		}
-		if (off == len) {
-			// Get the address of the START of the match.
-			return
-				match[CodeScanMatch_cip] -= len * 4,
-				match[CodeScanMatch_size] += len * 4,
-				// "CallFunction" doesn't work for arrays apparently.
-				cs[CodeScanMatcher_func];
-		} else {
-			// Out of parameters to check but still looking correct.
-			cs[CodeScanMatcher_offset_0] = off;
-			goto CodeScanCheck_pass_0;
-		}
-	}
-CodeScanCheck_fail_0:
-	// The parameter is wrong.
-	cs[CodeScanMatcher_offset_0] = 0;
-CodeScanCheck_pass_0:
-	off = cs[CodeScanMatcher_offset_1];
-	// Ensure that only one of the parallel scanners starts from the beginning
-	// on each instruction.
-	if ((off || zero) && op == Opcode:cs[CodeScanMatcher_code][off++]) {
-		new
-			cnt = DisasmGetNumOperands(dctx),
-			len = cs[CodeScanMatcher_len];
-		// Check if there are enough parameters for this opcode.
-		if ((len - off) / 2 < cnt) {
-			goto CodeScanCheck_fail_1;
-		}
-		for (new i = 0; i != cnt; ++i) {
-			switch (cs[CodeScanMatcher_code][off++]) {
-				case OP_TYPE_INT_ : {
-					if (cs[CodeScanMatcher_code][off++] != DisasmGetOperand(dctx, i)) {
-						goto CodeScanCheck_fail_1;
-					}
-				}
-				case OP_TYPE_UNK_ : {
-					// Ignore the parameter.
-					++off;
-				}
-				case OP_TYPE_FUNC_: {
-					// Do something with resolving addresses here maybe.
-					if (DisasmNeedReloc(dctx)) {
-						// Convert from an absolute address.
-					} else {
-						// Don't.
-					}
-					++off;
-				}
+			if (off == len) {
+				// Get the address of the START of the match.
+				return
+					match[CodeScanMatch_cip] -= len * 4,
+					match[CodeScanMatch_size] += len * 4,
+					// "CallFunction" doesn't work for arrays apparently.
+					cs[CodeScanMatcher_func];
+			} else {
+				// Out of parameters to check but still looking correct.
+				cs[CodeScanMatcher_offset][idx] = off;
+				continue;
 			}
 		}
-		if (off == len) {
-			// Get the address of the START of the match.
-			return
-				match[CodeScanMatch_cip] -= len * 4,
-				match[CodeScanMatch_size] += len * 4,
-				// "CallFunction" doesn't work for arrays apparently.
-				cs[CodeScanMatcher_func];
-		} else {
-			// Out of parameters to check but still looking correct.
-			return
-				cs[CodeScanMatcher_offset_1] = off,
-				0;
-		}
+CodeScanCheck_fail:
+		// The parameter is wrong.
+		cs[CodeScanMatcher_offset][idx] = 0;
 	}
-CodeScanCheck_fail_1:
-	// The parameter is wrong.
-	return
-		cs[CodeScanMatcher_offset_1] = 0,
-		0;
+	return 0;
 }
 
 static stock bool:CodeScanGetFuncName(addr, name[])
