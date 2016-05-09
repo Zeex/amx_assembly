@@ -273,6 +273,10 @@ stock DisasmGetCurIp(ctx[DisasmContext]) {
 	return ctx[DisasmContext_cip];
 }
 
+stock DisasmGetRemaining(ctx[DisasmContext]) {
+	return -ctx[DisasmContext_nip];
+}
+
 stock DisasmGetInsnName(ctx[DisasmContext], name[], size = sizeof(name)) {
 	name[0] = '\0';
 	strcat(name, ctx[DisasmContext_insn][DisasmInsnInfo_name], size);
