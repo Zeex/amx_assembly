@@ -95,7 +95,7 @@ enum CodeScanJump {
 #define CODE_SCAN_MAX_PATTERN_ARRAY (CODE_SCAN_MAX_PATTERN * 3)
 
 #if !defined CODE_SCAN_MAX_PARALLEL
-	#define CODE_SCAN_MAX_PARALLEL (5)
+	#define CODE_SCAN_MAX_PARALLEL (2)
 #endif
 
 enum CodeScanMatcher {
