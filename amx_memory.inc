@@ -33,6 +33,15 @@ stock ref(...) {
 	return 0; // make compiler happy
 }
 
+stock deref(v) {
+	#pragma unused v
+	static gFake[1];
+	#emit load.s.pri 12 // first argument
+	#emit stor.s.pri 16 // secret argument
+	#emit retn
+	return gFake; // make compiler happy
+}
+
 stock ReadAmxMemory(address) {
 	#emit lref.s.pri address
 	#emit retn
