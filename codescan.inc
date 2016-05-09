@@ -32,6 +32,16 @@
 #define SCANNER_NAME_FUNCTIONS  (8)
 #define SCANNER_IGNORE_HALT     (16)
 
+#define OP_TYPE_INT_  (0)
+#define OP_TYPE_UNK_  (1)
+#define OP_TYPE_FUNC_ (2)
+
+//#define OP_INT(%0)   , CS_TYPE_INT_, (%0)
+//#define OP_FLOAT(%0) , CS_TYPE_INT_, (%0)
+//#define OP_UNK()     , CS_TYPE_UNK_, (0)
+//#define OP_UNKNOWN() , CS_TYPE_UNK_, (0)
+//#define OP_FUNC(%0)  , CS_TYPE_FUNC_, (CodeScanAddress() ? ((ADDR_%1), 0) : (gCodeScanCallback_param))
+
 // If we can determine a function's name, we can determine if it is a public or
 // not.  If we can't name it, it is a normal one.  However, if naming is skipped
 // then we will have no idea what type it is.
@@ -39,6 +49,17 @@
 #define SCANNER_FUNC_PUBLIC   (2)
 #define SCANNER_FUNC_OTHER    (4)
 #define SCANNER_FUNC_UNKNOWN  (8)
+
+#define OP(%0) , (Opcode:CS_OP_X:CS_OP_Y:CS_OP_Z:$OP_%0)
+#define OP_%0\32;%1) OP_%0%1)
+
+#define CS_OP_X:%9$%0,%1,%2) %0), (_:CS_OP_1:CS_OP_2:CS_OP_3:$%1|||,%2)
+#define CS_OP_Y:%9$%0,%1)    %0), (_:CS_OP_1:CS_OP_2:CS_OP_3:$%1|||)
+#define CS_OP_Z:%9$%0)       %0)
+
+#define CS_OP_1:%9$%0???%1|||%2) OP_TYPE_UNK_ ), (_:CS_OP_X:CS_OP_Y:CS_OP_Z:$0%2)
+#define CS_OP_2:%9$%0&%1|||%2)   OP_TYPE_FUNC_), (CodeScanAddress() ? ((ADDR_%1), 0) : _:CS_OP_X:CS_OP_Y:CS_OP_Z:$(gCodeScanCallback_param)%2)
+#define CS_OP_3:%9$%1|||%2)      OP_TYPE_INT_ ), (_:CS_OP_X:CS_OP_Y:CS_OP_Z:$(%1)%2)
 
 #if !defined cellbytes
 	#define cellbytes (cellbits / 8)
@@ -68,14 +89,27 @@ enum CodeScanJump {
 	CodeScanJump_heap    // Sizes at the time of the jump.
 }
 
+#if !defined CODE_SCAN_MAX_PATTERN
+	#define CODE_SCAN_MAX_PATTERN (12)
+#endif
+#define CODE_SCAN_MAX_PATTERN_ARRAY (CODE_SCAN_MAX_PATTERN * 3)
+
+#if !defined CODE_SCAN_MAX_PARALLEL
+	#define CODE_SCAN_MAX_PARALLEL (5)
+#endif
+
 enum CodeScanMatcher {
 	CodeScanMatcher_func,     // A pointer to the callback.
-	CodeScanMatcher_code[32], // The code to look for.
+	CodeScanMatcher_code[CODE_SCAN_MAX_PATTERN_ARRAY], // The code to look for.
 	CodeScanMatcher_len,
-	CodeScanMatcher_offset,   // Where the current scanner is in this code.
-	CodeScanMatcher_next,     // The next match array.
-	CodeScanMatcher_flags     // Customisation.
+	CodeScanMatcher_offset[CODE_SCAN_MAX_PARALLEL], // Where the current scanner is in this code.
+	CodeScanMatcher_next,      // The next match array.
+	CodeScanMatcher_flags      // Customisation.
 }
+
+stock gCodeScanCallback_param = 0;
+stock gCodeScanCallback_matcher[CodeScanMatcher];
+stock gCodeScanCallback_match[CodeScanMatch];
 
 static stock bool:CodeScanCheckJumpTarget(cip, deloc, &stk, &hea, jumpTargets[][CodeScanJump], minn, num = sizeof (jumpTargets))
 {
@@ -159,10 +193,19 @@ static stock CodeScanAddSwitchTarget(dctx[DisasmContext], base, stk, hea, jumpTa
 	}
 }
 
+static stock CodeScanReset(cs[CodeScanMatcher], &next) {
+	static
+		lReset[CODE_SCAN_MAX_PARALLEL];
+	next = cs[CodeScanMatcher_next],
+	cs[CodeScanMatcher_offset] = lReset;
+	if (!cs[CodeScanMatcher_func]) {
+		cs[CodeScanMatcher_len] = 0;
+	}
+}
+
 stock CodeScanAddMatcher(scanner[CodeScanner], searcher[CodeScanMatcher]) {
 	searcher[CodeScanMatcher_next] = scanner[CodeScanner_first],
-	scanner[CodeScanner_first] = ref(searcher),
-	searcher[CodeScanMatcher_offset] = 0;
+	scanner[CodeScanner_first] = ref(searcher);
 }
 
 stock CodeScanMatcherInit_(searcher[CodeScanMatcher], name[], faked, flags = SCANNER_IGNORE_NOP | SCANNER_IGNORE_BREAK | SCANNER_IGNORE_HALT) {
@@ -177,18 +220,19 @@ stock CodeScanMatcherInit_(searcher[CodeScanMatcher], name[], faked, flags = SCA
 	}
 	searcher[CodeScanMatcher_flags] = flags,
 	searcher[CodeScanMatcher_next] = -1,
-	searcher[CodeScanMatcher_offset] = searcher[CodeScanMatcher_len] = 0;
+	searcher[CodeScanMatcher_len] = 0,
+	CodeScanReset(searcher, flags);
 }
 
 // Will not call the function because the check will fail, but will not compile
 // if the function doesn't exist, while still passing it in as a string.
-#define CodeScanMatcherInit(%0,%1) CodeScanMatcherInit_((%0),(#%1),((gCodeScanCallback_always_false&0)?(%1(gCodeScanCallback_match)):0))
-#define CodeScanMatcherInit_(%0,(%1,%2),%3) CodeScanMatcherInit_(%0,(%1),((gCodeScanCallback_always_false&0)?(%1(gCodeScanCallback_match)):0),%2)
+#define CodeScanMatcherInit(%0,%1) CodeScanMatcherInit_((%0),(#%1),((gCodeScanCallback_param&0)?(%1(gCodeScanCallback_match)):0))
+#define CodeScanMatcherInit_(%0,(%1,%2),%3) CodeScanMatcherInit_(%0,(%1),((gCodeScanCallback_param&0)?(%1(gCodeScanCallback_match)):0),%2)
 
-stock CodeScanMatcherPattern(searcher[CodeScanMatcher], {Opcode, Float, _}:...) {
+stock CodeScanMatcherPattern_(searcher[CodeScanMatcher], {Opcode, Float, _}:...) {
 	new
 		len = numargs() - 1;
-	if (len > 32) {
+	if (len > CODE_SCAN_MAX_PATTERN_ARRAY) {
 		return;
 	}
 	searcher[CodeScanMatcher_len] = len;
@@ -197,9 +241,8 @@ stock CodeScanMatcherPattern(searcher[CodeScanMatcher], {Opcode, Float, _}:...) 
 	}
 }
 
-stock gCodeScanCallback_always_false = 0;
-stock gCodeScanCallback_matcher[CodeScanMatcher];
-stock gCodeScanCallback_match[CodeScanMatch];
+// Note the lack of trailing comma.  This is to make the code patterns work.
+#define CodeScanMatcherPattern(%0, CodeScanMatcherPattern_(%0
 
 static stock CodeScanDeref(v) {
 	#pragma unused v
@@ -209,64 +252,92 @@ static stock CodeScanDeref(v) {
 	return gCodeScanCallback_matcher; // make compiler happy
 }
 
-static stock CodeScanReset(cs[CodeScanMatcher], &next) {
-	next = cs[CodeScanMatcher_next],
-	cs[CodeScanMatcher_offset] = 0;
-}
-
 static stock CodeScanCheck(Opcode:op, dctx[DisasmContext], cs[CodeScanMatcher], match[CodeScanMatch], &next) {
 	// Returns an address of a callback if it passes.
 	next = cs[CodeScanMatcher_next];
-	if (!cs[CodeScanMatcher_func]) {
+	if (!cs[CodeScanMatcher_len]) {
 		return 0;
 	}
 	new
-		flags = cs[CodeScanMatcher_flags];
-	switch (op) {
-		case OP_NOP: {
-			if (flags & SCANNER_IGNORE_NOP) {
-				return 0;
+		bool:zero = true,
+		off = cs[CodeScanMatcher_flags];
+	if (off) {
+		switch (op) {
+			case OP_NOP: {
+				if (off & SCANNER_IGNORE_NOP) {
+					return 0;
+				}
 			}
-		}
-		case OP_BREAK: {
-			if (flags & SCANNER_IGNORE_BREAK) {
-				return 0;
+			case OP_BREAK: {
+				if (off & SCANNER_IGNORE_BREAK) {
+					return 0;
+				}
 			}
-		}
-		case OP_HALT: {
-			if (flags & SCANNER_IGNORE_HALT) {
-				return 0;
+			case OP_HALT: {
+				if (off & SCANNER_IGNORE_HALT) {
+					return 0;
+				}
 			}
 		}
 	}
-	new
-		off = cs[CodeScanMatcher_offset],
-		cnt = DisasmGetNumOperands(dctx),
-		len = cs[CodeScanMatcher_len],
-		i = -1;
-	if (op == Opcode:cs[CodeScanMatcher_code][off]) {
-		do {
-			if (++off == len) {
+	for (new idx = 0; idx != CODE_SCAN_MAX_PARALLEL; ++idx) {
+		off = cs[CodeScanMatcher_offset][idx];
+		// Ensure that only one of the parallel scanners starts from the
+		// beginning on each instruction.
+		if (off) {
+		} else if (zero) {
+			zero = false;
+		} else {
+			continue;
+		}
+		if (op == Opcode:cs[CodeScanMatcher_code][off++]) {
+			new
+				cnt = DisasmGetNumOperands(dctx),
+				len = cs[CodeScanMatcher_len];
+			// Check if there are enough parameters for this opcode.
+			if ((len - off) / 2 < cnt) {
+				goto CodeScanCheck_fail;
+			}
+			for (new i = 0; i != cnt; ++i) {
+				switch (cs[CodeScanMatcher_code][off++]) {
+					case OP_TYPE_INT_ : {
+						if (cs[CodeScanMatcher_code][off++] != DisasmGetOperand(dctx, i)) {
+							goto CodeScanCheck_fail;
+						}
+					}
+					case OP_TYPE_UNK_ : {
+						// Ignore the parameter.
+						++off;
+					}
+					case OP_TYPE_FUNC_: {
+						// Do something with resolving addresses here maybe.
+						if (DisasmNeedReloc(dctx)) {
+							// Convert from an absolute address.
+						} else {
+							// Don't.
+						}
+						++off;
+					}
+				}
+			}
+			if (off == len) {
 				// Get the address of the START of the match.
 				return
 					match[CodeScanMatch_cip] -= len * 4,
 					match[CodeScanMatch_size] += len * 4,
 					// "CallFunction" doesn't work for arrays apparently.
 					cs[CodeScanMatcher_func];
-			}
-			if (++i == cnt) {
-				// Out of parameters to check (but still correct).
-				return
-					cs[CodeScanMatcher_offset] = off,
-					false;
+			} else {
+				// Out of parameters to check but still looking correct.
+				cs[CodeScanMatcher_offset][idx] = off;
+				continue;
 			}
 		}
-		while (cs[CodeScanMatcher_code][off] == cellmin || cs[CodeScanMatcher_code][off] == DisasmGetOperand(dctx, i));
-		// "cellmin" means "any value" (including cellmin).
+CodeScanCheck_fail:
+		// The parameter is wrong.
+		cs[CodeScanMatcher_offset][idx] = 0;
 	}
-	// The parameter is wrong.
-	return
-		cs[CodeScanMatcher_offset] = 0;
+	return 0;
 }
 
 static stock bool:CodeScanGetFuncName(addr, name[])
@@ -293,8 +364,9 @@ stock bool:CodeScanRun(scanner[CodeScanner], flags = 0) {
 	if (scanner[CodeScanner_first] == -1) {
 		return true;
 	}
-	// Declare, but never initialise, large variables.  Makes the code crash.
-//	goto CodeScanRun_skip_init;
+	// Declare, but never initialise, large variables.  CANNOT do multi
+	// dimensional arrays as they need their offset table copying in.
+	goto CodeScanRun_skip_init;
 	new
 		cip,
 		dctx[DisasmContext],
@@ -302,6 +374,10 @@ stock bool:CodeScanRun(scanner[CodeScanner], flags = 0) {
 		parseParam,
 		minn,
 		base,
+		hdr[AMX_HDR],
+		func;
+CodeScanRun_skip_init:
+	new
 		// This variable stores stack/heap sizes for jump targets so that we can
 		// know how big the stack is at those points even when jumping forward
 		// (not backwards though - since we progress purely linerarly in the
@@ -313,13 +389,10 @@ stock bool:CodeScanRun(scanner[CodeScanner], flags = 0) {
 		// specially.  We can't jump out of a function (or shouldn't do), so we
 		// can reset this at the start of each function.
 		jumpTargets[32][CodeScanJump],
-		hdr[AMX_HDR],
-//CodeScanRun_skip_init:
-	// The "ignore" options are global, but can be set per-scanner as well.
 		stk = 0,
 		hea = 0,
-		func,
 		fctx[CodeScanMatch],
+		// The "ignore" options are global, but can be set per-scanner as well.
 		bool:bFailOnINV = bool:(flags & SCANNER_FAIL_ON_INVALID),
 		bool:bIgnoreNOP = bool:(flags & SCANNER_IGNORE_NOP),
 		bool:bIgnoreBRK = bool:(flags & SCANNER_IGNORE_BREAK),
@@ -333,7 +406,11 @@ stock bool:CodeScanRun(scanner[CodeScanner], flags = 0) {
 	DisasmInit(dctx),
 	CodeScanResetJumpTargets(jumpTargets, minn),
 	base = GetAmxBaseAddress() + hdr[AMX_HDR_DAT],
-	fctx[CodeScanMatch_func] = DisasmGetCurIp(dctx);
+	fctx[CodeScanMatch_func] = DisasmGetCurIp(dctx),
+	fctx[CodeScanMatch_name][0] = '\0',
+	fctx[CodeScanMatch_type] = 0,
+	fctx[CodeScanMatch_params] = cellmin;
+	for (new cur = scanner[CodeScanner_first]; cur != -1; CodeScanReset(CodeScanDeref(cur), cur)) { }
 	// Loop over the data.  Since our end condition is "out of data", we know
 	// that any "false" returns are because of invalid data since the "< 0"
 	// check is also the only other way that "false" can be returned and we pre-
@@ -377,9 +454,8 @@ stock bool:CodeScanRun(scanner[CodeScanner], flags = 0) {
 						fctx[CodeScanMatch_type] = SCANNER_FUNC_OTHER;
 					}
 					fctx[CodeScanMatch_func] = cip,
-					fctx[CodeScanMatch_heap] = fctx[CodeScanMatch_stack] = fctx[CodeScanMatch_cip] = stk = hea = 0,
+					stk = hea = 0,
 					CodeScanResetJumpTargets(jumpTargets, minn),
-					fctx[CodeScanMatch_params] = cellmin,
 					parseState = 0;
 				}
 				case OP_LOAD_PRI: {
@@ -392,9 +468,8 @@ stock bool:CodeScanRun(scanner[CodeScanner], flags = 0) {
 						}
 						fctx[CodeScanMatch_type] = SCANNER_FUNC_AUTOMATA,
 						fctx[CodeScanMatch_func] = cip,
-						fctx[CodeScanMatch_heap] = fctx[CodeScanMatch_stack] = fctx[CodeScanMatch_cip] = stk = hea = 0,
-						CodeScanResetJumpTargets(jumpTargets, minn),
-						fctx[CodeScanMatch_params] = cellmin;
+						stk = hea = 0,
+						CodeScanResetJumpTargets(jumpTargets, minn);
 					}
 				}
 			}
@@ -427,9 +502,7 @@ stock bool:CodeScanRun(scanner[CodeScanner], flags = 0) {
 						dctx[DisasmContext_nip] = fctx[CodeScanMatch_func];
 						parseState = 32;
 					}
-					for (cur = scanner[CodeScanner_first]; cur != -1; ) {
-						CodeScanReset(CodeScanDeref(cur), cur);
-					}
+					for (cur = scanner[CodeScanner_first]; cur != -1; CodeScanReset(CodeScanDeref(cur), cur)) { }
 					break;
 				}
 			}
