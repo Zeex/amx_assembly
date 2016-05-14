@@ -49,6 +49,12 @@ enum DisasmContext {
 	DisasmContext_insn[DisasmInsnInfo]
 }
 
+enum DisasmResult {
+	DISASM_DONE = 0,
+	DISASM_NOP  = 1,
+	DISASM_OK   = 2
+}
+
 static stock const insn_table[][DisasmInsnInfo] = {
 	{ "none",        0, false },
 	{ "load.pri",    1, false },
@@ -208,7 +214,12 @@ stock DisasmInit(ctx[DisasmContext], start = 0, end = 0) {
 	if (end != 0) {
 		ctx[DisasmContext_end_ip] = code_base + end;
 	} else {
-		ctx[DisasmContext_end_ip] = code_base + (dat - cod);
+		//   code_base + (dat - cod)
+		// = (cod - dat) + (dat - cod)
+		// = cod - dat + dat - cod
+		// = cod - cod + dat - dat
+		// = 0
+		ctx[DisasmContext_end_ip] = 0;
 	}
 }
 
@@ -240,6 +251,25 @@ stock bool:DisasmDecodeInsn(ctx[DisasmContext]) {
 
 	ctx[DisasmContext_nip] = ip;
 	return true;
+}
+
+stock DisasmResult:DisasmNext(ctx[DisasmContext]) {
+	// This function is just a slightly more consistent wrapper around
+	// "DisasmDecodeInsn".  I wanted to change that function, but that would
+	// cause breaking changes.  This returns non-zero while there is still data
+	// being read, even if that data is not a valid opcode.  For invalid code,
+	// it skips the current cell and returns an invalid opcode.  It also now
+	// checks the end point correctly.
+	if (ctx[DisasmContext_nip] >= ctx[DisasmContext_end_ip]) {
+		return DISASM_DONE;
+	} else if (DisasmDecodeInsn(ctx)) {
+		return DISASM_OK;
+	} else {
+		ctx[DisasmContext_cip] = ctx[DisasmContext_nip],
+		ctx[DisasmContext_nip] += 4,
+		ctx[DisasmContext_opcode] = NUM_OPCODES;
+		return DISASM_NOP;
+	}
 }
 
 stock Opcode:DisasmNextInsn(ctx[DisasmContext]) {
@@ -370,13 +400,12 @@ stock DisasmWriteCode(File:file) {
 			continue;
 		}
 
+		new cip = DisasmGetCurIp(ctx);
 		new Opcode:opcode = DisasmGetOpcode(ctx);
 
 		if (opcode == OP_PROC) {
 			fwrite(file, "\n");
 		}
-
-		new cip = DisasmGetCurIp(ctx);
 
 		new insn_name[DISASM_MAX_INSN_NAME];
 		DisasmGetInsnName(ctx, insn_name);
