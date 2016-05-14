@@ -102,7 +102,7 @@ static stock const insn_table[][DisasmInsnInfo] = {
 	{ "call",        1, true  },
 	{ "call.pri",    0, false },
 	{ "jump",        1, true  },
-	{ "jrel",        1, true  },
+	{ "jrel",        1, false },
 	{ "jzer",        1, true  },
 	{ "jnz",         1, true  },
 	{ "jeq",         1, true  },
