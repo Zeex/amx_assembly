@@ -360,8 +360,8 @@ stock DisasmWriteCode(File:file) {
 
 	while (DisasmGetNextIp(ctx) < ctx[DisasmContext_end_ip])
 	{
-		new cip = DisasmGetCurIp(ctx);
 		if (!DisasmDecodeInsn(ctx)) {
+			new cip = DisasmGetNextIp(ctx);
 			ctx[DisasmContext_nip] += 4;
 			fwrite(file, ToHexStr(cip + dat - cod));
 			fwrite(file, " ???? ");
@@ -375,6 +375,8 @@ stock DisasmWriteCode(File:file) {
 		if (opcode == OP_PROC) {
 			fwrite(file, "\n");
 		}
+
+		new cip = DisasmGetCurIp(ctx);
 
 		new insn_name[DISASM_MAX_INSN_NAME];
 		DisasmGetInsnName(ctx, insn_name);
