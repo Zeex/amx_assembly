@@ -257,6 +257,40 @@ stock DisasmGetOperand(ctx[DisasmContext], index = 0) {
 	return ReadAmxMemory(ctx[DisasmContext_cip] + (index + 1) * 4);
 }
 
+stock DisasmGetOperandReloc(ctx[DisasmContext], index = 0) {
+	new param = DisasmGetOperand(ctx, index);
+	// Needs special code for dealing with "CASETBL", which has multiple
+	// parameters - not all of them to be relocated.  If the opcode is NOT that,
+	// then check if it is any other opcode requiring relocation.  This does
+	// result in the odd pattern of having a triadic operator in a conditional,
+	// but the alternative would be:
+	//   
+	//   if (ctx[DisasmContext_opcode == OP_CASETBL) {
+	//       if (index & 1) {
+	//           return param - base;
+	//       }
+	//   } else if (DisasmNeedReloc(ctx)) {
+	//       return param - base;
+	//   }
+	//   return param;
+	//   
+	// Or:
+	//   
+	//   if ((ctx[DisasmContext_opcode == OP_CASETBL && (index & 1)) ||
+	//       (ctx[DisasmContext_opcode != OP_CASETBL && DisasmNeedReloc(ctx))) {
+	//           return param - base;
+	//   } else {
+	//       return param;
+	//   }
+	//   
+	// I think the conditional ends up nicer in this rare case.
+	if ((ctx[DisasmContext_opcode == OP_CASETBL) ? (index & 1) : DisasmNeedReloc(ctx)) {
+		return param -  GetAmxBaseAddress() - GetAmxHeaderComponent(AMX_HDR_DAT);
+	} else {
+		return param;
+	}
+}
+
 stock DisasmGetNumOperands(ctx[DisasmContext]) {
 	return ctx[DisasmContext_insn][DisasmInsnInfo_num_opers];
 }
