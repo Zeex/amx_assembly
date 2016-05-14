@@ -196,9 +196,13 @@ static stock const insn_table[][DisasmInsnInfo] = {
 	{ "break",       0, false }
 };
 
+static stock gCodBase;
+
 stock DisasmInit(ctx[DisasmContext], start = 0, end = 0) {
 	new hdr[AMX_HDR];
 	GetAmxHeader(hdr);
+	
+	gCodBase = GetAmxBaseAddress() + hdr[AMX_HDR_COD];
 
 	new dat = hdr[AMX_HDR_DAT];
 	new cod = hdr[AMX_HDR_COD];
@@ -315,7 +319,7 @@ stock DisasmGetOperandReloc(ctx[DisasmContext], index = 0) {
 	//   
 	// I think the conditional ends up nicer in this rare case.
 	if ((ctx[DisasmContext_opcode == OP_CASETBL) ? (index & 1) : DisasmNeedReloc(ctx)) {
-		return param -  GetAmxBaseAddress() - GetAmxHeaderComponent(AMX_HDR_DAT);
+		return param - gCodBase;
 	} else {
 		return param;
 	}
@@ -378,8 +382,6 @@ stock DisasmWriteCode(File:file) {
 	new ctx[DisasmContext];
 	DisasmInit(ctx);
 
-	new base = GetAmxBaseAddress();
-
 	new hdr[AMX_HDR];
 	GetAmxHeader(hdr);
 
@@ -435,20 +437,20 @@ stock DisasmWriteCode(File:file) {
 				new num = DisasmGetNumOperands(ctx);
 				fwrite(file, ToHexStr(num));
 				fwrite(file, " ");
-				new rel_addr = DisasmGetOperand(ctx, 1) - (base + cod);
+				new rel_addr = DisasmGetOperand(ctx, 1) - gCodBase;
 				fwrite(file, ToHexStr(rel_addr));
 				for (new i = 1; i <= num; i++) {
 					fwrite(file, "\n         case ");
 					new val = DisasmGetOperand(ctx, i * 2);
 					fwrite(file, ToHexStr(val));
 					fwrite(file, " ");
-					rel_addr = DisasmGetOperand(ctx, i * 2 + 1) - (base + cod);
+					rel_addr = DisasmGetOperand(ctx, i * 2 + 1) - gCodBase;
 					fwrite(file, ToHexStr(rel_addr));
 				}
 			}
 			case OP_CALL: {
 				new name[DISASM_MAX_PUBLIC_NAME];
-				new address = DisasmGetOperand(ctx) - base - cod;
+				new address = DisasmGetOperand(ctx) - gCodBase;
 				if (address == hdr[AMX_HDR_CIP]) {
 					strcat(name, "main");
 				} else {
@@ -484,10 +486,7 @@ stock DisasmWriteCode(File:file) {
 			default: {
 				new n = DisasmGetNumOperands(ctx);
 				for (new i = 0; i < n; i++) {
-					new operand = DisasmGetOperand(ctx, i);
-					if (DisasmNeedReloc(ctx)) {
-						operand -= base + cod;
-					}
+					new operand = DisasmGetOperandReloc(ctx, i);
 					fwrite(file, ToHexStr(operand));
 				}
 			}
