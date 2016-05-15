@@ -49,6 +49,12 @@ enum DisasmContext {
 	DisasmContext_insn[DisasmInsnInfo]
 }
 
+enum DisasmResult {
+	DISASM_DONE = 0,
+	DISASM_NOP  = 1,
+	DISASM_OK   = 2
+}
+
 static stock const insn_table[][DisasmInsnInfo] = {
 	{ "none",        0, false },
 	{ "load.pri",    1, false },
@@ -102,7 +108,7 @@ static stock const insn_table[][DisasmInsnInfo] = {
 	{ "call",        1, true  },
 	{ "call.pri",    0, false },
 	{ "jump",        1, true  },
-	{ "jrel",        1, true  },
+	{ "jrel",        1, false },
 	{ "jzer",        1, true  },
 	{ "jnz",         1, true  },
 	{ "jeq",         1, true  },
@@ -190,9 +196,13 @@ static stock const insn_table[][DisasmInsnInfo] = {
 	{ "break",       0, false }
 };
 
+static stock gCodBase;
+
 stock DisasmInit(ctx[DisasmContext], start = 0, end = 0) {
 	new hdr[AMX_HDR];
 	GetAmxHeader(hdr);
+	
+	gCodBase = GetAmxBaseAddress() + hdr[AMX_HDR_COD];
 
 	new dat = hdr[AMX_HDR_DAT];
 	new cod = hdr[AMX_HDR_COD];
@@ -208,7 +218,12 @@ stock DisasmInit(ctx[DisasmContext], start = 0, end = 0) {
 	if (end != 0) {
 		ctx[DisasmContext_end_ip] = code_base + end;
 	} else {
-		ctx[DisasmContext_end_ip] = code_base + (dat - cod);
+		//   code_base + (dat - cod)
+		// = (cod - dat) + (dat - cod)
+		// = cod - dat + dat - cod
+		// = cod - cod + dat - dat
+		// = 0
+		ctx[DisasmContext_end_ip] = 0;
 	}
 }
 
@@ -242,6 +257,25 @@ stock bool:DisasmDecodeInsn(ctx[DisasmContext]) {
 	return true;
 }
 
+stock DisasmResult:DisasmNext(ctx[DisasmContext]) {
+	// This function is just a slightly more consistent wrapper around
+	// "DisasmDecodeInsn".  I wanted to change that function, but that would
+	// cause breaking changes.  This returns non-zero while there is still data
+	// being read, even if that data is not a valid opcode.  For invalid code,
+	// it skips the current cell and returns an invalid opcode.  It also now
+	// checks the end point correctly.
+	if (ctx[DisasmContext_nip] >= ctx[DisasmContext_end_ip]) {
+		return DISASM_DONE;
+	} else if (DisasmDecodeInsn(ctx)) {
+		return DISASM_OK;
+	} else {
+		ctx[DisasmContext_cip] = ctx[DisasmContext_nip],
+		ctx[DisasmContext_nip] += 4,
+		ctx[DisasmContext_opcode] = Opcode:NUM_OPCODES;
+		return DISASM_NOP;
+	}
+}
+
 stock Opcode:DisasmNextInsn(ctx[DisasmContext]) {
 	if (DisasmDecodeInsn(ctx)) {
 		return ctx[DisasmContext_opcode];
@@ -273,9 +307,47 @@ stock DisasmGetCurIp(ctx[DisasmContext]) {
 	return ctx[DisasmContext_cip];
 }
 
+stock DisasmGetRemaining(ctx[DisasmContext]) {
+	return ctx[DisasmContext_end_ip] - ctx[DisasmContext_nip];
+}
+
 stock DisasmGetInsnName(ctx[DisasmContext], name[], size = sizeof(name)) {
 	name[0] = '\0';
 	strcat(name, ctx[DisasmContext_insn][DisasmInsnInfo_name], size);
+}
+
+stock DisasmGetOperandReloc(ctx[DisasmContext], index = 0) {
+	new param = DisasmGetOperand(ctx, index);
+	// Needs special code for dealing with "CASETBL", which has multiple
+	// parameters - not all of them to be relocated.  If the opcode is NOT that,
+	// then check if it is any other opcode requiring relocation.  This does
+	// result in the odd pattern of having a triadic operator in a conditional,
+	// but the alternative would be:
+	//   
+	//   if (ctx[DisasmContext_opcode == OP_CASETBL) {
+	//       if (index & 1) {
+	//           return param - base;
+	//       }
+	//   } else if (DisasmNeedReloc(ctx)) {
+	//       return param - base;
+	//   }
+	//   return param;
+	//   
+	// Or:
+	//   
+	//   if ((ctx[DisasmContext_opcode == OP_CASETBL && (index & 1)) ||
+	//       (ctx[DisasmContext_opcode != OP_CASETBL && DisasmNeedReloc(ctx))) {
+	//           return param - base;
+	//   } else {
+	//       return param;
+	//   }
+	//   
+	// I think the conditional ends up nicer in this rare case.
+	if ((ctx[DisasmContext_opcode] == OP_CASETBL) ? (index & 1) : _:DisasmNeedReloc(ctx)) {
+		return param - gCodBase;
+	} else {
+		return param;
+	}
 }
 
 static stock ToHexStr(x) {
@@ -310,8 +382,6 @@ stock DisasmWriteCode(File:file) {
 	new ctx[DisasmContext];
 	DisasmInit(ctx);
 
-	new base = GetAmxBaseAddress();
-
 	new hdr[AMX_HDR];
 	GetAmxHeader(hdr);
 
@@ -332,13 +402,12 @@ stock DisasmWriteCode(File:file) {
 			continue;
 		}
 
+		new cip = DisasmGetCurIp(ctx);
 		new Opcode:opcode = DisasmGetOpcode(ctx);
 
 		if (opcode == OP_PROC) {
 			fwrite(file, "\n");
 		}
-
-		new cip = DisasmGetCurIp(ctx);
 
 		new insn_name[DISASM_MAX_INSN_NAME];
 		DisasmGetInsnName(ctx, insn_name);
@@ -368,20 +437,20 @@ stock DisasmWriteCode(File:file) {
 				new num = DisasmGetNumOperands(ctx);
 				fwrite(file, ToHexStr(num));
 				fwrite(file, " ");
-				new rel_addr = DisasmGetOperand(ctx, 1) - (base + cod);
+				new rel_addr = DisasmGetOperand(ctx, 1) - gCodBase;
 				fwrite(file, ToHexStr(rel_addr));
 				for (new i = 1; i <= num; i++) {
 					fwrite(file, "\n         case ");
 					new val = DisasmGetOperand(ctx, i * 2);
 					fwrite(file, ToHexStr(val));
 					fwrite(file, " ");
-					rel_addr = DisasmGetOperand(ctx, i * 2 + 1) - (base + cod);
+					rel_addr = DisasmGetOperand(ctx, i * 2 + 1) - gCodBase;
 					fwrite(file, ToHexStr(rel_addr));
 				}
 			}
 			case OP_CALL: {
 				new name[DISASM_MAX_PUBLIC_NAME];
-				new address = DisasmGetOperand(ctx) - base - cod;
+				new address = DisasmGetOperand(ctx) - gCodBase;
 				if (address == hdr[AMX_HDR_CIP]) {
 					strcat(name, "main");
 				} else {
@@ -417,10 +486,7 @@ stock DisasmWriteCode(File:file) {
 			default: {
 				new n = DisasmGetNumOperands(ctx);
 				for (new i = 0; i < n; i++) {
-					new operand = DisasmGetOperand(ctx, i);
-					if (DisasmNeedReloc(ctx)) {
-						operand -= base + cod;
-					}
+					new operand = DisasmGetOperandReloc(ctx, i);
 					fwrite(file, ToHexStr(operand));
 				}
 			}

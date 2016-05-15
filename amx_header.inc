@@ -176,24 +176,22 @@ stock ResetStaticAmxHeader() {
 	gInitialized = true;
 }
 
+#define InitStaticAmxHeader() \
+	if (!gInitialized) \
+		ResetStaticAmxHeader()
+
 stock GetAmxHeader(amxhdr[AMX_HDR]) {
-	if (!gInitialized) {
-		ResetStaticAmxHeader();
-	}
+	InitStaticAmxHeader();
 	amxhdr = gHdr;
 }
 
 stock GetAmxHeaderComponent(AMX_HDR:comp) {
-	if (!gInitialized) {
-		ResetStaticAmxHeader();
-	}
+	InitStaticAmxHeader();
 	return gHdr[comp];
 }
 
 stock PrintAmxHeader() {
-	if (!gInitialized) {
-		ResetStaticAmxHeader();
-	}
+	InitStaticAmxHeader();
 	printf("------------------------");
 	printf("AMX Header:");
 	printf("------------------------");
@@ -258,34 +256,32 @@ stock GetNumPublics(amxhdr[AMX_HDR]) {
 }
 
 stock GetPublicIndexFromAddress(address) {
-	new amxhdr[AMX_HDR];
-	GetAmxHeader(amxhdr);
+	InitStaticAmxHeader();
 
-	new num_publics = GetNumPublics(amxhdr);
-	new off = amxhdr[AMX_HDR_PUBLICS] - amxhdr[AMX_HDR_DAT];
+	new num_publics = GetNumPublics(gHdr);
+	new off = gHdr[AMX_HDR_PUBLICS] - gHdr[AMX_HDR_DAT];
 
 	// Linear search
 	for (new i = 0; i < num_publics; i++) {
 		if (ReadAmxMemory(off) == address) {
 			return i;
 		}
-		off += amxhdr[AMX_HDR_DEFSIZE];
+		off += gHdr[AMX_HDR_DEFSIZE];
 	}
 
 	return -1;
 }
 
 stock bool:GetPublicInfo(index, info[AMX_FUNCSTUBNT]) {
-	new amxhdr[AMX_HDR];
-	GetAmxHeader(amxhdr);
+	InitStaticAmxHeader();
 
-	new num_publics = GetNumPublics(amxhdr);
+	new num_publics = GetNumPublics(gHdr);
 
 	if (index < 0 || index >= num_publics) {
 		return false;
 	}
 
-	new off = amxhdr[AMX_HDR_PUBLICS] - amxhdr[AMX_HDR_DAT] + index * amxhdr[AMX_HDR_DEFSIZE];
+	new off = gHdr[AMX_HDR_PUBLICS] - gHdr[AMX_HDR_DAT] + index * gHdr[AMX_HDR_DEFSIZE];
 	info[AMX_FUNCSTUBNT_ADDRESS] = ReadAmxMemory(off);
 	info[AMX_FUNCSTUBNT_NAMEOFS] = ReadAmxMemory(off + 4);
 
@@ -293,10 +289,9 @@ stock bool:GetPublicInfo(index, info[AMX_FUNCSTUBNT]) {
 }
 
 stock GetPublicIndexFromName(const name[]) {
-	new amxhdr[AMX_HDR];
-	GetAmxHeader(amxhdr);
+	InitStaticAmxHeader();
 
-	new num_publics = GetNumPublics(amxhdr);
+	new num_publics = GetNumPublics(gHdr);
 
 	// Binary search
 	new first = 0;
@@ -306,8 +301,8 @@ stock GetPublicIndexFromName(const name[]) {
 	while (first <= last) {
 		mid = (first + last) / 2;
 
-		new off = amxhdr[AMX_HDR_PUBLICS] - amxhdr[AMX_HDR_DAT] + mid * amxhdr[AMX_HDR_DEFSIZE];
-		new nameofs = ReadAmxMemory(off + 4) - amxhdr[AMX_HDR_DAT];
+		new off = gHdr[AMX_HDR_PUBLICS] - gHdr[AMX_HDR_DAT] + mid * gHdr[AMX_HDR_DEFSIZE];
+		new nameofs = ReadAmxMemory(off + 4) - gHdr[AMX_HDR_DAT];
 
 		new diff = NtCompare(nameofs, name);
 		if (diff < 0) {
@@ -346,16 +341,15 @@ stock bool:GetPublicNameFromAddress(address, name[], size = sizeof(name)) {
 }
 
 stock HookPublic(index, address) {
-	new amxhdr[AMX_HDR];
-	GetAmxHeader(amxhdr);
+	InitStaticAmxHeader();
 
-	new num_publics = GetNumPublics(amxhdr);
+	new num_publics = GetNumPublics(gHdr);
 
 	if (index < 0 || index >= num_publics) {
 		return 0;
 	}
 
-	new off = amxhdr[AMX_HDR_PUBLICS] - amxhdr[AMX_HDR_DAT] + index * amxhdr[AMX_HDR_DEFSIZE];
+	new off = gHdr[AMX_HDR_PUBLICS] - gHdr[AMX_HDR_DAT] + index * gHdr[AMX_HDR_DEFSIZE];
 	new old_address = ReadAmxMemory(off);
 	WriteAmxMemory(off, address);
 
@@ -367,37 +361,35 @@ stock GetNumNatives(amxhdr[AMX_HDR]) {
 }
 
 stock GetNativeIndexFromAddress(address) {
-	new amxhdr[AMX_HDR];
-	GetAmxHeader(amxhdr);
+	InitStaticAmxHeader();
 
-	new num_natives = GetNumNatives(amxhdr);
-	new off = amxhdr[AMX_HDR_NATIVES] - amxhdr[AMX_HDR_DAT];
+	new num_natives = GetNumNatives(gHdr);
+	new off = gHdr[AMX_HDR_NATIVES] - gHdr[AMX_HDR_DAT];
 
 	// Linear search
 	for (new i = 0; i < num_natives; i++) {
 		if (ReadAmxMemory(off) == address) {
 			return i;
 		}
-		off += amxhdr[AMX_HDR_DEFSIZE];
+		off += gHdr[AMX_HDR_DEFSIZE];
 	}
 
 	return -1;
 }
 
 stock bool:GetNativeInfo(index, info[AMX_FUNCSTUBNT]) {
-	new amxhdr[AMX_HDR];
-	GetAmxHeader(amxhdr);
+	InitStaticAmxHeader();
 
 	// For when "index" is not valid
 	info[AMX_FUNCSTUBNT_ADDRESS] = -1;
 
-	new num_natives = GetNumNatives(amxhdr);
+	new num_natives = GetNumNatives(gHdr);
 
 	if (index < 0 || index >= num_natives) {
 		return false;
 	}
 
-	new off = amxhdr[AMX_HDR_NATIVES] - amxhdr[AMX_HDR_DAT] + index * amxhdr[AMX_HDR_DEFSIZE];
+	new off = gHdr[AMX_HDR_NATIVES] - gHdr[AMX_HDR_DAT] + index * gHdr[AMX_HDR_DEFSIZE];
 	info[AMX_FUNCSTUBNT_ADDRESS] = ReadAmxMemory(off);
 	info[AMX_FUNCSTUBNT_NAMEOFS] = ReadAmxMemory(off + 4);
 
@@ -405,22 +397,21 @@ stock bool:GetNativeInfo(index, info[AMX_FUNCSTUBNT]) {
 }
 
 stock GetNativeIndexFromName(const name[]) {
-	new amxhdr[AMX_HDR];
-	GetAmxHeader(amxhdr);
+	InitStaticAmxHeader();
 
-	new num_natives = GetNumNatives(amxhdr);
-	new off = amxhdr[AMX_HDR_NATIVES] - amxhdr[AMX_HDR_DAT];
+	new num_natives = GetNumNatives(gHdr);
+	new off = gHdr[AMX_HDR_NATIVES] - gHdr[AMX_HDR_DAT];
 
 	// Linear search
 	for (new i = 0; i < num_natives; i++) {
-		new nameofs = ReadAmxMemory(off + 4) - amxhdr[AMX_HDR_DAT];
+		new nameofs = ReadAmxMemory(off + 4) - gHdr[AMX_HDR_DAT];
 
 		new diff = NtCompare(nameofs, name);
 		if (diff == 0) {
 			return i;
 		}
 
-		off += amxhdr[AMX_HDR_DEFSIZE];
+		off += gHdr[AMX_HDR_DEFSIZE];
 	}
 
 	return -1;
@@ -450,16 +441,15 @@ stock bool:GetNativeNameFromAddress(address, name[], size = sizeof(name)) {
 }
 
 stock HookNative(index, address) {
-	new amxhdr[AMX_HDR];
-	GetAmxHeader(amxhdr);
+	InitStaticAmxHeader();
 
-	new num_natives = GetNumNatives(amxhdr);
+	new num_natives = GetNumNatives(gHdr);
 
 	if (index < 0 || index >= num_natives) {
 		return 0;
 	}
 
-	new off = amxhdr[AMX_HDR_NATIVES] - amxhdr[AMX_HDR_DAT] + index * amxhdr[AMX_HDR_DEFSIZE];
+	new off = gHdr[AMX_HDR_NATIVES] - gHdr[AMX_HDR_DAT] + index * gHdr[AMX_HDR_DEFSIZE];
 	new old_address = ReadAmxMemory(off);
 	WriteAmxMemory(off, address);
 
@@ -471,16 +461,15 @@ stock GetNumPubVars(amxhdr[AMX_HDR]) {
 }
 
 stock bool:GetPubVarInfo(index, info[AMX_FUNCSTUBNT]) {
-	new amxhdr[AMX_HDR];
-	GetAmxHeader(amxhdr);
+	InitStaticAmxHeader();
 
-	new num_pubvars = GetNumPubVars(amxhdr);
+	new num_pubvars = GetNumPubVars(gHdr);
 
 	if (index < 0 || index >= num_pubvars) {
 		return false;
 	}
 
-	new off = amxhdr[AMX_HDR_PUBVARS] - amxhdr[AMX_HDR_DAT] + index * amxhdr[AMX_HDR_DEFSIZE];
+	new off = gHdr[AMX_HDR_PUBVARS] - gHdr[AMX_HDR_DAT] + index * gHdr[AMX_HDR_DEFSIZE];
 	info[AMX_FUNCSTUBNT_ADDRESS] = ReadAmxMemory(off);
 	info[AMX_FUNCSTUBNT_NAMEOFS] = ReadAmxMemory(off + 4);
 
@@ -488,10 +477,9 @@ stock bool:GetPubVarInfo(index, info[AMX_FUNCSTUBNT]) {
 }
 
 stock GetPubVarIndexFromName(const name[]) {
-	new amxhdr[AMX_HDR];
-	GetAmxHeader(amxhdr);
+	InitStaticAmxHeader();
 
-	new num_pubvars = GetNumPubVars(amxhdr);
+	new num_pubvars = GetNumPubVars(gHdr);
 
 	// Binary search
 	new first = 0;
@@ -501,8 +489,8 @@ stock GetPubVarIndexFromName(const name[]) {
 	while (first <= last) {
 		mid = (first + last) / 2;
 
-		new off = amxhdr[AMX_HDR_PUBVARS] - amxhdr[AMX_HDR_DAT] + mid * amxhdr[AMX_HDR_DEFSIZE];
-		new nameofs = ReadAmxMemory(off + 4) - amxhdr[AMX_HDR_DAT];
+		new off = gHdr[AMX_HDR_PUBVARS] - gHdr[AMX_HDR_DAT] + mid * gHdr[AMX_HDR_DEFSIZE];
+		new nameofs = ReadAmxMemory(off + 4) - gHdr[AMX_HDR_DAT];
 
 		new diff = NtCompare(nameofs, name);
 		if (diff < 0) {
@@ -518,18 +506,17 @@ stock GetPubVarIndexFromName(const name[]) {
 }
 
 stock GetPubVarIndexFromAddress(address) {
-	new amxhdr[AMX_HDR];
-	GetAmxHeader(amxhdr);
+	InitStaticAmxHeader();
 
-	new num_pubvars = GetNumPubVars(amxhdr);
-	new off = amxhdr[AMX_HDR_PUBVARS] - amxhdr[AMX_HDR_DAT];
+	new num_pubvars = GetNumPubVars(gHdr);
+	new off = gHdr[AMX_HDR_PUBVARS] - gHdr[AMX_HDR_DAT];
 
 	// Linear search
 	for (new i = 0; i < num_pubvars; i++) {
 		if (ReadAmxMemory(off) == address) {
 			return i;
 		}
-		off += amxhdr[AMX_HDR_DEFSIZE];
+		off += gHdr[AMX_HDR_DEFSIZE];
 	}
 
 	return -1;
@@ -558,3 +545,6 @@ stock bool:GetPubVarNameFromIndex(index, name[], size = sizeof(name)) {
 stock bool:GetPubVarNameFromAddress(address, name[], size = sizeof(name)) {
 	return GetPubVarNameFromIndex(GetPubVarIndexFromAddress(address), name, size);
 }
+
+#undef InitStaticAmxHeader
+

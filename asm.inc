@@ -428,6 +428,10 @@ stock AsmError:AsmEmitJzerRel(ctx[AsmContext], offset) {
 	return AsmEmitJumpInstruction(ctx, OP_JZER, offset);
 }
 
+stock AsmError:AsmEmitJrel(ctx[AsmContext], offset) {
+	return AsmEmitInstruction(ctx, OP_JREL, offset);
+}
+
 stock AsmError:AsmEmitLctrl(ctx[AsmContext], index) {
 	assert(index >= 0 && index <= 6);
 	return AsmEmitInstruction(ctx, OP_LCTRL, index);
