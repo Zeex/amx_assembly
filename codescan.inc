@@ -507,6 +507,9 @@ static stock bool:CodeScanGetFuncName(addr, name[])
 		true;
 }
 
+static stock
+	gHdr[AMX_HDR];
+
 stock bool:CodeScanRun(scanner[CodeScanner], flags = 0) {
 	// Technically, if there are no replacements defined, then doing nothing
 	// will correctly match them all, so this is not a failure.
@@ -523,7 +526,6 @@ stock bool:CodeScanRun(scanner[CodeScanner], flags = 0) {
 		parseParam,
 		minn,
 		base,
-		hdr[AMX_HDR],
 		func;
 CodeScanRun_skip_init:
 	new
@@ -552,10 +554,10 @@ CodeScanRun_skip_init:
 		// means "preamble", which is mostly "HALT"s and state stubs.
 		parseState = 4;
 	// Initialise the data structures.
-	GetAmxHeader(hdr),
+	GetAmxHeader(gHdr),
 	DisasmInit(dctx),
 	CodeScanResetJumpTargets(jumpTargets, minn),
-	base = GetAmxBaseAddress() + hdr[AMX_HDR_DAT],
+	base = GetAmxBaseAddress() + gHdr[AMX_HDR_DAT],
 	fctx[CodeScanMatch_func] = DisasmGetCurIp(dctx),
 	fctx[CodeScanMatch_name][0] = '\0',
 	fctx[CodeScanMatch_type] = 0,
@@ -778,6 +780,8 @@ CodeScanRun_skip_init:
 					//   val = val - base - cod + cod - dat;
 					//   val = val - base - dat;
 					//   val = val - (base + dat);
+					//   base = base + dat;
+					//   val = val - base;
 					//   
 					// Only jumps that go forwards.
 					parseParam = DisasmGetOperand(dctx) - base,
@@ -852,7 +856,8 @@ stock CodeScanGetMatchAsm(csm[CodeScanMatch], ret[AsmContext]) {
 }
 
 stock CodeScanGetMatchFunc(csm[CodeScanMatch]) {
-	return csm[CodeScanMatch_func];
+	// The stored value is relative to "DAT", return relative to "COD".
+	return csm[CodeScanMatch_func] - gHdr[AMX_HDR_COD] + gHdr[AMX_HDR_DAT];
 }
 
 stock CodeScanGetMatchLength(csm[CodeScanMatch]) {
