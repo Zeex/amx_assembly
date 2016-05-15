@@ -308,7 +308,7 @@ stock DisasmGetCurIp(ctx[DisasmContext]) {
 }
 
 stock DisasmGetRemaining(ctx[DisasmContext]) {
-	return -ctx[DisasmContext_nip];
+	return ctx[DisasmContext_end_ip] - ctx[DisasmContext_nip];
 }
 
 stock DisasmGetInsnName(ctx[DisasmContext], name[], size = sizeof(name)) {
