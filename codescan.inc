@@ -34,9 +34,12 @@
 #define SCANNER_IGNORE_HALT     (16)
 #define SCANNER_IGNORE_BOUNDS   (32)
 
-#define OP_TYPE_INT_  (0)
-#define OP_TYPE_UNK_  (1)
-#define OP_TYPE_FUNC_ (2)
+#define OP@I_ (0) // Type integer.
+#define OP@U_ (1) // Type unknown (???).
+#define OP@F_ (2) // Type function (&func).
+#define OP@N_ (3) // Type none.
+#define OP@O_ (4) // Type opcode.
+#define OP@S_ (5) // Type skipped.
 
 // If we can determine a function's name, we can determine if it is a public or
 // not.  If we can't name it, it is a normal one.  However, if naming is skipped
@@ -62,29 +65,37 @@
 //   
 // Because otherwise a) the code can't guarantee that the function will be in
 // the final amx, and b) we need a call to it from which to extract the addr.
-#define OP(%0) , (Opcode:CS_OP_X:CS_OP_Y:CS_OP_Z:$OP_%0)
+// 
+// You can use this style explcitly within an "OP" scanner, or there is a new
+// dedicated keyword for it - "addressof(func)" (note the lack of "&" there).
+// 
+#define OP(%0) ,(_:OP@T_:OP@O_),(Opcode:OP@X_:OP@Y_:OP@W_:$OP_%0)
 #define OP_%0\32;%1) OP_%0%1)
 
-#define CS_OP_X:%9$%0,%1,%2) %0), (_:CS_OP_1:CS_OP_2:CS_OP_3:$%1|||,%2)
-#define CS_OP_Y:%9$%0,%1)    %0), (_:CS_OP_1:CS_OP_2:CS_OP_3:$%1|||)
-#define CS_OP_Z:%9$%0)       %0)
+#define OP@X_:%9$%0,%1,%2) %0),(_:OP@1_:OP@2_:OP@3_:$%1|||,%2)
+#define OP@Y_:%9$%0,%1)    %0),(_:OP@1_:OP@2_:OP@3_:$%1|||)
+#define OP@Z_:%9$%0)       %0)
+#define OP@W_:%9$%0)       %0),(OP@N_),(0)
 
-#define CS_OP_1:%9$%0???%1|||%2) OP_TYPE_UNK_ ), (_:CS_OP_X:CS_OP_Y:CS_OP_Z:$0%2)
-#define CS_OP_2:%9$%0&%1|||%2)   OP_TYPE_FUNC_), (CodeScanAddress_@@() ? (((CALL@%1), gCodeScanCallback_param) ? 1 : 2) : _:CS_OP_X:CS_OP_Y:CS_OP_Z:$(gCodeScanCallback_param)%2)
-#define CS_OP_3:%9$%1|||%2)      OP_TYPE_INT_ ), (_:CS_OP_X:CS_OP_Y:CS_OP_Z:$(%1)%2)
+#define OP@T_:OP@O_),(Opcode:OP@X_:OP@Y_:OP@Z_:$OP_???%0) OP@S_),(0)
+
+#define OP@1_:%9$%0???%1|||%2) OP@U_ ),(_:OP@X_:OP@Y_:OP@Z_:$0%2)
+#define OP@2_:%9$%0&%1|||%2)   OP@F_),(OP@A_()?(((CALL@%1),OP@V_)?1:2):_:OP@X_:OP@Y_:OP@Z_:$(OP@V_)%2)
+#define OP@3_:%9$%1|||%2)      OP@I_ ),(_:OP@X_:OP@Y_:OP@Z_:$(%1)%2)
 
 // This code uses two nested conditionals because of:
 // https://github.com/Zeex/pawn/issues/96 (this doesn't work):
 //   
-//   (CodeScanAddress_@@() ? ((CALL@%1), 0) : (gCodeScanCallback_param))
+//   (OP@A_() ? ((CALL@%1), 0) : (OP@V_))
 //   
 // Even though it is the obvious solution when you don't want the result of
 // "CALL@%1" to be used (as it may not exist), and you can't use a constant
-// instead of "gCodeScanCallback_param" because then if becomes a constant in a
+// instead of "OP@V_" because then if becomes a constant in a
 // condition, which the compiler rightly complains about.  Of course, because
-// "CodeScanAddress_@@()" always returns "false", the entire other block of code
+// "OP@A_()" always returns "false", the entire other block of code
 // is jumped over.
-#define addressof(%1) (CodeScanAddress_@@() ? (((CALL@%1), gCodeScanCallback_param) ? 1 : 2) : (gCodeScanCallback_param))
+#define addressof(%1) (OP@A_()?(((CALL@%1),OP@V_)?1:2):(OP@V_))
+#define CALL@OP@A_ OP@A_()
 
 #if !defined cellbytes
 	#define cellbytes (cellbits / 8)
@@ -128,15 +139,17 @@ enum CodeScanMatcher {
 	CodeScanMatcher_code[CODE_SCAN_MAX_PATTERN_ARRAY], // The code to look for.
 	CodeScanMatcher_len,
 	CodeScanMatcher_offset[CODE_SCAN_MAX_PARALLEL], // Where the current scanner is in this code.
+	CodeScanMatcher_start[CODE_SCAN_MAX_PARALLEL],
+	// CodeScanMatcher_count[CODE_SCAN_MAX_PARALLEL],
 	CodeScanMatcher_next,      // The next match array.
 	CodeScanMatcher_flags      // Customisation.
 }
 
-stock gCodeScanCallback_param = 0;
+stock OP@V_ = 0;
 stock gCodeScanCallback_matcher[CodeScanMatcher];
 stock gCodeScanCallback_match[CodeScanMatch];
 
-stock bool:CodeScanAddress_@@() {
+stock bool:OP@A_() {
 	// Start reading code from the point to which this function returns, looking
 	// for the next "CALL" op to signal the function call from the macro.
 	new ctx[DisasmContext];
@@ -144,7 +157,7 @@ stock bool:CodeScanAddress_@@() {
 	while (DisasmNext(ctx)) {
 		if (DisasmGetOpcode(ctx) == OP_CALL) {
 			// Return the data in a global, to be repassed from the conditional.
-			gCodeScanCallback_param = DisasmGetOperandReloc(ctx);
+			OP@V_ = DisasmGetOperandReloc(ctx);
 			return false;
 		}
 	}
@@ -268,8 +281,8 @@ stock CodeScanMatcherInit_(searcher[CodeScanMatcher], name[], faked, flags = SCA
 
 // Will not call the function because the check will fail, but will not compile
 // if the function doesn't exist, while still passing it in as a string.
-#define CodeScanMatcherInit(%0,%1) CodeScanMatcherInit_((%0),(#%1),((gCodeScanCallback_param&0)?(%1(gCodeScanCallback_match)):0))
-#define CodeScanMatcherInit_(%0,(%1,%2),%3) CodeScanMatcherInit_(%0,(%1),((gCodeScanCallback_param&0)?(%1(gCodeScanCallback_match)):0),%2)
+#define CodeScanMatcherInit(%0,&%1) CodeScanMatcherInit_((%0),(#%1),((OP@V_&0)?(%1(gCodeScanCallback_match)):0))
+#define CodeScanMatcherInit_(%0,(%1,%2),%3) CodeScanMatcherInit_(%0,(%1),((OP@V_&0)?(%1(gCodeScanCallback_match)):0),%2)
 
 stock CodeScanMatcherPattern_(searcher[CodeScanMatcher], {Opcode, Float, _}:...) {
 	new
@@ -294,7 +307,7 @@ static stock CodeScanDeref(v) {
 	return gCodeScanCallback_matcher; // make compiler happy
 }
 
-static stock CodeScanCheck(Opcode:op, dctx[DisasmContext], cs[CodeScanMatcher], match[CodeScanMatch], &next) {
+static stock CodeScanCheck(Opcode:op, dctx[DisasmContext], cs[CodeScanMatcher], fctx[CodeScanMatch], &next) {
 	// Returns an address of a callback if it passes.
 	next = cs[CodeScanMatcher_next];
 	if (!cs[CodeScanMatcher_len]) {
@@ -304,6 +317,9 @@ static stock CodeScanCheck(Opcode:op, dctx[DisasmContext], cs[CodeScanMatcher], 
 		bool:zero = true,
 		off = cs[CodeScanMatcher_flags];
 	if (off) {
+		// To deal with differences in different compilation modes, we just mark
+		// these opcodes as fully ignorable (because they are mostly used for
+		// debugging and not real user code).
 		switch (op) {
 			case OP_NOP: {
 				if (off & SCANNER_IGNORE_NOP) {
@@ -327,51 +343,76 @@ static stock CodeScanCheck(Opcode:op, dctx[DisasmContext], cs[CodeScanMatcher], 
 			}
 		}
 	}
+	new
+		cnt = DisasmGetNumOperands(dctx),
+		len = cs[CodeScanMatcher_len];
 	for (new idx = 0; idx != CODE_SCAN_MAX_PARALLEL; ++idx) {
 		off = cs[CodeScanMatcher_offset][idx];
 		// Ensure that only one of the parallel scanners starts from the
 		// beginning on each instruction.
 		if (off) {
 		} else if (zero) {
+			// Get the start point of this match.
+			cs[CodeScanMatcher_start][idx] = DisasmGetCurIp(dctx),
 			zero = false;
 		} else {
 			continue;
 		}
-		if (op == Opcode:cs[CodeScanMatcher_code][off++]) {
-			new
-				cnt = DisasmGetNumOperands(dctx),
-				len = cs[CodeScanMatcher_len];
+		if (cs[CodeScanMatcher_code][off] == OP@S_) {
+			off += 2;
+			if (off == len) {
+				return
+					fctx[CodeScanMatch_cip] = cs[CodeScanMatcher_start][idx],
+					fctx[CodeScanMatch_size] = DisasmGetNextIp(dctx) - cs[CodeScanMatcher_start][idx],
+					cs[CodeScanMatcher_func];
+			} else if (cs[CodeScanMatcher_code][off] == OP@O_ && Opcode:cs[CodeScanMatcher_code][off + 1] == op) {
+				// Found the match after the current "missing" instruction.
+				goto CodeScanCheck_pass;
+			} else {
+				// The "== op" check is done twice because in this case we don't
+				// want to fail the scanner if it doesn't match.
+				continue;
+			}
+		}
+		if (cs[CodeScanMatcher_code][off] == OP@O_ && Opcode:cs[CodeScanMatcher_code][off + 1] == op) {
+CodeScanCheck_pass:
 			// Check if there are enough parameters for this opcode.
+			off += 2;
 			if ((len - off) / 2 < cnt) {
 				goto CodeScanCheck_fail;
 			}
-			for (new i = 0; i != cnt; ++i) {
-				switch (cs[CodeScanMatcher_code][off++]) {
-					case OP_TYPE_INT_ : {
-						if (cs[CodeScanMatcher_code][off++] != DisasmGetOperand(dctx, i)) {
+			if (cnt) {
+				for (new i = 0; i != cnt; ++i) {
+					switch (cs[CodeScanMatcher_code][off++]) {
+						// Because we now abstract relocations to the disasm system,
+						// we don't need to differentiate between fixed parameters
+						// and function parameters any more - they are always fully
+						// resolved.
+						case OP@I_, OP@F_: {
+							if (cs[CodeScanMatcher_code][off++] != DisasmGetOperandReloc(dctx, i)) {
+								goto CodeScanCheck_fail;
+							}
+						}
+						case OP@U_: {
+							// Ignore the parameter.
+							++off;
+						}
+						case OP@N_, OP@O_, OP@S_: {
 							goto CodeScanCheck_fail;
 						}
 					}
-					case OP_TYPE_UNK_ : {
-						// Ignore the parameter.
-						++off;
-					}
-					case OP_TYPE_FUNC_: {
-						// Do something with resolving addresses here maybe.
-						if (DisasmNeedReloc(dctx)) {
-							// Convert from an absolute address.
-						} else {
-							// Don't.
-						}
-						++off;
-					}
 				}
+			} else if (cs[CodeScanMatcher_code][off] == OP@N_) {
+				// No parameters expected, none given.
+				off += 2;
+			} else {
+				goto CodeScanCheck_fail;
 			}
 			if (off == len) {
 				// Get the address of the START of the match.
 				return
-					match[CodeScanMatch_cip] -= len * 4,
-					match[CodeScanMatch_size] += len * 4,
+					fctx[CodeScanMatch_cip] = cs[CodeScanMatcher_start][idx],
+					fctx[CodeScanMatch_size] = DisasmGetNextIp(dctx) - cs[CodeScanMatcher_start][idx],
 					// "CallFunction" doesn't work for arrays apparently.
 					cs[CodeScanMatcher_func];
 			} else {
@@ -536,12 +577,10 @@ CodeScanRun_skip_init:
 			// it after.
 			// Found a valid instruction that we don't want to ignore.  Finally
 			// do the actual comparisons to various defined scanners.
-			fctx[CodeScanMatch_heap] = hea,
-			fctx[CodeScanMatch_stack] = stk,
-			fctx[CodeScanMatch_cip] = DisasmGetNextIp(dctx),
-			fctx[CodeScanMatch_size] = DisasmGetRemaining(dctx);
 			for (new cur = scanner[CodeScanner_first]; cur != -1; ) {
 				if ((func = CodeScanCheck(op, dctx, CodeScanDeref(cur), fctx, cur))) {
+					fctx[CodeScanMatch_heap] = hea,
+					fctx[CodeScanMatch_stack] = stk;
 					// Reset to the start of the function, to reparse.
 					#emit PUSH.adr   fctx
 					#emit PUSH.C     4
