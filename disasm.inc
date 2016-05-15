@@ -271,7 +271,7 @@ stock DisasmResult:DisasmNext(ctx[DisasmContext]) {
 	} else {
 		ctx[DisasmContext_cip] = ctx[DisasmContext_nip],
 		ctx[DisasmContext_nip] += 4,
-		ctx[DisasmContext_opcode] = NUM_OPCODES;
+		ctx[DisasmContext_opcode] = Opcode:NUM_OPCODES;
 		return DISASM_NOP;
 	}
 }
@@ -289,6 +289,31 @@ stock Opcode:DisasmGetOpcode(ctx[DisasmContext]) {
 
 stock DisasmGetOperand(ctx[DisasmContext], index = 0) {
 	return ReadAmxMemory(ctx[DisasmContext_cip] + (index + 1) * 4);
+}
+
+stock DisasmGetNumOperands(ctx[DisasmContext]) {
+	return ctx[DisasmContext_insn][DisasmInsnInfo_num_opers];
+}
+
+stock bool:DisasmNeedReloc(ctx[DisasmContext]) {
+	return ctx[DisasmContext_insn][DisasmInsnInfo_needs_reloc];
+}
+
+stock DisasmGetNextIp(ctx[DisasmContext]) {
+	return ctx[DisasmContext_nip];
+}
+
+stock DisasmGetCurIp(ctx[DisasmContext]) {
+	return ctx[DisasmContext_cip];
+}
+
+stock DisasmGetRemaining(ctx[DisasmContext]) {
+	return -ctx[DisasmContext_nip];
+}
+
+stock DisasmGetInsnName(ctx[DisasmContext], name[], size = sizeof(name)) {
+	name[0] = '\0';
+	strcat(name, ctx[DisasmContext_insn][DisasmInsnInfo_name], size);
 }
 
 stock DisasmGetOperandReloc(ctx[DisasmContext], index = 0) {
@@ -318,36 +343,11 @@ stock DisasmGetOperandReloc(ctx[DisasmContext], index = 0) {
 	//   }
 	//   
 	// I think the conditional ends up nicer in this rare case.
-	if ((ctx[DisasmContext_opcode == OP_CASETBL) ? (index & 1) : DisasmNeedReloc(ctx)) {
+	if ((ctx[DisasmContext_opcode] == OP_CASETBL) ? (index & 1) : _:DisasmNeedReloc(ctx)) {
 		return param - gCodBase;
 	} else {
 		return param;
 	}
-}
-
-stock DisasmGetNumOperands(ctx[DisasmContext]) {
-	return ctx[DisasmContext_insn][DisasmInsnInfo_num_opers];
-}
-
-stock bool:DisasmNeedReloc(ctx[DisasmContext]) {
-	return ctx[DisasmContext_insn][DisasmInsnInfo_needs_reloc];
-}
-
-stock DisasmGetNextIp(ctx[DisasmContext]) {
-	return ctx[DisasmContext_nip];
-}
-
-stock DisasmGetCurIp(ctx[DisasmContext]) {
-	return ctx[DisasmContext_cip];
-}
-
-stock DisasmGetRemaining(ctx[DisasmContext]) {
-	return -ctx[DisasmContext_nip];
-}
-
-stock DisasmGetInsnName(ctx[DisasmContext], name[], size = sizeof(name)) {
-	name[0] = '\0';
-	strcat(name, ctx[DisasmContext_insn][DisasmInsnInfo_name], size);
 }
 
 static stock ToHexStr(x) {
