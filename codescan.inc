@@ -759,25 +759,60 @@ stock CodeScanInit(scanner[CodeScanner]) {
 	gBase = GetAmxBaseAddress() + gHdr[AMX_HDR_DAT],
 	gDat = gHdr[AMX_HDR_COD] - gHdr[AMX_HDR_DAT],
 	CodeScanResetJumpTargets(scanner),
-	scanner[CodeScanMatch_type] = 0,
+	scanner[CodeScanMatch_type] =
+	 scanner[CodeScanMatch_name] =
+	  scanner[CodeScanner_param] =
+	   scanner[CodeScanner_state] =
+	    scanner[CodeScanMatch_heap] =
+	     scanner[CodeScanMatch_stack] = 0,
 	scanner[CodeScanMatch_params] = cellmin,
-	scanner[CodeScanner_first] = -1,
-	scanner[CodeScanner_param] = 0,
-	scanner[CodeScanner_state] = 4;
+	scanner[CodeScanner_first] = -1;
 }
 
-stock CodeScanGetFunctionDisasm(csm[CodeScanner], ret[DisasmContext]) {
+stock CodeScanGetFunctionScanner(csm[CodeScanner], ret[CodeScanner], ctx[DisasmContext]) {
 	// Doesn't do any decompilation, just gets the information for decompiling
 	// the whole of the current function.
-	ret[DisasmContext_end_ip] = 0,
-	ret[DisasmContext_start_ip] = ret[DisasmContext_nip] = ret[DisasmContext_cip] = csm[CodeScanMatch_func];
+	CodeScanInit(ret),
+	ctx[DisasmContext_end_ip] = 0,
+	ctx[DisasmContext_start_ip] = ctx[DisasmContext_nip] = ctx[DisasmContext_cip] = csm[CodeScanMatch_func];
+	switch (csm[CodeScanMatch_type]) {
+		case 0, SCANNER_FUNC_AUTOMATA, SCANNER_FUNC_HALT, SCANNER_FUNC_AUTOMATA_NO_NAME, SCANNER_FUNC_HALT_NO_NAME: {
+			ret[CodeScanner_state] = 4;
+		}
+		default: {
+			ret[CodeScanner_state] = 0;
+		}
+	}
 }
 
-stock CodeScanGetMatchDisasm(csm[CodeScanner], ret[DisasmContext]) {
+stock CodeScanGetMatchScanner(csm[CodeScanner], ret[CodeScanner], ctx[DisasmContext], bool:accurate = false) {
 	// Doesn't do any decompilation, just gets the information for decompiling
 	// the currently found match.
-	ret[DisasmContext_end_ip] = 0,
-	ret[DisasmContext_start_ip] = ret[DisasmContext_nip] = ret[DisasmContext_cip] = csm[CodeScanMatch_cip];
+	CodeScanGetFunctionScanner(csm, ret, ctx);
+	if (accurate) {
+		// To be accurate in terms of jump targets, we re-run the scanner over
+		// the function back up to this point.
+		while (ctx[DisasmContext_nip] < csm[CodeScanMatch_cip]) {
+			CodeScanStepInternal(ctx, ret, ret[CodeScanner_state], ret[CodeScanner_param]);
+		}
+	} else {
+		// For speed, we just change the current instruction pointers.
+		ctx[DisasmContext_start_ip] = ctx[DisasmContext_nip] = ctx[DisasmContext_cip] = csm[CodeScanMatch_cip];
+	}
+}
+
+stock CodeScanGetFunctionDisasm(csm[CodeScanner], ctx[DisasmContext]) {
+	// Doesn't do any decompilation, just gets the information for decompiling
+	// the whole of the current function.
+	ctx[DisasmContext_end_ip] = 0,
+	ctx[DisasmContext_start_ip] = ctx[DisasmContext_nip] = ctx[DisasmContext_cip] = csm[CodeScanMatch_func];
+}
+
+stock CodeScanGetMatchDisasm(csm[CodeScanner], ctx[DisasmContext]) {
+	// Doesn't do any decompilation, just gets the information for decompiling
+	// the currently found match.
+	ctx[DisasmContext_end_ip] = 0,
+	ctx[DisasmContext_start_ip] = ctx[DisasmContext_nip] = ctx[DisasmContext_cip] = csm[CodeScanMatch_cip];
 }
 
 stock CodeScanGetFunctionAsm(csm[CodeScanner], ret[AsmContext]) {
@@ -819,6 +854,18 @@ stock CodeScanGetMatchType(csm[CodeScanner]) {
 			// for the state stub, not for the various implementations.
 		}
 	}
+	// There are four types:
+	//   
+	//   PUBLIC   - Public functions.
+	//   HALT     - The "halt" instructions at the very start.
+	//   AUTOMATA - A state determining stub.
+	//   OTHER    - A normal function.
+	//   
+	// These names are always prefixed by "SCANNER_FUNC_", and only "PUBLIC" is
+	// guaranteed to have a name - the types are partially determined in other
+	// ways ("OTHER" will never have a name).
+	// 
+	// There is also "0", which just means that nothing has been scanned yet.
 	return csm[CodeScanMatch_type];
 }
 
