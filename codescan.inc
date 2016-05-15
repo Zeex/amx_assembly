@@ -706,16 +706,18 @@ stock bool:CodeScanStep(dctx[DisasmContext], csState[CodeScanner]) {
 	return CodeScanStepInternal(dctx, csState, csState[CodeScanner_state], csState[CodeScanner_param]);
 }
 
-static stock bool:CodeScanRunInternal(dctx[DisasmContext], csState[CodeScanner], &parseState, &parseParam) {
-	// Technically, if there are no replacements defined, then doing nothing
-	// will correctly match them all, so this is not a failure.
+stock bool:CodeScanRun(csState[CodeScanner]) {
 	if (csState[CodeScanner_first] == -1) {
 		return true;
 	}
 	new
+		dctx[DisasmContext],
 		func,
 		cur,
-		Opcode:op;
+		Opcode:op,
+		parseState = 4,
+		parseParam;
+	DisasmInit(dctx);
 	for (cur = csState[CodeScanner_first]; cur != -1; CodeScanReset(CodeScanDeref(cur), cur)) { }
 	while (CodeScanStepInternal(dctx, csState, parseState, parseParam)) {
 		// Check the address - if it is a jump target that changes the stack
@@ -744,13 +746,6 @@ static stock bool:CodeScanRunInternal(dctx[DisasmContext], csState[CodeScanner],
 		}
 	}
 	return true;
-}
-
-stock bool:CodeScanRun(csState[CodeScanner]) {
-	new
-		dctx[DisasmContext];
-	DisasmInit(dctx);
-	return CodeScanRunInternal(dctx, csState, csState[CodeScanner_state], csState[CodeScanner_param]);
 }
 
 stock CodeScanInit(scanner[CodeScanner]) {
