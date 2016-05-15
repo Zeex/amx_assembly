@@ -94,13 +94,13 @@ stock MyFunc(a, b[], ...)
 // If we can determine a function's name, we can determine if it is a public or
 // not.  If we can't name it, it is a normal one.  However, if naming is skipped
 // then we will have no idea what type it is.
-#define SCANNER_FUNC_OTHER    (1)
-#define SCANNER_FUNC_PUBLIC   (2)
+#define SCANNER_FUNC_PUBLIC   (1)
+#define SCANNER_FUNC_OTHER    (2)
 #define SCANNER_FUNC_AUTOMATA (3)
 #define SCANNER_FUNC_HALT     (4)
 #define SCANNER_FUNC_UNKNOWN  (5)
-#define SCANNER_FUNC_AUTOMATA_NO_NAME (6)
-#define SCANNER_FUNC_HALT_NO_NAME     (7)
+#define SCANNER_FUNC_AUTOMATA_NO_NAME (7)
+#define SCANNER_FUNC_HALT_NO_NAME     (8)
 
 // The "OP()" macro is used to easilly define code patterns to scan for:
 //   
@@ -811,17 +811,12 @@ stock CodeScanGetMatchType(csm[CodeScanner]) {
 	if (csm[CodeScanMatch_type] >= SCANNER_FUNC_UNKNOWN) {
 		csm[CodeScanMatch_name][0] = '\0';
 		if (CodeScanGetFuncName(csm[CodeScanMatch_func], csm[CodeScanMatch_name])) {
-			csm[CodeScanMatch_type] -= 3;
-		} else if (csm[CodeScanMatch_type] == SCANNER_FUNC_UNKNOWN) {
-			csm[CodeScanMatch_type] = SCANNER_FUNC_OTHER;
-		}
-	}
-	switch (csm[CodeScanMatch_type]) {
-		case SCANNER_FUNC_AUTOMATA_NO_NAME: {
-			return SCANNER_FUNC_AUTOMATA;
-		}
-		case SCANNER_FUNC_HALT_NO_NAME: {
-			return SCANNER_FUNC_HALT;
+			csm[CodeScanMatch_type] -= 4;
+		} else {
+			csm[CodeScanMatch_type] /= 2;
+			// We could check for functions that are state implementations.
+			// Currently public functions with states will only get their names
+			// for the state stub, not for the various implementations.
 		}
 	}
 	return csm[CodeScanMatch_type];
@@ -841,6 +836,7 @@ stock CodeScanGetMatchHole(csm[CodeScanner], idx) {
 
 stock CodeScanGetMatchName(csm[CodeScanner], name[]) {
 	if (csm[CodeScanMatch_type] >= SCANNER_FUNC_UNKNOWN) {
+		// We get the type, because the type is based on the name.
 		CodeScanGetMatchType(csm);
 	}
 	name[0] = '\0',
