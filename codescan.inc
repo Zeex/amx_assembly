@@ -23,6 +23,7 @@
 #endif
 #define CODESCAN_INC
 
+#include "frame_info"
 #include "disasm"
 #include "asm"
 
@@ -31,16 +32,11 @@
 #define SCANNER_IGNORE_BREAK    (4)
 #define SCANNER_NAME_FUNCTIONS  (8)
 #define SCANNER_IGNORE_HALT     (16)
+#define SCANNER_IGNORE_BOUNDS   (32)
 
 #define OP_TYPE_INT_  (0)
 #define OP_TYPE_UNK_  (1)
 #define OP_TYPE_FUNC_ (2)
-
-//#define OP_INT(%0)   , CS_TYPE_INT_, (%0)
-//#define OP_FLOAT(%0) , CS_TYPE_INT_, (%0)
-//#define OP_UNK()     , CS_TYPE_UNK_, (0)
-//#define OP_UNKNOWN() , CS_TYPE_UNK_, (0)
-//#define OP_FUNC(%0)  , CS_TYPE_FUNC_, (CodeScanAddress() ? ((ADDR_%1), 0) : (gCodeScanCallback_param))
 
 // If we can determine a function's name, we can determine if it is a public or
 // not.  If we can't name it, it is a normal one.  However, if naming is skipped
@@ -50,6 +46,22 @@
 #define SCANNER_FUNC_OTHER    (4)
 #define SCANNER_FUNC_UNKNOWN  (8)
 
+// The "OP()" macro is used to easilly define code patterns to scan for:
+//   
+//   new csm[CodeScanMatcher];
+//   CodeScanMatcherInit(csm,
+//       OP(CONST_PRI, 42)
+//       OP(ADD_C,     ???)
+//       OP(CALL,      &my_func)
+//   )
+//   
+// Any function that you want to take the address of in this way must have its
+// call pattern defined as:
+//   
+//   #define CALL@my_func my_func(0, "hi", false)
+//   
+// Because otherwise a) the code can't guarantee that the function will be in
+// the final amx, and b) we need a call to it from which to extract the addr.
 #define OP(%0) , (Opcode:CS_OP_X:CS_OP_Y:CS_OP_Z:$OP_%0)
 #define OP_%0\32;%1) OP_%0%1)
 
@@ -58,8 +70,21 @@
 #define CS_OP_Z:%9$%0)       %0)
 
 #define CS_OP_1:%9$%0???%1|||%2) OP_TYPE_UNK_ ), (_:CS_OP_X:CS_OP_Y:CS_OP_Z:$0%2)
-#define CS_OP_2:%9$%0&%1|||%2)   OP_TYPE_FUNC_), (CodeScanAddress() ? ((ADDR_%1), 0) : _:CS_OP_X:CS_OP_Y:CS_OP_Z:$(gCodeScanCallback_param)%2)
+#define CS_OP_2:%9$%0&%1|||%2)   OP_TYPE_FUNC_), (CodeScanAddress_@@() ? (((CALL@%1), gCodeScanCallback_param) ? 1 : 2) : _:CS_OP_X:CS_OP_Y:CS_OP_Z:$(gCodeScanCallback_param)%2)
 #define CS_OP_3:%9$%1|||%2)      OP_TYPE_INT_ ), (_:CS_OP_X:CS_OP_Y:CS_OP_Z:$(%1)%2)
+
+// This code uses two nested conditionals because of:
+// https://github.com/Zeex/pawn/issues/96 (this doesn't work):
+//   
+//   (CodeScanAddress_@@() ? ((CALL@%1), 0) : (gCodeScanCallback_param))
+//   
+// Even though it is the obvious solution when you don't want the result of
+// "CALL@%1" to be used (as it may not exist), and you can't use a constant
+// instead of "gCodeScanCallback_param" because then if becomes a constant in a
+// condition, which the compiler rightly complains about.  Of course, because
+// "CodeScanAddress_@@()" always returns "false", the entire other block of code
+// is jumped over.
+#define addressof(%1) (CodeScanAddress_@@() ? (((CALL@%1), gCodeScanCallback_param) ? 1 : 2) : (gCodeScanCallback_param))
 
 #if !defined cellbytes
 	#define cellbytes (cellbits / 8)
@@ -110,6 +135,23 @@ enum CodeScanMatcher {
 stock gCodeScanCallback_param = 0;
 stock gCodeScanCallback_matcher[CodeScanMatcher];
 stock gCodeScanCallback_match[CodeScanMatch];
+
+stock bool:CodeScanAddress_@@() {
+	// Start reading code from the point to which this function returns, looking
+	// for the next "CALL" op to signal the function call from the macro.
+	new ctx[DisasmContext];
+	DisasmInit(ctx, GetCurrentFrameReturn());
+	while (DisasmNext(ctx)) {
+		if (DisasmGetOpcode(ctx) == OP_CALL) {
+			// Return the data in a global, to be repassed from the conditional.
+			gCodeScanCallback_param = DisasmGetOperandReloc(ctx);
+			return false;
+		}
+	}
+	// ALWAYS returns false so that the function call within "OP(&func)" will
+	// never be called thanks to the conditional.
+	return false;
+}
 
 static stock bool:CodeScanCheckJumpTarget(cip, deloc, &stk, &hea, jumpTargets[][CodeScanJump], minn, num = sizeof (jumpTargets))
 {
@@ -268,6 +310,11 @@ static stock CodeScanCheck(Opcode:op, dctx[DisasmContext], cs[CodeScanMatcher], 
 					return 0;
 				}
 			}
+			case OP_BOUNDS: {
+				if (off & SCANNER_IGNORE_BOUNDS) {
+					return 0;
+				}
+			}
 			case OP_BREAK: {
 				if (off & SCANNER_IGNORE_BREAK) {
 					return 0;
@@ -397,6 +444,7 @@ CodeScanRun_skip_init:
 		bool:bIgnoreNOP = bool:(flags & SCANNER_IGNORE_NOP),
 		bool:bIgnoreBRK = bool:(flags & SCANNER_IGNORE_BREAK),
 		bool:bIgnoreHLT = bool:(flags & SCANNER_IGNORE_HALT),
+		bool:bIgnoreBND = bool:(flags & SCANNER_IGNORE_BOUNDS),
 		bool:bNameFunc  = bool:(flags & SCANNER_NAME_FUNCTIONS),
 		// Used for when mulitple opcodes in a row affect the parsing.  "4"
 		// means "preamble", which is mostly "HALT"s and state stubs.
@@ -434,6 +482,12 @@ CodeScanRun_skip_init:
 				}
 				case OP_BREAK: {
 					if (bIgnoreBRK) {
+						parseState &= ~3;
+						continue;
+					}
+				}
+				case OP_BOUNDS: {
+					if (bIgnoreBND) {
 						parseState &= ~3;
 						continue;
 					}
