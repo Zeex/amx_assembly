@@ -94,11 +94,13 @@ stock MyFunc(a, b[], ...)
 // If we can determine a function's name, we can determine if it is a public or
 // not.  If we can't name it, it is a normal one.  However, if naming is skipped
 // then we will have no idea what type it is.
-#define SCANNER_FUNC_AUTOMATA (1)
+#define SCANNER_FUNC_OTHER    (1)
 #define SCANNER_FUNC_PUBLIC   (2)
-#define SCANNER_FUNC_OTHER    (4)
-#define SCANNER_FUNC_UNKNOWN  (8)
-#define SCANNER_FUNC_HALT     (16)
+#define SCANNER_FUNC_AUTOMATA (3)
+#define SCANNER_FUNC_HALT     (4)
+#define SCANNER_FUNC_UNKNOWN  (5)
+#define SCANNER_FUNC_AUTOMATA_NO_NAME (6)
+#define SCANNER_FUNC_HALT_NO_NAME     (7)
 
 // The "OP()" macro is used to easilly define code patterns to scan for:
 //   
@@ -175,6 +177,7 @@ enum CodeScanner {
 	CodeScanMatch_params,   // Likely unknown statically.
 	CodeScanMatch_cip,      // The point of the pattern match END.
 	CodeScanMatch_holes[CODE_SCAN_MAX_PATTERN_ARRAY / 2], // Results of "???"s.
+	CodeScanMatch_name[32 char],
 	CodeScanner_first,
 	CodeScanner_minn,
 	CodeScanner_jump_switch[CODE_SCAN_MAX_JUMP_TARGETS], // For "CASETBL" not regular jumps.
@@ -510,7 +513,7 @@ static stock bool:CodeScanGetFuncName(addr, name[])
 	}
 	// This code will not return great results for public functions with states.
 	return
-		GetPublicNameFromIndex(index, name, 40),
+		GetPublicNameFromIndex(index, name, 32),
 		true;
 }
 
@@ -532,7 +535,7 @@ static stock bool:CodeScanStepInternal(dctx[DisasmContext], csState[CodeScanner]
 			switch (op) {
 				case OP_HALT: {
 					if (parseState == 4) {
-						csState[CodeScanMatch_type] = SCANNER_FUNC_HALT,
+						csState[CodeScanMatch_type] = SCANNER_FUNC_HALT_NO_NAME,
 						csState[CodeScanMatch_func] = cip,
 						stk = hea = 0,
 						CodeScanResetJumpTargets(csState);
@@ -551,7 +554,7 @@ static stock bool:CodeScanStepInternal(dctx[DisasmContext], csState[CodeScanner]
 					// first instruction seen, then it is the start of an
 					// automata function stub.
 					if (parseState == 4) {
-						csState[CodeScanMatch_type] = SCANNER_FUNC_AUTOMATA,
+						csState[CodeScanMatch_type] = SCANNER_FUNC_AUTOMATA_NO_NAME,
 						csState[CodeScanMatch_func] = cip,
 						stk = hea = 0,
 						CodeScanResetJumpTargets(csState);
@@ -804,6 +807,23 @@ stock CodeScanGetMatchLength(csm[CodeScanner]) {
 }
 
 stock CodeScanGetMatchType(csm[CodeScanner]) {
+	// Lazilly get the names and types of functions when requested.
+	if (csm[CodeScanMatch_type] >= SCANNER_FUNC_UNKNOWN) {
+		csm[CodeScanMatch_name][0] = '\0';
+		if (CodeScanGetFuncName(csm[CodeScanMatch_func], csm[CodeScanMatch_name])) {
+			csm[CodeScanMatch_type] -= 3;
+		} else if (csm[CodeScanMatch_type] == SCANNER_FUNC_UNKNOWN) {
+			csm[CodeScanMatch_type] = SCANNER_FUNC_OTHER;
+		}
+	}
+	switch (csm[CodeScanMatch_type]) {
+		case SCANNER_FUNC_AUTOMATA_NO_NAME: {
+			return SCANNER_FUNC_AUTOMATA;
+		}
+		case SCANNER_FUNC_HALT_NO_NAME: {
+			return SCANNER_FUNC_HALT;
+		}
+	}
 	return csm[CodeScanMatch_type];
 }
 
@@ -817,5 +837,13 @@ stock CodeScanGetMatchStack(csm[CodeScanner]) {
 
 stock CodeScanGetMatchHole(csm[CodeScanner], idx) {
 	return csm[CodeScanMatch_holes][idx];
+}
+
+stock CodeScanGetMatchName(csm[CodeScanner], name[]) {
+	if (csm[CodeScanMatch_type] >= SCANNER_FUNC_UNKNOWN) {
+		CodeScanGetMatchType(csm);
+	}
+	name[0] = '\0',
+	strcat(name, csm[CodeScanMatch_name], 32);
 }
 
