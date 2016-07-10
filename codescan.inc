@@ -296,8 +296,9 @@ static stock CodeScanAddJumpTarget(cip, stk, hea, jumpTargets[CodeScanner], num 
 static stock CodeScanAddSwitchTarget(dctx[DisasmContext], stk, hea, jumpTargets[CodeScanner], num = CODE_SCAN_MAX_JUMP_TARGETS)
 {
 	new
-		sip = DisasmGetOperand(dctx) - gBase;
-	if (UnrelocateOpcode(Opcode:ReadAmxMemory(sip)) != OP_CASETBL) {
+		sip = DisasmGetOperand(dctx) - gBase,
+		codepos = sip + gHdr[AMX_HDR_DAT] - gHdr[AMX_HDR_COD];
+	if (codepos < 0 || codepos > gHdr[AMX_HDR_DAT] || UnrelocateOpcode(Opcode:ReadAmxMemory(sip)) != OP_CASETBL) {
 		// Can happen when we parse "RelocateOpcodeNow" because it has an
 		// explicit "#emit switch 0" in.
 		return;
