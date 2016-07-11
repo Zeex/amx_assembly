@@ -587,9 +587,9 @@ stock Opcode:RelocateOpcodeNow(Opcode:opcode) {
 		case OP_SWITCH: {
 			static T = 1;
 			#if debug > 0
-				if (T) return ReadOpcodeNearThis(8);
-			#else
 				if (T) return ReadOpcodeNearThis(12);
+			#else
+				if (T) return ReadOpcodeNearThis(8);
 			#endif
 			switch (0) {
 				case 0: {}
