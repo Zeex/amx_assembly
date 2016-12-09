@@ -76,7 +76,6 @@ stock MyFunc(a, b[], ...)
 #define SCANNER_NAME_FUNCTIONS  (8)
 #define SCANNER_IGNORE_HALT     (16)
 #define SCANNER_IGNORE_BOUNDS   (32)
-#define SCANNER_MATCH_ALL       (64)
 
 #define O@I_ (0) // Type integer.
 #define O@U_ (1) // Type unknown (???).
@@ -385,30 +384,29 @@ static stock CodeScanCheck(Opcode:op, dctx[DisasmContext], cs[CodeScanMatcher], 
 	}
 	new
 		bool:zero = true,
-		off,
-		flags = cs[CodeScanMatcher_flags];
-	if (flags) {
+		off = cs[CodeScanMatcher_flags];
+	if (off) {
 		// To deal with differences in different compilation modes, we just mark
 		// these opcodes as fully ignorable (because they are mostly used for
 		// debugging and not real user code).
 		switch (op) {
 			case OP_NOP: {
-				if (flags & SCANNER_IGNORE_NOP) {
+				if (off & SCANNER_IGNORE_NOP) {
 					return 0;
 				}
 			}
 			case OP_BOUNDS: {
-				if (flags & SCANNER_IGNORE_BOUNDS) {
+				if (off & SCANNER_IGNORE_BOUNDS) {
 					return 0;
 				}
 			}
 			case OP_BREAK: {
-				if (flags & SCANNER_IGNORE_BREAK) {
+				if (off & SCANNER_IGNORE_BREAK) {
 					return 0;
 				}
 			}
 			case OP_HALT: {
-				if (flags & SCANNER_IGNORE_HALT) {
+				if (off & SCANNER_IGNORE_HALT) {
 					return 0;
 				}
 			}
@@ -445,11 +443,6 @@ static stock CodeScanCheck(Opcode:op, dctx[DisasmContext], cs[CodeScanMatcher], 
 				// want to fail the scanner if it doesn't match.
 				continue;
 			}
-		}
-		if (cs[CodeScanMatcher_code][off] == OP_TYPE_OPCODE_ && (flags & SCANNER_MATCH_ALL)) {
-			fctx[CodeScanMatch_size] = DisasmGetNextIp(dctx) - cs[CodeScanMatcher_start][idx];
-			fctx[CodeScanMatch_cip] = cs[CodeScanMatcher_start][idx];
-			return cs[CodeScanMatcher_func];
 		}
 		if (cs[CodeScanMatcher_code][off] == OP_TYPE_OPCODE_ && Opcode:cs[CodeScanMatcher_code][off + 1] == op) {
 CodeScanCheck_pass:
