@@ -55,6 +55,8 @@ stock GetAmxAddress() {
 		static const code[] = {
 			0x90909090, 0x90909090, 0x90909090, 0x90909090, // for alignment
 			0x0424448b, 0xC3C3C3C3
+			// 8B 44 24 04 - MOV  eax, [esp + arg_0]
+			// C3          - RETN
 		};
 		address = RunShellcode(refabs(code));
 	}
