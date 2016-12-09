@@ -397,6 +397,7 @@
 #define AsmEmitLoadSALT AsmEmitLoadSAlt
 #define AsmEmitLodb.%0(%1) AsmEmitLodb%0(%1)
 #define AsmEmitLodbi AsmEmitLodbI
+#define AsmEmitLoadi AsmEmitLoadI
 #define AsmEmitLref.%0(%1) AsmEmitLref%0(%1)
 #define AsmEmitLrefpri AsmEmitLrefPri
 #define AsmEmitLrefPRI AsmEmitLrefPri

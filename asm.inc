@@ -83,18 +83,20 @@ static stock AsmError:AsmEmitCell(ctx[AsmContext], value) {
 	return ASM_ERROR_NONE;
 }
 
-static stock AsmError:AsmEmitOpcode(ctx[AsmContext], Opcode:opcode) {
+// Core functions:
+
+stock AsmError:AsmEmitOpcode(ctx[AsmContext], Opcode:opcode) {
 	if (opcode <= OP_NONE || _:opcode >= NUM_OPCODES) {
 		return AsmRaiseError(ctx, ASM_ERROR_OPCODE);
 	}
 	return AsmEmitCell(ctx, _:RelocateOpcode(opcode));
 }
 
-static stock AsmError:AsmEmitOperand(ctx[AsmContext], value) {
+stock AsmError:AsmEmitOperand(ctx[AsmContext], value) {
 	return AsmEmitCell(ctx, value);
 }
 
-static stock AsmError:AsmEmitInstruction(ctx[AsmContext], Opcode:opcode, ...) {
+stock AsmError:AsmEmitInstruction(ctx[AsmContext], Opcode:opcode, ...) {
 	// if there's an error while writing then backtracking is useful
 	gPreviousWriteOffset = ctx[AsmContext_buffer_offset];
 
@@ -118,7 +120,7 @@ static stock AsmError:AsmEmitInstruction(ctx[AsmContext], Opcode:opcode, ...) {
 	return ASM_ERROR_NONE;
 }
 
-static stock AsmGetJumpAddressFromOffset(ctx[AsmContext], offset) {
+stock AsmGetJumpAddressFromOffset(ctx[AsmContext], offset) {
 	new amxhdr[AMX_HDR];
 	GetAmxHeader(amxhdr);
 
@@ -129,11 +131,9 @@ static stock AsmGetJumpAddressFromOffset(ctx[AsmContext], offset) {
 	return base + dest;
 }
 
-static stock AsmError:AsmEmitJumpInstruction(ctx[AsmContext], Opcode:opcode, offset) {
+stock AsmError:AsmEmitJumpInstruction(ctx[AsmContext], Opcode:opcode, offset) {
 	return AsmEmitInstruction(ctx, opcode, AsmGetJumpAddressFromOffset(ctx, offset));
 }
-
-// Core functions:
 
 stock AsmError:AsmInitPtr(ctx[AsmContext], buffer, size) {
 	ctx[AsmContext_buffer] = buffer;

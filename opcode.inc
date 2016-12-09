@@ -585,8 +585,15 @@ stock Opcode:RelocateOpcodeNow(Opcode:opcode) {
 			#emit sysreq.c 0
 		}
 		case OP_SWITCH: {
-			return ReadOpcodeNearThis(4);
-			#emit switch 0
+			static T = 1;
+			#if debug > 0
+				if (T) return ReadOpcodeNearThis(12);
+			#else
+				if (T) return ReadOpcodeNearThis(8);
+			#endif
+			switch (0) {
+				case 0: {}
+			}
 		}
 		case OP_CASETBL: {
 			new x = 0;
