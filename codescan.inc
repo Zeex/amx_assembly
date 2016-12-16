@@ -735,7 +735,8 @@ stock bool:CodeScanRun(csState[CodeScanner]) {
 				#emit PUSH.S     csState
 				#emit PUSH.C     4
 				#emit LCTRL      6
-				#emit ADD.C      28
+				#emit ADD.C      36
+				#emit LCTRL      8
 				#emit PUSH.pri
 				#emit LOAD.S.pri func
 				#emit SCTRL      6

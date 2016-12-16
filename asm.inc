@@ -57,6 +57,8 @@ stock const ASM_CTRL_STP = 3;
 stock const ASM_CTRL_STK = 4;
 stock const ASM_CTRL_FRM = 5;
 stock const ASM_CTRL_CIP = 6;
+stock const ASM_CTRL_JIT = 7;
+stock const ASM_CTRL_JMP = 8;
 
 static gPreviousWriteOffset = cellmin;
 
@@ -433,7 +435,7 @@ stock AsmError:AsmEmitJrel(ctx[AsmContext], offset) {
 }
 
 stock AsmError:AsmEmitLctrl(ctx[AsmContext], index) {
-	assert(index >= 0 && index <= 6);
+	assert(index >= 0 && index <= 8);
 	return AsmEmitInstruction(ctx, OP_LCTRL, index);
 }
 
@@ -575,7 +577,7 @@ stock AsmError:AsmEmitRetn(ctx[AsmContext]) {
 }
 
 stock AsmError:AsmEmitSctrl(ctx[AsmContext], index) {
-	assert(index == 2 || 4 <= index <= 6);
+	assert(index == 2 || 4 <= index <= 6 || index == 8);
 	return AsmEmitInstruction(ctx, OP_SCTRL, index);
 }
 
