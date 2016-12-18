@@ -188,6 +188,11 @@ stock AsmError:AsmSetErrorHandler(ctx[AsmContext], error_handler) {
 	return ASM_ERROR_NONE;
 }
 
+stock AsmError:AsmSetErrorHandlerName(ctx[AsmContext], error_handler[]) {
+	ctx[AsmContext_error_handler] = GetPublicAddressFromName(error_handler);
+	return ASM_ERROR_NONE;
+}
+
 // Low level functions:
 
 stock AsmError:AsmEmitAdd(ctx[AsmContext]) {
