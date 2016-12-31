@@ -41,12 +41,12 @@ main()
 		OP(CALL,   &MyFunc)
 		OP(RETN)
 	);
-	CodeScanAddMatcher(scan, csm0);
+	CodeScanAddMatcher(scanner, csm0);
 	
 	// Add other matcher patterns here.
 	
 	// Run all the scanners in parallel.
-	CodeScanRun(scan);
+	CodeScanRun(scanner);
 }
 
 public TailCall_FoundCallback(m[CodeScanner])
