@@ -72,21 +72,31 @@ enum AMX_FUNCSTUBNT {
 	AMX_FUNCSTUBNT_ADDRESS,
 	AMX_FUNCSTUBNT_NAMEOFS
 }
+#define AMX_FUNCSTUBNT_ID AMX_FUNCSTUBNT_ADDRESS
 
 // Publics
+forward bool:GetPublicInfo(index, info[AMX_FUNCSTUBNT]);
 forward GetPublicIndexFromAddress(address);
 forward GetPublicIndexFromName(const name[]);
-forward bool:GetPublicInfo(index, info[AMX_FUNCSTUBNT]);
 forward GetPublicAddressFromName(const name[]);
 forward GetPublicAddressFromIndex(index);
 forward bool:GetPublicNameFromIndex(index, name[], size = sizeof(name));
 forward bool:GetPublicNameFromAddress(address, name[], size = sizeof(name));
 forward HookPublic(index, address);
 
+// Tags
+forward bool:GetTagInfo(index, info[AMX_FUNCSTUBNT]);
+forward GetTagIndexFromID(id);
+forward GetTagIndexFromName(const name[]);
+forward GetTagIDFromName(const name[]);
+forward GetTagIDFromIndex(index);
+forward bool:GetTagNameFromIndex(index, name[], size = sizeof(name));
+forward bool:GetTagNameFromID(id, name[], size = sizeof(name));
+
 // Natives
+forward bool:GetNativeInfo(index, info[AMX_FUNCSTUBNT]);
 forward GetNativeIndexFromAddress(address);
 forward GetNativeIndexFromName(const name[]);
-forward bool:GetNativeInfo(index, info[AMX_FUNCSTUBNT]);
 forward GetNativeAddressFromName(const name[]);
 forward GetNativeAddressFromIndex(index);
 forward bool:GetNativeNameFromIndex(index, name[], size = sizeof(name));
@@ -528,7 +538,6 @@ stock GetPubVarAddressFromIndex(index) {
 	return info[AMX_FUNCSTUBNT_ADDRESS];
 }
 
-
 stock GetPubVarAddressFromName(const name[]) {
 	return GetPubVarAddressFromIndex(GetPubVarIndexFromName(name));
 }
@@ -544,6 +553,95 @@ stock bool:GetPubVarNameFromIndex(index, name[], size = sizeof(name)) {
 
 stock bool:GetPubVarNameFromAddress(address, name[], size = sizeof(name)) {
 	return GetPubVarNameFromIndex(GetPubVarIndexFromAddress(address), name, size);
+}
+
+stock GetNumTags(amxhdr[AMX_HDR]) {
+	return (amxhdr[AMX_HDR_NAMETABLE] - amxhdr[AMX_HDR_TAGS]) / amxhdr[AMX_HDR_DEFSIZE];
+}
+
+stock bool:GetTagInfo(index, info[AMX_FUNCSTUBNT]) {
+	InitStaticAmxHeader();
+
+	new num_tags = GetNumTags(gHdr);
+
+	if (index < 0 || index >= num_tags) {
+		return false;
+	}
+
+	new off = gHdr[AMX_HDR_TAGS] - gHdr[AMX_HDR_DAT] + index * gHdr[AMX_HDR_DEFSIZE];
+	info[AMX_FUNCSTUBNT_ID] = ReadAmxMemory(off);
+	info[AMX_FUNCSTUBNT_NAMEOFS] = ReadAmxMemory(off + 4);
+
+	return true;
+}
+
+stock GetTagIndexFromName(const name[]) {
+	InitStaticAmxHeader();
+
+	new num_tags = GetNumTags(gHdr);
+
+	// Binary search
+	new first = 0;
+	new last = num_tags - 1;
+	new mid;
+
+	while (first <= last) {
+		mid = (first + last) / 2;
+
+		new off = gHdr[AMX_HDR_TAGS] - gHdr[AMX_HDR_DAT] + mid * gHdr[AMX_HDR_DEFSIZE];
+		new nameofs = ReadAmxMemory(off + 4) - gHdr[AMX_HDR_DAT];
+
+		new diff = NtCompare(nameofs, name);
+		if (diff < 0) {
+			first = mid + 1;
+		} else if (diff > 0) {
+			last = mid - 1;
+		} else {
+			return mid;
+		}
+	}
+
+	return -1;
+}
+
+stock GetTagIndexFromID(id) {
+	InitStaticAmxHeader();
+
+	new num_tags = GetNumTags(gHdr);
+	new off = gHdr[AMX_HDR_TAGS] - gHdr[AMX_HDR_DAT];
+
+	// Linear search
+	for (new i = 0; i < num_tags; i++) {
+		if (ReadAmxMemory(off) == id) {
+			return i;
+		}
+		off += gHdr[AMX_HDR_DEFSIZE];
+	}
+
+	return -1;
+}
+
+stock GetTagIDFromIndex(index) {
+	new info[AMX_FUNCSTUBNT];
+	GetTagInfo(index, info);
+	return info[AMX_FUNCSTUBNT_ID];
+}
+
+stock GetTagIDFromName(const name[]) {
+	return GetTagIDFromIndex(GetTagIndexFromName(name));
+}
+
+stock bool:GetTagNameFromIndex(index, name[], size = sizeof(name)) {
+	new info[AMX_FUNCSTUBNT];
+	if (!GetTagInfo(index, info)) {
+		return false;
+	}
+	return (NtCopy(info[AMX_FUNCSTUBNT_NAMEOFS]
+	        - GetAmxHeaderComponent(AMX_HDR_DAT), name, size) > 0);
+}
+
+stock bool:GetTagNameFromID(id, name[], size = sizeof(name)) {
+	return GetTagNameFromIndex(GetTagIndexFromID(id), name, size);
 }
 
 #undef InitStaticAmxHeader
