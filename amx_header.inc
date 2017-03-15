@@ -674,16 +674,42 @@ stock bool:GetTagNameFromID(id, name[], size = sizeof(name)) {
 	return GetTagNameFromIndex(GetTagIndexFromID(id), name, size);
 }
 
-stock bool:IsTagStrong(tag) {
+stock bool:IsTagIDStrong(tag) {
 	return !!(tag & 0x40000000);
 }
 
-stock bool:IsTagWeak(tag) {
+stock bool:IsTagIDWeak(tag) {
 	return !(tag & 0x40000000);
 }
 
-stock bool:IsTagEmpty(tag) {
-	return tag == 0;
+stock bool:IsTagIDEmpty(tag) {
+	return (tag == 0);
+}
+
+stock bool:IsTagNameStrong(tag[]) {
+	return ('A' <= tag[0] <= 'Z');
+}
+
+stock bool:IsTagNameWeak(tag[]) {
+	return !('A' <= tag[0] <= 'Z');
+}
+
+stock bool:IsTagNameEmpty(tag[]) {
+	return (tag[0] == '_' && tag[1] == '\0');
+}
+
+stock bool:IsTagIndexStrong(tag) {
+	new info[AMX_FUNCSTUBNT];
+	return (GetTagInfo(index, info) && IsTagIDStrong(info[AMX_FUNCSTUBNT_ID]);
+}
+
+stock bool:IsTagIndexWeak(tag) {
+	new info[AMX_FUNCSTUBNT];
+	return (GetTagInfo(index, info) && IsTagIDWeak(info[AMX_FUNCSTUBNT_ID]);
+}
+
+stock bool:IsTagIndexEmpty(tag) {
+	return (tag == 0);
 }
 
 #undef InitStaticAmxHeader
