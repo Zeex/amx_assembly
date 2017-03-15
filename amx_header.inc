@@ -555,14 +555,23 @@ stock bool:GetPubVarNameFromAddress(address, name[], size = sizeof(name)) {
 	return GetPubVarNameFromIndex(GetPubVarIndexFromAddress(address), name, size);
 }
 
-stock GetNumTags(amxhdr[AMX_HDR]) {
+static stock GetNumTagsInternal(amxhdr[AMX_HDR]) {
 	return (amxhdr[AMX_HDR_NAMETABLE] - amxhdr[AMX_HDR_TAGS]) / amxhdr[AMX_HDR_DEFSIZE];
 }
 
+stock GetNumTags(amxhdr[AMX_HDR]) {
+	return GetNumTagsInternal(amxhdr) + 1;
+}
+
 stock bool:GetTagInfo(index, info[AMX_FUNCSTUBNT]) {
+	if (index == 0) {
+		info[AMX_FUNCSTUBNT_ID] = 0;
+		info[AMX_FUNCSTUBNT_NAMEOFS] = 0;
+		return true;
+	}
 	InitStaticAmxHeader();
 
-	new num_tags = GetNumTags(gHdr);
+	new num_tags = GetNumTagsInternal(gHdr);
 
 	if (index < 0 || index >= num_tags) {
 		return false;
@@ -576,9 +585,11 @@ stock bool:GetTagInfo(index, info[AMX_FUNCSTUBNT]) {
 }
 
 stock GetTagIndexFromName(const name[]) {
+	if (name[0] == '_' && name[1] == '\0')
+		return 0;
 	InitStaticAmxHeader();
 
-	new num_tags = GetNumTags(gHdr);
+	new num_tags = GetNumTagsInternal(gHdr);
 
 	// Binary search
 	new first = 0;
@@ -605,10 +616,12 @@ stock GetTagIndexFromName(const name[]) {
 }
 
 stock GetTagIndexFromID(id) {
+	if (id == 0)
+		return 0;
 	id &= ~0x80000000;
 	InitStaticAmxHeader();
 
-	new num_tags = GetNumTags(gHdr);
+	new num_tags = GetNumTagsInternal(gHdr);
 	new off = gHdr[AMX_HDR_TAGS] - gHdr[AMX_HDR_DAT];
 
 	// Linear search
@@ -623,16 +636,26 @@ stock GetTagIndexFromID(id) {
 }
 
 stock GetTagIDFromIndex(index) {
+	if (index == 0)
+		return 0;
 	new info[AMX_FUNCSTUBNT];
 	GetTagInfo(index, info);
 	return info[AMX_FUNCSTUBNT_ID];
 }
 
 stock GetTagIDFromName(const name[]) {
+	if (name[0] == '_' && name[1] == '\0')
+		return 0;
 	return GetTagIDFromIndex(GetTagIndexFromName(name));
 }
 
 stock bool:GetTagNameFromIndex(index, name[], size = sizeof(name)) {
+	if (index == 0)
+	{
+		name[0] = '_';
+		name[1] = '\0';
+		return true;
+	}
 	new info[AMX_FUNCSTUBNT];
 	if (!GetTagInfo(index, info)) {
 		return false;
@@ -642,6 +665,12 @@ stock bool:GetTagNameFromIndex(index, name[], size = sizeof(name)) {
 }
 
 stock bool:GetTagNameFromID(id, name[], size = sizeof(name)) {
+	if (id == 0)
+	{
+		name[0] = '_';
+		name[1] = '\0';
+		return true;
+	}
 	return GetTagNameFromIndex(GetTagIndexFromID(id), name, size);
 }
 
@@ -651,6 +680,10 @@ stock bool:IsTagStrong(tag) {
 
 stock bool:IsTagWeak(tag) {
 	return !(tag & 0x40000000);
+}
+
+stock bool:IsTagEmpty(tag) {
+	return tag == 0;
 }
 
 #undef InitStaticAmxHeader
