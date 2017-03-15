@@ -569,7 +569,7 @@ stock bool:GetTagInfo(index, info[AMX_FUNCSTUBNT]) {
 	}
 
 	new off = gHdr[AMX_HDR_TAGS] - gHdr[AMX_HDR_DAT] + index * gHdr[AMX_HDR_DEFSIZE];
-	info[AMX_FUNCSTUBNT_ID] = ReadAmxMemory(off);
+	info[AMX_FUNCSTUBNT_ID] = ReadAmxMemory(off) | 0x80000000;
 	info[AMX_FUNCSTUBNT_NAMEOFS] = ReadAmxMemory(off + 4);
 
 	return true;
@@ -605,6 +605,7 @@ stock GetTagIndexFromName(const name[]) {
 }
 
 stock GetTagIndexFromID(id) {
+	id &= ~0x80000000;
 	InitStaticAmxHeader();
 
 	new num_tags = GetNumTags(gHdr);
