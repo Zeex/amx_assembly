@@ -105,7 +105,8 @@ stock MyFunc(a, b[], ...)
 // The "OP()" macro is used to easilly define code patterns to scan for:
 //   
 //   new csm[CodeScanMatcher];
-//   CodeScanMatcherInit(csm,
+//   CodeScanMatcherInit(csm, &callback);
+//   CodeScanMatcherPattern(csm,
 //       OP(CONST_PRI, 42)
 //       OP(ADD_C,     ???)
 //       OP(CALL,      &my_func)
@@ -175,7 +176,7 @@ enum CodeScanner {
 	CodeScanMatch_heap,     // At the point of this scanner.
 	CodeScanMatch_stack,    // At the point of this scanner.
 	CodeScanMatch_params,   // Likely unknown statically.
-	CodeScanMatch_cip,      // The point of the pattern match END.
+	CodeScanMatch_cip,      // The point of the pattern match.
 	CodeScanMatch_holes[CODE_SCAN_MAX_PATTERN_ARRAY / 2], // Results of "???"s.
 	CodeScanMatch_name[32 char],
 	CodeScanner_first,
@@ -204,6 +205,11 @@ enum CodeScanMatcher {
 #define CodeScanGetNextCall_ O@A_
 #define CALL@CodeScanGetNextCall_ CALL@O@A_
 #define CALL@O@A_ O@A_()
+
+// This macro is to let anyone use `&callback` for a scanner callback without
+// having to define the `CALL@...` macro for the required parameters (since we
+// know to call scanner callbacks in this code).
+#define addressof_ScannerCallback_(%1) (O@A_()?(((%1((gCodeScanCallback_match))),O@V_)?1:2):(O@V_))
 
 stock
 	gCodeScanReturnVar_ = 0,
@@ -332,16 +338,17 @@ stock CodeScanAddMatcher(scanner[CodeScanner], searcher[CodeScanMatcher]) {
 	scanner[CodeScanner_first] = ref(searcher);
 }
 
-stock CodeScanMatcherInit_(searcher[CodeScanMatcher], name[], faked, flags = SCANNER_IGNORE_NOP | SCANNER_IGNORE_BOUNDS | SCANNER_IGNORE_BREAK | SCANNER_IGNORE_HALT) {
-	// All this parameter does is ensure that the callback exists.
-	#pragma unused faked
-	new
-		idx = GetPublicIndexFromName(name);
-	if (idx == -1) {
-		searcher[CodeScanMatcher_func] = 0;
-	} else {
-		searcher[CodeScanMatcher_func] = GetPublicAddressFromIndex(idx);
-	}
+stock CodeScanMatcherInit_(searcher[CodeScanMatcher], address, flags = SCANNER_IGNORE_NOP | SCANNER_IGNORE_BOUNDS | SCANNER_IGNORE_BREAK | SCANNER_IGNORE_HALT) {
+	// This used to look the function up by name from the public functions
+	// table, but that was very silly since we already had code in this exact
+	// file to get the address of ANY function at run-time (`addressof`).  The
+	// only difference between the normal `addressof` and the one used here is
+	// that because we know exactly what sort of functions we are expecting, we
+	// know exactly what parameters they require to construct the fake call, so
+	// we can do away with the `CALL@...` macro requirement for defining the
+	// standard call pattern.  This also means that we actually ensure that the
+	// passed function has the correct shape.
+	searcher[CodeScanMatcher_func] = address,
 	searcher[CodeScanMatcher_flags] = flags,
 	searcher[CodeScanMatcher_next] = -1,
 	searcher[CodeScanMatcher_len] = 0,
@@ -350,8 +357,8 @@ stock CodeScanMatcherInit_(searcher[CodeScanMatcher], name[], faked, flags = SCA
 
 // Will not call the function because the check will fail, but will not compile
 // if the function doesn't exist, while still passing it in as a string.
-#define CodeScanMatcherInit(%0,&%1) CodeScanMatcherInit_((%0),(#%1),((O@V_&0)?(%1(gCodeScanCallback_match)):0))
-#define CodeScanMatcherInit_(%0,(%1,%2),%3) CodeScanMatcherInit_(%0,(%1),((O@V_&0)?(%1(gCodeScanCallback_match)):0),%2)
+#define CodeScanMatcherInit(%0,&%1) CodeScanMatcherInit_((%0),addressof_ScannerCallback_(%1))
+#define CodeScanMatcherInit_(%0,addressof_ScannerCallback_(%1,%2)) CodeScanMatcherInit_(%0,addressof_ScannerCallback_(%1),%2)
 
 stock CodeScanMatcherPattern_(searcher[CodeScanMatcher], {Opcode, Float, _}:...) {
 	new
