@@ -645,5 +645,13 @@ stock bool:GetTagNameFromID(id, name[], size = sizeof(name)) {
 	return GetTagNameFromIndex(GetTagIndexFromID(id), name, size);
 }
 
+stock bool:IsTagStrong(tag) {
+	return !!(tag & 0x40000000);
+}
+
+stock bool:IsTagWeak(tag) {
+	return !(tag & 0x40000000);
+}
+
 #undef InitStaticAmxHeader
 
