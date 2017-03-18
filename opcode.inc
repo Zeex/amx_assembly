@@ -23,6 +23,14 @@
 #endif
 #define OPCODE_INC
 
+#if __Pawn >= 0x30A
+	// Disable the recursion warning in the Russian compiler.
+	#pragma warning push
+	#pragma warning disable 207
+	#pragma disablerecursion
+	#pragma warning pop
+#endif
+
 enum Opcode {
   OP_NONE,         OP_LOAD_PRI,     OP_LOAD_ALT,
   OP_LOAD_S_PRI,   OP_LOAD_S_ALT,   OP_LREF_PRI,
