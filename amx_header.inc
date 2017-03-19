@@ -616,9 +616,9 @@ stock GetTagIndexFromName(const name[]) {
 }
 
 stock GetTagIndexFromID(id) {
+	id &= ~0x80000000;
 	if (id == 0)
 		return 0;
-	id &= ~0x80000000;
 	InitStaticAmxHeader();
 
 	new num_tags = GetNumTagsInternal(gHdr);
@@ -683,7 +683,7 @@ stock bool:IsTagIDWeak(tag) {
 }
 
 stock bool:IsTagIDEmpty(tag) {
-	return (tag == 0);
+	return !(id & ~0x80000000);
 }
 
 stock bool:IsTagNameStrong(tag[]) {
