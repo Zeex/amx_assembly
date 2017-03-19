@@ -683,7 +683,7 @@ stock bool:IsTagIDWeak(tag) {
 }
 
 stock bool:IsTagIDEmpty(tag) {
-	return !(id & ~0x80000000);
+	return !(tag & ~0x80000000);
 }
 
 stock bool:IsTagNameStrong(tag[]) {
