@@ -30,6 +30,9 @@
 #define AMX_HDR_BYTES (60)
 #define AMX_HDR_CELLS (AMX_HDR_BYTES / 4)
 
+#define AMX_TAG_MASK (0x80000000)
+#define AMX_TAG_STRONG (0x40000000)
+
 enum AMX_HDR {
 	AMX_HDR_SIZE,
 	AMX_HDR_MAGIC,
@@ -565,7 +568,7 @@ stock GetNumTags(amxhdr[AMX_HDR]) {
 
 stock bool:GetTagInfo(index, info[AMX_FUNCSTUBNT]) {
 	if (index == 0) {
-		info[AMX_FUNCSTUBNT_ID] = 0;
+		info[AMX_FUNCSTUBNT_ID] = AMX_TAG_MASK;
 		info[AMX_FUNCSTUBNT_NAMEOFS] = 0;
 		return true;
 	}
@@ -578,7 +581,7 @@ stock bool:GetTagInfo(index, info[AMX_FUNCSTUBNT]) {
 	}
 
 	new off = gHdr[AMX_HDR_TAGS] - gHdr[AMX_HDR_DAT] + index * gHdr[AMX_HDR_DEFSIZE];
-	info[AMX_FUNCSTUBNT_ID] = ReadAmxMemory(off) | 0x80000000;
+	info[AMX_FUNCSTUBNT_ID] = ReadAmxMemory(off) | AMX_TAG_MASK;
 	info[AMX_FUNCSTUBNT_NAMEOFS] = ReadAmxMemory(off + 4);
 
 	return true;
@@ -616,7 +619,7 @@ stock GetTagIndexFromName(const name[]) {
 }
 
 stock GetTagIndexFromID(id) {
-	id &= ~0x80000000;
+	id &= ~AMX_TAG_MASK;
 	if (id == 0)
 		return 0;
 	InitStaticAmxHeader();
@@ -637,7 +640,7 @@ stock GetTagIndexFromID(id) {
 
 stock GetTagIDFromIndex(index) {
 	if (index == 0)
-		return 0;
+		return AMX_TAG_MASK;
 	new info[AMX_FUNCSTUBNT];
 	GetTagInfo(index, info);
 	return info[AMX_FUNCSTUBNT_ID];
@@ -645,7 +648,7 @@ stock GetTagIDFromIndex(index) {
 
 stock GetTagIDFromName(const name[]) {
 	if (name[0] == '_' && name[1] == '\0')
-		return 0;
+		return AMX_TAG_MASK;
 	return GetTagIDFromIndex(GetTagIndexFromName(name));
 }
 
@@ -675,15 +678,15 @@ stock bool:GetTagNameFromID(id, name[], size = sizeof(name)) {
 }
 
 stock bool:IsTagIDStrong(tag) {
-	return !!(tag & 0x40000000);
+	return !!(tag & AMX_TAG_STRONG);
 }
 
 stock bool:IsTagIDWeak(tag) {
-	return !(tag & 0x40000000);
+	return !(tag & AMX_TAG_STRONG);
 }
 
 stock bool:IsTagIDEmpty(tag) {
-	return !(tag & ~0x80000000);
+	return !(tag & ~AMX_TAG_MASK);
 }
 
 stock bool:IsTagNameStrong(tag[]) {
