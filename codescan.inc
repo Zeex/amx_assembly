@@ -76,6 +76,7 @@ stock MyFunc(a, b[], ...)
 #define SCANNER_NAME_FUNCTIONS  (8)
 #define SCANNER_IGNORE_HALT     (16)
 #define SCANNER_IGNORE_BOUNDS   (32)
+#define SCANNER_HAS_USER_DATA   (64)
 
 #define O@I_ (0) // Type integer.
 #define O@U_ (1) // Type unknown (???).
@@ -190,7 +191,8 @@ enum CodeScanner {
 }
 
 enum CodeScanMatcher {
-	CodeScanMatcher_func,     // A pointer to the callback.
+	CodeScanMatcher_func,      // A pointer to the callback.
+	CodeScanMatcher_user_data, // User data to pass to their callback.
 	CodeScanMatcher_code[CODE_SCAN_MAX_PATTERN_ARRAY], // The code to look for.
 	CodeScanMatcher_len,
 	CodeScanMatcher_offset[CODE_SCAN_MAX_PARALLEL], // Where the current scanner is in this code.
@@ -213,7 +215,6 @@ enum CodeScanMatcher {
 
 stock
 	gCodeScanReturnVar_ = 0,
-	gCodeScanCallback_matcher[CodeScanMatcher],
 	gCodeScanCallback_match[CodeScanner];
 
 static stock
@@ -349,10 +350,17 @@ stock CodeScanMatcherInit_(searcher[CodeScanMatcher], address, flags = SCANNER_I
 	// standard call pattern.  This also means that we actually ensure that the
 	// passed function has the correct shape.
 	searcher[CodeScanMatcher_func] = address,
-	searcher[CodeScanMatcher_flags] = flags,
+	searcher[CodeScanMatcher_flags] = flags & ~SCANNER_HAS_USER_DATA,
 	searcher[CodeScanMatcher_next] = -1,
 	searcher[CodeScanMatcher_len] = 0,
+	searcher[CodeScanMatcher_user_data] = 0,
 	CodeScanReset(searcher, flags);
+}
+
+stock CodeScanMatcherData(searcher[CodeScanMatcher], val) {
+	// Use `ref()` to pass an array.
+	searcher[CodeScanMatcher_flags] |= SCANNER_HAS_USER_DATA,
+	searcher[CodeScanMatcher_user_data] = val;
 }
 
 // Will not call the function because the check will fail, but will not compile
@@ -376,18 +384,21 @@ stock CodeScanMatcherPattern_(searcher[CodeScanMatcher], {Opcode, Float, _}:...)
 #define CodeScanMatcherPattern(%0, CodeScanMatcherPattern_(%0
 
 static stock CodeScanDeref(v) {
+	static
+		lFakeMatcher[CodeScanMatcher];
 	#pragma unused v
-	#emit load.s.pri 12 // first argument
-	#emit stor.s.pri 16 // secret argument
+	#emit load.s.pri 12 // First argument.
+	#emit stor.s.pri 16 // Secret argument.
 	#emit retn
-	return gCodeScanCallback_matcher; // make compiler happy
+	return lFakeMatcher; // Make compiler happy, and teach it the array return.
 }
 
-static stock CodeScanCheck(Opcode:op, dctx[DisasmContext], cs[CodeScanMatcher], fctx[CodeScanner], &next) {
+static stock bool:CodeScanCheck(Opcode:op, dctx[DisasmContext], cs[CodeScanMatcher], fctx[CodeScanner], &next) {
 	// Returns an address of a callback if it passes.
-	next = cs[CodeScanMatcher_next];
 	if (!cs[CodeScanMatcher_len]) {
-		return 0;
+		return
+			next = cs[CodeScanMatcher_next],
+			false;
 	}
 	new
 		bool:zero = true,
@@ -399,22 +410,30 @@ static stock CodeScanCheck(Opcode:op, dctx[DisasmContext], cs[CodeScanMatcher], 
 		switch (op) {
 			case OP_NOP: {
 				if (off & SCANNER_IGNORE_NOP) {
-					return 0;
+					return
+						next = cs[CodeScanMatcher_next],
+						false;
 				}
 			}
 			case OP_BOUNDS: {
 				if (off & SCANNER_IGNORE_BOUNDS) {
-					return 0;
+					return
+						next = cs[CodeScanMatcher_next],
+						false;
 				}
 			}
 			case OP_BREAK: {
 				if (off & SCANNER_IGNORE_BREAK) {
-					return 0;
+					return
+						next = cs[CodeScanMatcher_next],
+						false;
 				}
 			}
 			case OP_HALT: {
 				if (off & SCANNER_IGNORE_HALT) {
-					return 0;
+					return
+						next = cs[CodeScanMatcher_next],
+						false;
 				}
 			}
 		}
@@ -441,7 +460,7 @@ static stock CodeScanCheck(Opcode:op, dctx[DisasmContext], cs[CodeScanMatcher], 
 					memcpy(fctx[CodeScanMatch_holes], cs[CodeScanMatcher_holes], idx * (CODE_SCAN_MAX_PATTERN_ARRAY / 2), cs[CodeScanMatcher_holeidx][idx] * cellbytes, (CODE_SCAN_MAX_PATTERN_ARRAY / 2)),
 					fctx[CodeScanMatch_cip] = cs[CodeScanMatcher_start][idx],
 					fctx[CodeScanMatch_size] = DisasmGetNextIp(dctx) - cs[CodeScanMatcher_start][idx],
-					cs[CodeScanMatcher_func];
+					true;
 			} else if (cs[CodeScanMatcher_code][off] == OP_TYPE_OPCODE_ && Opcode:cs[CodeScanMatcher_code][off + 1] == op) {
 				// Found the match after the current "missing" instruction.
 				goto CodeScanCheck_pass;
@@ -492,8 +511,7 @@ CodeScanCheck_pass:
 					memcpy(fctx[CodeScanMatch_holes], cs[CodeScanMatcher_holes][idx * (CODE_SCAN_MAX_PATTERN_ARRAY / 2)], 0, cs[CodeScanMatcher_holeidx][idx] * cellbytes, (CODE_SCAN_MAX_PATTERN_ARRAY / 2)),
 					fctx[CodeScanMatch_cip] = cs[CodeScanMatcher_start][idx],
 					fctx[CodeScanMatch_size] = DisasmGetNextIp(dctx) - cs[CodeScanMatcher_start][idx],
-					// "CallFunction" doesn't work for arrays apparently.
-					cs[CodeScanMatcher_func];
+					true;
 			} else {
 				// Out of parameters to check but still looking correct.
 				cs[CodeScanMatcher_offset][idx] = off;
@@ -504,7 +522,9 @@ CodeScanCheck_fail:
 		// The parameter is wrong.
 		cs[CodeScanMatcher_holeidx][idx] = cs[CodeScanMatcher_offset][idx] = 0;
 	}
-	return 0;
+	return
+		next = cs[CodeScanMatcher_next],
+		false;
 }
 
 static stock bool:CodeScanGetFuncName(addr, name[])
@@ -717,13 +737,48 @@ stock bool:CodeScanStep(dctx[DisasmContext], csState[CodeScanner]) {
 	return CodeScanStepInternal(dctx, csState, csState[CodeScanner_state], csState[CodeScanner_param]);
 }
 
+static stock bool:CodeScanCall(cs[CodeScanMatcher], csState[CodeScanner]) {
+	// If I wrote way more assembly I could get away with not calling
+	// `CodeScanDeref(cur)` below, and not need to assign `param` to a variable
+	// before pushing it.  But I'm not going to - it isn't worth the effort.
+	new
+		func = cs[CodeScanMatcher_func];
+	if (cs[CodeScanMatcher_flags] & SCANNER_HAS_USER_DATA) {
+		new
+			param = cs[CodeScanMatcher_user_data];
+		#emit PUSH.S     param
+		#emit PUSH.S     csState
+		#emit PUSH.C     8
+		#emit LCTRL      6
+		#emit ADD.C      36
+		#emit LCTRL      8
+		#emit PUSH.pri
+		#emit LOAD.S.pri func
+		#emit SCTRL      6
+		#emit STACK      8
+		#emit RETN
+	} else {
+		#emit PUSH.S     csState
+		#emit PUSH.C     4
+		#emit LCTRL      6
+		#emit ADD.C      36
+		#emit LCTRL      8
+		#emit PUSH.pri
+		#emit LOAD.S.pri func
+		#emit SCTRL      6
+		#emit STACK      4
+		#emit RETN
+	}
+	// Never reached.
+	return false;
+}
+
 stock bool:CodeScanRun(csState[CodeScanner]) {
 	if (csState[CodeScanner_first] == -1) {
 		return true;
 	}
 	new
 		dctx[DisasmContext],
-		func,
 		cur,
 		Opcode:op,
 		parseState = 4,
@@ -737,21 +792,12 @@ stock bool:CodeScanRun(csState[CodeScanner]) {
 		// Found a valid instruction that we don't want to ignore.  Finally
 		// do the actual comparisons to various defined scanners.
 		for (cur = csState[CodeScanner_first], op = DisasmGetOpcode(dctx); cur != -1; ) {
-			if ((func = CodeScanCheck(op, dctx, CodeScanDeref(cur), csState, cur))) {
-				// Reset to the start of the function, to reparse.
-				#emit PUSH.S     csState
-				#emit PUSH.C     4
-				#emit LCTRL      6
-				#emit ADD.C      36
-				#emit LCTRL      8
-				#emit PUSH.pri
-				#emit LOAD.S.pri func
-				#emit SCTRL      6
-				#emit STOR.S.pri func
-				// If code was written, reparse this function.
-				if (func) {
+			if (CodeScanCheck(op, dctx, CodeScanDeref(cur), csState, cur)) {
+				if (CodeScanCall(CodeScanDeref(cur), csState)) {
+					// If code was written, reparse this function.
 					dctx[DisasmContext_nip] = csState[CodeScanMatch_func];
 				}
+				// Reset to the start of the function, to reparse.
 				for (cur = csState[CodeScanner_first]; cur != -1; CodeScanReset(CodeScanDeref(cur), cur)) { }
 				break;
 			}
