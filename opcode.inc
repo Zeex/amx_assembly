@@ -29,6 +29,9 @@
 	#pragma warning disable 207
 	#pragma disablerecursion
 	#pragma warning pop
+	
+	// Disable the recursion warning in the fast compiler.
+	#pragma warning disable 238
 #endif
 
 enum Opcode {
