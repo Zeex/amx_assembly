@@ -871,13 +871,13 @@ stock CodeScanGetMatchDisasm(csm[CodeScanner], ctx[DisasmContext]) {
 }
 
 stock CodeScanGetFunctionAsm(csm[CodeScanner], ret[AsmContext]) {
-	// Doesn't do any decompilation, just gets the information for decompiling
+	// Doesn't do any decompilation, just gets the information for writing to
 	// the whole of the current function.
 	AsmInitPtr(ret, csm[CodeScanMatch_func], cellmax);
 }
 
 stock CodeScanGetMatchAsm(csm[CodeScanner], ret[AsmContext]) {
-	// Doesn't do any decompilation, just gets the information for decompiling
+	// Doesn't do any decompilation, just gets the information for writing to
 	// the currently found match.
 	AsmInitPtr(ret, csm[CodeScanMatch_cip], cellmax);
 }
