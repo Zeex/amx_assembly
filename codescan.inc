@@ -156,7 +156,7 @@ stock MyFunc(a, b[], ...)
 #endif
 
 #if !defined CODE_SCAN_MAX_PATTERN
-	#define CODE_SCAN_MAX_PATTERN (12)
+	#define CODE_SCAN_MAX_PATTERN (16)
 #endif
 #define CODE_SCAN_MAX_PATTERN_ARRAY (CODE_SCAN_MAX_PATTERN * 3)
 
