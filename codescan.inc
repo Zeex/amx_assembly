@@ -793,9 +793,17 @@ stock bool:CodeScanRun(csState[CodeScanner]) {
 		// do the actual comparisons to various defined scanners.
 		for (cur = csState[CodeScanner_first], op = DisasmGetOpcode(dctx); cur != -1; ) {
 			if (CodeScanCheck(op, dctx, CodeScanDeref(cur), csState, cur)) {
-				if (CodeScanCall(CodeScanDeref(cur), csState)) {
-					// If code was written, reparse this function.
-					dctx[DisasmContext_nip] = csState[CodeScanMatch_func];
+				switch (CodeScanCall(CodeScanDeref(cur), csState)) {
+					case -1: {
+						// Want to skip this match.  However, it was a full
+						// match so does need resetting.
+						CodeScanReset(CodeScanDeref(cur), cur);
+						continue;
+					}
+					case 1: {
+						// If code was written, reparse this function.
+						dctx[DisasmContext_nip] = csState[CodeScanMatch_func];
+					}
 				}
 				// Reset to the start of the function, to reparse.
 				for (cur = csState[CodeScanner_first]; cur != -1; CodeScanReset(CodeScanDeref(cur), cur)) { }
