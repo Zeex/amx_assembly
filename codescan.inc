@@ -800,7 +800,10 @@ stock bool:CodeScanRun(csState[CodeScanner]) {
 						CodeScanReset(CodeScanDeref(cur), cur);
 						continue;
 					}
-					case 1: {
+					case 0: {
+						// Do nothing except ignore.
+					}
+					default: {
 						// If code was written, reparse this function.
 						dctx[DisasmContext_nip] = csState[CodeScanMatch_func];
 					}
