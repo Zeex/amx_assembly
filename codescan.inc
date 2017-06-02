@@ -903,6 +903,16 @@ stock CodeScanGetMatchAddress(csm[CodeScanner]) {
 	return csm[CodeScanMatch_cip] - gDat;
 }
 
+stock CodeScanGetMatchFuncData(csm[CodeScanner]) {
+	// Return relative to "DAT".
+	return csm[CodeScanMatch_func];
+}
+
+stock CodeScanGetMatchAddressData(csm[CodeScanner]) {
+	// Return relative to "DAT".
+	return csm[CodeScanMatch_cip];
+}
+
 stock CodeScanGetMatchLength(csm[CodeScanner]) {
 	return csm[CodeScanMatch_size];
 }
