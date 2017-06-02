@@ -372,7 +372,6 @@ stock CodeScanMatcherData(searcher[CodeScanMatcher], val) {
 stock CodeScanMatcherPattern_(searcher[CodeScanMatcher], {Opcode, Float, _}:...) {
 	new
 		len = numargs() - 1;
-	printf("%d %d", len, CODE_SCAN_MAX_PATTERN_ARRAY);
 	if (len > CODE_SCAN_MAX_PATTERN_ARRAY) {
 		return;
 	}
