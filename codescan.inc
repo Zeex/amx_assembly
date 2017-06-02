@@ -158,7 +158,8 @@ stock MyFunc(a, b[], ...)
 #if !defined CODE_SCAN_MAX_PATTERN
 	#define CODE_SCAN_MAX_PATTERN (16)
 #endif
-#define CODE_SCAN_MAX_PATTERN_ARRAY (CODE_SCAN_MAX_PATTERN * 3)
+#define CODE_SCAN_MAX_PATTERN_ARRAY (CODE_SCAN_MAX_PATTERN * 4)
+#define CODE_SCAN_MAX_HOLES         (CODE_SCAN_MAX_PATTERN * 2)
 
 #if !defined CODE_SCAN_MAX_PARALLEL
 	#define CODE_SCAN_MAX_PARALLEL (2)
@@ -178,7 +179,7 @@ enum CodeScanner {
 	CodeScanMatch_stack,    // At the point of this scanner.
 	CodeScanMatch_params,   // Likely unknown statically.
 	CodeScanMatch_cip,      // The point of the pattern match.
-	CodeScanMatch_holes[CODE_SCAN_MAX_PATTERN_ARRAY / 2], // Results of "???"s.
+	CodeScanMatch_holes[CODE_SCAN_MAX_HOLES], // Results of "???"s.
 	CodeScanMatch_name[32 char],
 	CodeScanner_first,
 	CodeScanner_minn,
@@ -198,7 +199,7 @@ enum CodeScanMatcher {
 	CodeScanMatcher_offset[CODE_SCAN_MAX_PARALLEL], // Where the current scanner is in this code.
 	CodeScanMatcher_start[CODE_SCAN_MAX_PARALLEL],
 	CodeScanMatcher_holeidx[CODE_SCAN_MAX_PARALLEL],
-	CodeScanMatcher_holes[CODE_SCAN_MAX_PARALLEL * CODE_SCAN_MAX_PATTERN_ARRAY / 2],
+	CodeScanMatcher_holes[CODE_SCAN_MAX_PARALLEL * CODE_SCAN_MAX_HOLES],
 	CodeScanMatcher_next,      // The next match array.
 	CodeScanMatcher_flags      // Customisation.
 }
@@ -371,6 +372,7 @@ stock CodeScanMatcherData(searcher[CodeScanMatcher], val) {
 stock CodeScanMatcherPattern_(searcher[CodeScanMatcher], {Opcode, Float, _}:...) {
 	new
 		len = numargs() - 1;
+	printf("%d %d", len, CODE_SCAN_MAX_PATTERN_ARRAY);
 	if (len > CODE_SCAN_MAX_PATTERN_ARRAY) {
 		return;
 	}
