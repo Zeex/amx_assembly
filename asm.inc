@@ -235,6 +235,12 @@ stock AsmError:AsmEmitCall(ctx[AsmContext], address) {
 	return AsmEmitInstruction(ctx, OP_CALL, address);
 }
 
+stock AsmError:AsmEmitCallAbs(ctx[AsmContext], address) {
+	new hdr[AMX_HDR];
+	GetAmxHeader(hdr);
+	return AsmEmitInstruction(ctx, OP_CALL, address + GetAmxBaseAddress() + hdr[AMX_HDR_COD]);
+}
+
 stock AsmError:AsmEmitCmps(ctx[AsmContext], nbytes) {
 	return AsmEmitInstruction(ctx, OP_CMPS, nbytes);
 }

@@ -315,6 +315,8 @@
 #define AsmEmitAlignPRI AsmEmitAlignPri
 #define AsmEmitAlignalt AsmEmitAlignaAlt
 #define AsmEmitAlignALT AsmEmitAlignaAlt
+#define AsmEmitCall.%0(%1) AsmEmitCall%0(%1)
+#define AsmEmitCallabs AsmEmitCallAbs
 #define AsmEmitConst.%0(%1) AsmEmitConst%0(%1)
 #define AsmEmitConstpri AsmEmitConstPri
 #define AsmEmitConstPRI AsmEmitConstPri
