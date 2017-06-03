@@ -868,30 +868,30 @@ stock CodeScanGetMatchScanner(csm[CodeScanner], ret[CodeScanner], ctx[DisasmCont
 	}
 }
 
-stock CodeScanGetFunctionDisasm(csm[CodeScanner], ctx[DisasmContext]) {
+stock CodeScanGetFunctionDisasm(csm[CodeScanner], ctx[DisasmContext], offset = 0) {
 	// Doesn't do any decompilation, just gets the information for decompiling
 	// the whole of the current function.
 	ctx[DisasmContext_end_ip] = 0,
-	ctx[DisasmContext_start_ip] = ctx[DisasmContext_nip] = ctx[DisasmContext_cip] = csm[CodeScanMatch_func];
+	ctx[DisasmContext_start_ip] = ctx[DisasmContext_nip] = ctx[DisasmContext_cip] = csm[CodeScanMatch_func] + offset;
 }
 
-stock CodeScanGetMatchDisasm(csm[CodeScanner], ctx[DisasmContext]) {
+stock CodeScanGetMatchDisasm(csm[CodeScanner], ctx[DisasmContext], offset = 0) {
 	// Doesn't do any decompilation, just gets the information for decompiling
 	// the currently found match.
 	ctx[DisasmContext_end_ip] = 0,
-	ctx[DisasmContext_start_ip] = ctx[DisasmContext_nip] = ctx[DisasmContext_cip] = csm[CodeScanMatch_cip];
+	ctx[DisasmContext_start_ip] = ctx[DisasmContext_nip] = ctx[DisasmContext_cip] = csm[CodeScanMatch_cip] + offset;
 }
 
-stock CodeScanGetFunctionAsm(csm[CodeScanner], ret[AsmContext]) {
+stock CodeScanGetFunctionAsm(csm[CodeScanner], ctx[AsmContext], offset = 0) {
 	// Doesn't do any decompilation, just gets the information for writing to
 	// the whole of the current function.
-	AsmInitPtr(ret, csm[CodeScanMatch_func], cellmax);
+	AsmInitPtr(ctx, csm[CodeScanMatch_func] + offset, cellmax);
 }
 
-stock CodeScanGetMatchAsm(csm[CodeScanner], ret[AsmContext]) {
+stock CodeScanGetMatchAsm(csm[CodeScanner], ctx[AsmContext], offset = 0) {
 	// Doesn't do any decompilation, just gets the information for writing to
 	// the currently found match.
-	AsmInitPtr(ret, csm[CodeScanMatch_cip], cellmax);
+	AsmInitPtr(ctx, csm[CodeScanMatch_cip] + offset, cellmax);
 }
 
 stock CodeScanGetMatchFunc(csm[CodeScanner]) {
