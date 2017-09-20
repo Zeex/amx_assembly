@@ -110,6 +110,7 @@ stock GetAmxStackBase()
 stock GetAmxStackBottom()
 {
 	#emit lctrl 4
+	#emit add.c 12
 	#emit retn
 	return 0;
 }
