@@ -529,3 +529,4 @@ stock GetCurrentFrameFunction() {
 	// this function gets its own caller - pointless but here for completeness
 	return GetFrameFunction(GetCallerFrame());
 }
+
