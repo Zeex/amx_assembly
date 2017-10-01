@@ -69,6 +69,7 @@ stock MyFunc(a, b[], ...)
 #include "frame_info"
 #include "disasm"
 #include "asm"
+#include "addressof"
 
 #define SCANNER_FAIL_ON_INVALID (1)
 #define SCANNER_IGNORE_NOP      (2)
@@ -138,19 +139,6 @@ stock MyFunc(a, b[], ...)
 #define O@2_:%9$%0&%1|||%2)   O@F_),(O@A_()?(((CALL@%1),O@V_)?1:2):_:O@X_:O@Y_:O@Z_:$(O@V_)%2)
 #define O@3_:%9$%1|||%2)      O@I_ ),(_:O@X_:O@Y_:O@Z_:$(%1)%2)
 
-// This code uses two nested conditionals because of:
-// https://github.com/Zeex/pawn/issues/96 (this doesn't work):
-//   
-//   (O@A_() ? ((CALL@%1), 0) : (O@V_))
-//   
-// Even though it is the obvious solution when you don't want the result of
-// "CALL@%1" to be used (as it may not exist), and you can't use a constant
-// instead of "O@V_" because then if becomes a constant in a
-// condition, which the compiler rightly complains about.  Of course, because
-// "O@A_()" always returns "false", the entire other block of code
-// is jumped over.
-#define addressof(%1) (O@A_()?(((CALL@%1),O@V_)?1:2):(O@V_))
-
 #if !defined cellbytes
 	#define cellbytes (cellbits / 8)
 #endif
@@ -204,41 +192,18 @@ enum CodeScanMatcher {
 	CodeScanMatcher_flags      // Customisation.
 }
 
-#define gCodeScanReturnVar_ O@V_
-#define CodeScanGetNextCall_ O@A_
-#define CALL@CodeScanGetNextCall_ CALL@O@A_
-#define CALL@O@A_ O@A_()
-
 // This macro is to let anyone use `&callback` for a scanner callback without
 // having to define the `CALL@...` macro for the required parameters (since we
 // know to call scanner callbacks in this code).
 #define addressof_ScannerCallback_(%1) (O@A_()?(((%1((gCodeScanCallback_match))),O@V_)?1:2):(O@V_))
 
 stock
-	gCodeScanReturnVar_ = 0,
 	gCodeScanCallback_match[CodeScanner];
 
 static stock
 	gHdr[AMX_HDR],
 	gBase,
 	gDat;
-
-stock bool:CodeScanGetNextCall_() {
-	// Start reading code from the point to which this function returns, looking
-	// for the next "CALL" op to signal the function call from the macro.
-	new ctx[DisasmContext];
-	DisasmInit(ctx, GetCurrentFrameReturn());
-	while (DisasmNext(ctx)) {
-		if (DisasmGetOpcode(ctx) == OP_CALL) {
-			// Return the data in a global, to be repassed from the conditional.
-			gCodeScanReturnVar_ = DisasmGetOperandReloc(ctx);
-			return false;
-		}
-	}
-	// ALWAYS returns false so that the function call within "OP(&func)" will
-	// never be called thanks to the conditional.
-	return false;
-}
 
 static stock bool:CodeScanCheckJumpTarget(cip, deloc, &stk, &hea, jumpTargets[CodeScanner], num = CODE_SCAN_MAX_JUMP_TARGETS)
 {
