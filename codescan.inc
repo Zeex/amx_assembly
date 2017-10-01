@@ -545,6 +545,7 @@ static stock bool:CodeScanStepInternal(dctx[DisasmContext], csState[CodeScanner]
 				// be missing if there are no variables currently in scope.
 				case OP_LCTRL: {
 					if (DisasmGetOperand(dctx) == 5) {
+						parseParam = 0;
 						parseState = 1;
 					} else {
 						parseState = 0;
