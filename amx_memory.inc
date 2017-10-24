@@ -33,10 +33,33 @@ stock ref(...) {
 	return 0; // make compiler happy
 }
 
+// Returns an array from an address.
 stock deref(v) {
-	#pragma unused v
 	static gFake[1];
-	#emit load.s.pri 12 // first argument
+	#emit load.s.pri  v // first argument
+	#emit stor.s.pri 16 // secret argument
+	#emit retn
+	return gFake; // make compiler happy
+}
+
+// Returns the address of a variable parameter.
+stock argref(n) {
+	#emit load.s.alt 0
+	#emit load.s.pri n
+	#emit add.c 3
+	#emit lidx
+	#emit retn
+	return 0; // make compiler happy
+}
+
+// Returns an array from a variable parameter.
+stock argderef(n) {
+	static gFake[1];
+	
+	#emit load.s.alt 0
+	#emit load.s.pri n
+	#emit add.c 3
+	#emit lidx
 	#emit stor.s.pri 16 // secret argument
 	#emit retn
 	return gFake; // make compiler happy
