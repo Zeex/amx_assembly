@@ -40,3 +40,13 @@ stock GetAmxJITBaseAddress() {
 	return 0;
 }
 
+stock ResolveJITAddress(addr) {
+	// Converts an address to a JIT address, if there is a JIT.  Otherwise does
+	// nothing.  Could make it try detect if this is already JIT resolved, i.e.
+	// is a return address.
+	#emit load.s.pri addr
+	#emit lctrl 8
+	#emit retn
+	return 0;
+}
+
