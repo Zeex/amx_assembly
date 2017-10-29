@@ -170,7 +170,7 @@ stock SetAmxStackBottom(ptr)
 	#emit sctrl 4
 	// Return.
 	#emit load.pri cip
-	#emit lctrl 8
+	#emit sctrl 8
 	#emit sctrl 6
 }
 
@@ -185,7 +185,7 @@ stock SetAmxFrame(ptr)
 	// Return.
 	#emit move.pri
 	#emit stack 16
-	#emit lctrl 8
+	#emit sctrl 8
 	#emit sctrl 6
 }
 
@@ -198,7 +198,7 @@ stock SetAmxNextInstructionPointer(ptr)
 	// Return.
 	#emit move.pri
 	#emit stack 16
-	#emit lctrl 8
+	#emit sctrl 8
 	#emit sctrl 6
 }
 
