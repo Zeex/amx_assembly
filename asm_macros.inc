@@ -32,7 +32,7 @@
 #define asm_emit_notlabel:asm_emit_(ctx,%1) asm_emit_(ctx,%1 )
 
 // Detect jumps to labels, instead of the labels themselves.
-#define AsmEmitLabel(ctx,#%1\32;%2) asm_emit_%1Label(ctx,#%2)
+#define AsmEmitLabel(ctx,#%1\32;%2) asm_emit_%1Label(ctx,%2)
 
 // NOW detect the second space and use it to extract the opcode name.
 #define asm_emit_(ctx,%1\32;%2) asm_emit_%1(ctx,%2)
@@ -592,19 +592,19 @@
 #define asm_emit_jzerLabel AsmEmitJzerLabel
 #define asm_emit_jzer_labelLabel AsmEmitJzerLabel
 
-#define asm_emit_jeq_label(ctx,%2) AsmEmitJeqLabel(ctx,#%2)
-#define asm_emit_jgeq_label(ctx,%2) AsmEmitJgeqLabel(ctx,#%2)
-#define asm_emit_jgrtr_label(ctx,%2) AsmEmitJgrtrLabel(ctx,#%2)
-#define asm_emit_jleq_label(ctx,%2) AsmEmitJleqLabel(ctx,#%2)
-#define asm_emit_jless_label(ctx,%2) AsmEmitJlessLabel(ctx,#%2)
-#define asm_emit_jneq_label(ctx,%2) AsmEmitJneqLabel(ctx,#%2)
-#define asm_emit_jnz_label(ctx,%2) AsmEmitJnzLabel(ctx,#%2)
-#define asm_emit_jsgeq_label(ctx,%2) AsmEmitJsgeqLabel(ctx,#%2)
-#define asm_emit_jsgrtr_label(ctx,%2) AsmEmitJsgrtrLabel(ctx,#%2)
-#define asm_emit_jsleq_label(ctx,%2) AsmEmitJsleqLabel(ctx,#%2)
-#define asm_emit_jsless_label(ctx,%2) AsmEmitJslessLabel(ctx,#%2)
-#define asm_emit_jump_label(ctx,%2) AsmEmitJumpLabel(ctx,#%2)
-#define asm_emit_jzer_label(ctx,%2) AsmEmitJzerLabel(ctx,#%2)
+#define asm_emit_jeq_label AsmEmitJeqLabel
+#define asm_emit_jgeq_label AsmEmitJgeqLabel
+#define asm_emit_jgrtr_label AsmEmitJgrtrLabel
+#define asm_emit_jleq_label AsmEmitJleqLabel
+#define asm_emit_jless_label AsmEmitJlessLabel
+#define asm_emit_jneq_label AsmEmitJneqLabel
+#define asm_emit_jnz_label AsmEmitJnzLabel
+#define asm_emit_jsgeq_label AsmEmitJsgeqLabel
+#define asm_emit_jsgrtr_label AsmEmitJsgrtrLabel
+#define asm_emit_jsleq_label AsmEmitJsleqLabel
+#define asm_emit_jsless_label AsmEmitJslessLabel
+#define asm_emit_jump_label AsmEmitJumpLabel
+#define asm_emit_jzer_label AsmEmitJzerLabel
 
 #define asm_emit_JEQLabel AsmEmitJeqLabel
 #define asm_emit_JGEQLabel AsmEmitJgeqLabel
@@ -635,32 +635,52 @@
 #define asm_emit_JzerLabel AsmEmitJzerLabel
 
 // Only used when they explicitly typed `@emit JUMP.label x`
-#define AsmEmitJeqlabel(ctx,%2) AsmEmitJeqLabel(ctx,#%2)
-#define AsmEmitJgeqlabel(ctx,%2) AsmEmitJgeqLabel(ctx,#%2)
-#define AsmEmitJgrtrlabel(ctx,%2) AsmEmitJgrtrLabel(ctx,#%2)
-#define AsmEmitJleqlabel(ctx,%2) AsmEmitJleqLabel(ctx,#%2)
-#define AsmEmitJlesslabel(ctx,%2) AsmEmitJlessLabel(ctx,#%2)
-#define AsmEmitJneqlabel(ctx,%2) AsmEmitJneqLabel(ctx,#%2)
-#define AsmEmitJnzlabel(ctx,%2) AsmEmitJnzLabel(ctx,#%2)
-#define AsmEmitJsgeqlabel(ctx,%2) AsmEmitJsgeqLabel(ctx,#%2)
-#define AsmEmitJsgrtrlabel(ctx,%2) AsmEmitJsgrtrLabel(ctx,#%2)
-#define AsmEmitJsleqlabel(ctx,%2) AsmEmitJsleqLabel(ctx,#%2)
-#define AsmEmitJslesslabel(ctx,%2) AsmEmitJslessLabel(ctx,#%2)
-#define AsmEmitJumplabel(ctx,%2) AsmEmitJumpLabel(ctx,#%2)
-#define AsmEmitJzerlabel(ctx,%2) AsmEmitJzerLabel(ctx,#%2)
-#define AsmEmitJeqLABEL(ctx,%2) AsmEmitJeqLabel(ctx,#%2)
-#define AsmEmitJgeqLABEL(ctx,%2) AsmEmitJgeqLabel(ctx,#%2)
-#define AsmEmitJgrtrLABEL(ctx,%2) AsmEmitJgrtrLabel(ctx,#%2)
-#define AsmEmitJleqLABEL(ctx,%2) AsmEmitJleqLabel(ctx,#%2)
-#define AsmEmitJlessLABEL(ctx,%2) AsmEmitJlessLabel(ctx,#%2)
-#define AsmEmitJneqLABEL(ctx,%2) AsmEmitJneqLabel(ctx,#%2)
-#define AsmEmitJnzLABEL(ctx,%2) AsmEmitJnzLabel(ctx,#%2)
-#define AsmEmitJsgeqLABEL(ctx,%2) AsmEmitJsgeqLabel(ctx,#%2)
-#define AsmEmitJsgrtrLABEL(ctx,%2) AsmEmitJsgrtrLabel(ctx,#%2)
-#define AsmEmitJsleqLABEL(ctx,%2) AsmEmitJsleqLabel(ctx,#%2)
-#define AsmEmitJslessLABEL(ctx,%2) AsmEmitJslessLabel(ctx,#%2)
-#define AsmEmitJumpLABEL(ctx,%2) AsmEmitJumpLabel(ctx,#%2)
-#define AsmEmitJzerLABEL(ctx,%2) AsmEmitJzerLabel(ctx,#%2)
+#define AsmEmitJeqlabel AsmEmitJeqLabel
+#define AsmEmitJgeqlabel AsmEmitJgeqLabel
+#define AsmEmitJgrtrlabel AsmEmitJgrtrLabel
+#define AsmEmitJleqlabel AsmEmitJleqLabel
+#define AsmEmitJlesslabel AsmEmitJlessLabel
+#define AsmEmitJneqlabel AsmEmitJneqLabel
+#define AsmEmitJnzlabel AsmEmitJnzLabel
+#define AsmEmitJsgeqlabel AsmEmitJsgeqLabel
+#define AsmEmitJsgrtrlabel AsmEmitJsgrtrLabel
+#define AsmEmitJsleqlabel AsmEmitJsleqLabel
+#define AsmEmitJslesslabel AsmEmitJslessLabel
+#define AsmEmitJumplabel AsmEmitJumpLabel
+#define AsmEmitJzerlabel AsmEmitJzerLabel
+
+#define AsmEmitJeqLABEL AsmEmitJeqLabel
+#define AsmEmitJgeqLABEL AsmEmitJgeqLabel
+#define AsmEmitJgrtrLABEL AsmEmitJgrtrLabel
+#define AsmEmitJleqLABEL AsmEmitJleqLabel
+#define AsmEmitJlessLABEL AsmEmitJlessLabel
+#define AsmEmitJneqLABEL AsmEmitJneqLabel
+#define AsmEmitJnzLABEL AsmEmitJnzLabel
+#define AsmEmitJsgeqLABEL AsmEmitJsgeqLabel
+#define AsmEmitJsgrtrLABEL AsmEmitJsgrtrLabel
+#define AsmEmitJsleqLABEL AsmEmitJsleqLabel
+#define AsmEmitJslessLABEL AsmEmitJslessLabel
+#define AsmEmitJumpLABEL AsmEmitJumpLabel
+#define AsmEmitJzerLABEL AsmEmitJzerLabel
+
+// This is required as otherwise:
+//   
+//   @emit Jump.Label x
+//   
+// Would not generate the `#x` required, while all other versions would.
+#define AsmEmitJeqLabel(ctx,%2) AsmEmitJeqLabelStringize(ctx,#%2)
+#define AsmEmitJgeqLabel(ctx,%2) AsmEmitJgeqLabelStringize(ctx,#%2)
+#define AsmEmitJgrtrLabel(ctx,%2) AsmEmitJgrtrLabelStringize(ctx,#%2)
+#define AsmEmitJleqLabel(ctx,%2) AsmEmitJleqLabelStringize(ctx,#%2)
+#define AsmEmitJlessLabel(ctx,%2) AsmEmitJlessLabelStringize(ctx,#%2)
+#define AsmEmitJneqLabel(ctx,%2) AsmEmitJneqLabelStringize(ctx,#%2)
+#define AsmEmitJnzLabel(ctx,%2) AsmEmitJnzLabelStringize(ctx,#%2)
+#define AsmEmitJsgeqLabel(ctx,%2) AsmEmitJsgeqLabelStringize(ctx,#%2)
+#define AsmEmitJsgrtrLabel(ctx,%2) AsmEmitJsgrtrLabelStringize(ctx,#%2)
+#define AsmEmitJsleqLabel(ctx,%2) AsmEmitJsleqLabelStringize(ctx,#%2)
+#define AsmEmitJslessLabel(ctx,%2) AsmEmitJslessLabelStringize(ctx,#%2)
+#define AsmEmitJumpLabel(ctx,%2) AsmEmitJumpLabelStringize(ctx,#%2)
+#define AsmEmitJzerLabel(ctx,%2) AsmEmitJzerLabelStringize(ctx,#%2)
 
 // Only used when they explicitly typed `@emit JUMP.label x:`
 #define AsmEmitJeqlabelLabel AsmEmitJeqLabel
@@ -676,6 +696,7 @@
 #define AsmEmitJslesslabelLabel AsmEmitJslessLabel
 #define AsmEmitJumplabelLabel AsmEmitJumpLabel
 #define AsmEmitJzerlabelLabel AsmEmitJzerLabel
+
 #define AsmEmitJeqLABELLabel AsmEmitJeqLabel
 #define AsmEmitJgeqLABELLabel AsmEmitJgeqLabel
 #define AsmEmitJgrtrLABELLabel AsmEmitJgrtrLabel
@@ -689,4 +710,31 @@
 #define AsmEmitJslessLABELLabel AsmEmitJslessLabel
 #define AsmEmitJumpLABELLabel AsmEmitJumpLabel
 #define AsmEmitJzerLABELLabel AsmEmitJzerLabel
+
+#define AsmEmitJeqLabelLabel AsmEmitJeqLabel
+#define AsmEmitJgeqLabelLabel AsmEmitJgeqLabel
+#define AsmEmitJgrtrLabelLabel AsmEmitJgrtrLabel
+#define AsmEmitJleqLabelLabel AsmEmitJleqLabel
+#define AsmEmitJlessLabelLabel AsmEmitJlessLabel
+#define AsmEmitJneqLabelLabel AsmEmitJneqLabel
+#define AsmEmitJnzLabelLabel AsmEmitJnzLabel
+#define AsmEmitJsgeqLabelLabel AsmEmitJsgeqLabel
+#define AsmEmitJsgrtrLabelLabel AsmEmitJsgrtrLabel
+#define AsmEmitJsleqLabelLabel AsmEmitJsleqLabel
+#define AsmEmitJslessLabelLabel AsmEmitJslessLabel
+#define AsmEmitJumpLabelLabel AsmEmitJumpLabel
+#define AsmEmitJzerLabelLabel AsmEmitJzerLabel
+
+// CallLabel macros.
+#define asm_emit_callLabel AsmEmitCallLabel
+#define asm_emit_call_labelLabel AsmEmitCallLabel
+#define asm_emit_call_label AsmEmitCallLabel
+#define asm_emit_CALLLabel AsmEmitCallLabel
+#define asm_emit_CallLabel AsmEmitCallLabel
+#define AsmEmitCalllabel AsmEmitCallLabel
+#define AsmEmitCallLABEL AsmEmitCallLabel
+#define AsmEmitCalllabelLabel AsmEmitCallLabel
+#define AsmEmitCallLABELLabel AsmEmitCallLabel
+#define AsmEmitCallLabelLabel AsmEmitCallLabel
+#define AsmEmitCallLabel(ctx,%2) AsmEmitCallLabelStringize(ctx,#%2)
 
