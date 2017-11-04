@@ -33,10 +33,33 @@ stock ref(...) {
 	return 0; // make compiler happy
 }
 
+// Returns an array from an address.
 stock deref(v) {
-	#pragma unused v
 	static gFake[1];
-	#emit load.s.pri 12 // first argument
+	#emit load.s.pri  v // first argument
+	#emit stor.s.pri 16 // secret argument
+	#emit retn
+	return gFake; // make compiler happy
+}
+
+// Returns the address of a variable parameter.
+stock argref(n) {
+	#emit load.s.alt 0
+	#emit load.s.pri n
+	#emit add.c 3
+	#emit lidx
+	#emit retn
+	return 0; // make compiler happy
+}
+
+// Returns an array from a variable parameter.
+stock argderef(n) {
+	static gFake[1];
+	
+	#emit load.s.alt 0
+	#emit load.s.pri n
+	#emit add.c 3
+	#emit lidx
 	#emit stor.s.pri 16 // secret argument
 	#emit retn
 	return gFake; // make compiler happy
@@ -147,7 +170,7 @@ stock SetAmxStackBottom(ptr)
 	#emit sctrl 4
 	// Return.
 	#emit load.pri cip
-	#emit lctrl 8
+	#emit sctrl 8
 	#emit sctrl 6
 }
 
@@ -162,7 +185,7 @@ stock SetAmxFrame(ptr)
 	// Return.
 	#emit move.pri
 	#emit stack 16
-	#emit lctrl 8
+	#emit sctrl 8
 	#emit sctrl 6
 }
 
@@ -175,7 +198,7 @@ stock SetAmxNextInstructionPointer(ptr)
 	// Return.
 	#emit move.pri
 	#emit stack 16
-	#emit lctrl 8
+	#emit sctrl 8
 	#emit sctrl 6
 }
 
