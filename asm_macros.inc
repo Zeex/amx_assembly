@@ -25,14 +25,15 @@
 
 // Only detect ONE space, so you don't need a trailing space on opcodes with no
 // parameters. Add a space on the end here incase there wasn't one already.
-#define @emit%0\32;%1\10;%3 (asm_emit_label:asm_emit_notlabel:asm_emit_(ctx,%1));
+#define @emit%0\32;%1\10;%3 (asm_emit_haslabel:asm_emit_notlabel:asm_emit_(ctx,%1));
 
 // Detect labels (for jump targets).
-#define asm_emit_label:asm_emit_notlabel:asm_emit_(ctx,%1:) AsmEmitLabel(ctx,#%1)
+#define asm_emit_haslabel:asm_emit_notlabel:asm_emit_(ctx,%1:) AsmEmitLabelStringize AsmEmitLabel:(ctx,%1)
 #define asm_emit_notlabel:asm_emit_(ctx,%1) asm_emit_(ctx,%1 )
 
 // Detect jumps to labels, instead of the labels themselves.
-#define AsmEmitLabel(ctx,#%1\32;%2) asm_emit_%1Label(ctx,%2)
+#define AsmEmitLabelStringize%0:(ctx,%1\32;%2) asm_emit_%1Label(ctx,%2)
+#define AsmEmitLabel:(ctx,%2) (ctx,#%2)
 
 // NOW detect the second space and use it to extract the opcode name.
 #define asm_emit_(ctx,%1\32;%2) asm_emit_%1(ctx,%2)
@@ -737,4 +738,12 @@
 #define AsmEmitCallLABELLabel AsmEmitCallLabel
 #define AsmEmitCallLabelLabel AsmEmitCallLabel
 #define AsmEmitCallLabel(ctx,%2) AsmEmitCallLabelStringize(ctx,#%2)
+
+// Explicit `@emit Label name`
+#define asm_emit_labelLabel(ctx,%2) AsmEmitLabelStringize(ctx,#%2)
+#define asm_emit_LABELLabel(ctx,%2) AsmEmitLabelStringize(ctx,#%2)
+#define asm_emit_LabelLabel(ctx,%2) AsmEmitLabelStringize(ctx,#%2)
+#define asm_emit_label(ctx,%2) AsmEmitLabelStringize(ctx,#%2)
+#define asm_emit_LABEL(ctx,%2) AsmEmitLabelStringize(ctx,#%2)
+#define asm_emit_Label(ctx,%2) AsmEmitLabelStringize(ctx,#%2)
 
