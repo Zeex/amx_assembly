@@ -108,6 +108,111 @@ static stock AsmError:AsmEmitCell(ctx[AsmContext], value) {
 	return ASM_ERROR_NONE;
 }
 
+// Label functions:
+
+#define AsmIsLabelResolved(%2,%0)    (%2[AsmContext_labels][(%0)] & 1)
+#define AsmIsJumpRelative(%0)        ((%0) & 1)
+#define AsmSetJumpRelative(%2,%0,%1) (%2[AsmContext_labels][(%0)] & (%1))
+#define AsmGetLabel(%2,%0)           (%2[AsmContext_labels][(%0)] & ~1)
+#define AsmSetLabel(%2,%0,%1)        (%2[AsmContext_labels][(%0)] = (%1) | 1)
+
+static stock AsmHashLabel(const label[]) {
+	// Return the Bernstein hash of this label.  This is NOT a cryptographically
+	// secure hash, but is sufficient for our uses.
+	new hash = -1;
+	new i = -1;
+	new ch;
+	while ((ch = label[++i])) {
+		hash = hash * 33 + ch;
+	}
+	return hash;
+}
+
+static stock AsmFindLabelIndex(ctx[AsmContext], hash) {
+	for (new i = 0; i != ASM_MAX_LABELS; ++i) {
+		if (ctx[AsmContext_label_names][i] == hash) {
+			return i;
+		}
+	}
+	return -1;
+}
+
+stock AsmError:AsmEmitLabelStringize(ctx[AsmContext], const label[]) {
+	// Everything works on the hashes - it saves storing the strings.
+	new hash = AsmHashLabel(label);
+	// See if this label already exists.
+	new idx = AsmFindLabelIndex(ctx, hash);
+	// Get the true address.  Use an offset of -8 because
+	// `AsmGetJumpAddressFromOffset` assumes the jump is from the start of the
+	// next instruction (8 bytes later), while we want it from right here, so
+	// shift back accordingly.
+	new datAddr = ctx[AsmContext_buffer] + ctx[AsmContext_buffer_offset];
+	new codAddr = AsmGetJumpAddressFromOffset(ctx, -8);
+	if (idx == -1) {
+		// Doesn't exist.  Get a free slot.
+		idx = AsmFindLabelIndex(ctx, 0);
+		if (idx == -1) {
+			return AsmRaiseError(ctx, ASM_ERROR_LABEL_OVERFLOW);
+		}
+		ctx[AsmContext_label_names][idx] = hash;
+	} else if (AsmIsLabelResolved(ctx, idx)) {
+		// Check that no other labels have the same name.
+		return AsmRaiseError(ctx, ASM_ERROR_LABEL_DUPLICATE);
+	} else {
+		// Loop over all the pending items in the linked list.
+		new cur = AsmGetLabel(ctx, idx);
+		while (cur) {
+			new next = ReadAmxMemory(cur);
+			if (AsmIsJumpRelative(next)) {
+				WriteAmxMemory(cur, datAddr - cur - 4);
+			} else {
+				WriteAmxMemory(cur, codAddr);
+			}
+			cur = next & ~1;
+		}
+	}
+	// Store the label's absolute address, along with a flag to mark that it is
+	// resolved.
+	AsmSetLabel(ctx, idx, codAddr);
+	return ASM_ERROR_NONE;
+}
+
+stock AsmError:AsmEmitJumpStringize(ctx[AsmContext], const label[], bool:relative) {
+	new hash = AsmHashLabel(label);
+	new idx = AsmFindLabelIndex(ctx, hash);
+	new datAddr = ctx[AsmContext_buffer] + ctx[AsmContext_buffer_offset];
+	new AsmError:error = ASM_ERROR_NONE;
+	if (idx == -1) {
+		// Doesn't exist.  Get a free slot.
+		idx = AsmFindLabelIndex(ctx, 0);
+		if (idx == -1) {
+			return AsmRaiseError(ctx, ASM_ERROR_LABEL_OVERFLOW);
+		}
+		ctx[AsmContext_label_names][idx] = hash;
+	} else if (AsmIsLabelResolved(ctx, idx)) {
+		// The label was in the past, jump to that.
+		new cur = AsmGetLabel(ctx, idx);
+		if (relative) {
+			error = AsmEmitCell(ctx, cur - datAddr - 4);
+		} else {
+			error = AsmEmitCell(ctx, cur);
+		}
+	} else {
+		// The label is not yet known, store this use in the list.
+		new cur = AsmGetLabel(ctx, idx);
+		if (relative) {
+			error = AsmEmitCell(ctx, cur | 1);
+		} else {
+			error = AsmEmitCell(ctx, cur);
+		}
+		if (error == ASM_ERROR_NONE) {
+			// Store to the list only if the output was successful.
+			AsmSetLabel(ctx, idx, datAddr);
+		}
+	}
+	return error;
+}
+
 // Core functions:
 
 stock AsmError:AsmEmitOpcode(ctx[AsmContext], Opcode:opcode) {
@@ -158,6 +263,19 @@ stock AsmGetJumpAddressFromOffset(ctx[AsmContext], offset) {
 
 stock AsmError:AsmEmitJumpInstruction(ctx[AsmContext], Opcode:opcode, offset) {
 	return AsmEmitInstruction(ctx, opcode, AsmGetJumpAddressFromOffset(ctx, offset));
+}
+
+stock AsmError:AsmEmitJumpLabelInstruction(ctx[AsmContext], Opcode:opcode, const label[], bool:relative = false) {
+	// if there's an error while writing then backtracking is useful
+	gPreviousWriteOffset = ctx[AsmContext_buffer_offset];
+
+	new AsmError:error = ASM_ERROR_NONE;
+
+	error = AsmEmitOpcode(ctx, opcode);
+	if (error != ASM_ERROR_NONE) {
+		return error;
+	}
+	return AsmEmitJumpStringize(ctx, label, relative);
 }
 
 stock AsmError:AsmInitPtr(ctx[AsmContext], buffer, size) {
@@ -217,107 +335,6 @@ stock AsmError:AsmSetErrorHandler(ctx[AsmContext], error_handler) {
 
 stock AsmError:AsmSetErrorHandlerName(ctx[AsmContext], error_handler[]) {
 	ctx[AsmContext_error_handler] = GetPublicAddressFromName(error_handler);
-	return ASM_ERROR_NONE;
-}
-
-// Label functions:
-
-#define AsmIsLabelResolved(%2,%0)    (%2[AsmContext_labels][(%0)] & 1)
-#define AsmIsJumpRelative(%0)        ((%0) & 1)
-#define AsmSetJumpRelative(%2,%0,%1) (%2[AsmContext_labels][(%0)] & (%1))
-#define AsmGetLabel(%2,%0)           (%2[AsmContext_labels][(%0)] & ~1)
-#define AsmSetLabel(%2,%0,%1)        (%2[AsmContext_labels][(%0)] = (%1) | 1)
-
-static stock AsmHashLabel(const label[]) {
-	// Return the Bernstein hash of this label.  This is NOT a cryptographically
-	// secure hash, but is sufficient for our uses.
-	new hash = -1;
-	new i = -1;
-	new ch;
-	while ((ch = label[++i])) {
-		hash = hash * 33 + ch;
-	}
-	return hash;
-}
-
-static stock AsmFindLabelIndex(ctx[AsmContext], hash) {
-	for (new i = 0; i != ASM_MAX_LABELS; ++i) {
-		if (ctx[AsmContext_label_names][i] == hash) {
-			return i;
-		}
-	}
-	return -1;
-}
-
-stock AsmEmitLabelStringize(ctx[AsmContext], const label[]) {
-	// Everything works on the hashes - it saves storing the strings.
-	new hash = AsmHashLabel(label);
-	// See if this label already exists.
-	new idx = AsmFindLabelIndex(ctx, hash);
-	// Get the true address.  Use an offset of -8 because
-	// `AsmGetJumpAddressFromOffset` assumes the jump is from the start of the
-	// next instruction (8 bytes later), while we want it from right here, so
-	// shift back accordingly.
-	new datAddr = ctx[AsmContext_buffer] + ctx[AsmContext_buffer_offset];
-	new codAddr = AsmGetJumpAddressFromOffset(ctx, -8);
-	if (idx == -1) {
-		// Doesn't exist.  Get a free slot.
-		idx = AsmFindLabelIndex(ctx, 0);
-		if (idx == -1) {
-			return AsmRaiseError(ctx, ASM_ERROR_LABEL_OVERFLOW);
-		}
-		ctx[AsmContext_label_names][idx] = hash;
-	} else if (AsmIsLabelResolved(ctx, idx)) {
-		// Check that no other labels have the same name.
-		return AsmRaiseError(ctx, ASM_ERROR_LABEL_DUPLICATE);
-	} else {
-		// Loop over all the pending items in the linked list.
-		new cur = AsmGetLabel(ctx, idx);
-		while (cur) {
-			new next = ReadAmxMemory(cur);
-			if (AsmIsJumpRelative(next)) {
-				WriteAmxMemory(cur, datAddr - cur - 4);
-			} else {
-				WriteAmxMemory(cur, codAddr);
-			}
-			cur = next & ~1;
-		}
-	}
-	// Store the label's absolute address, along with a flag to mark that it is
-	// resolved.
-	AsmSetLabel(ctx, idx, codAddr);
-	return ASM_ERROR_NONE;
-}
-
-stock AsmEmitJumpStringize(ctx[AsmContext], const label[], bool:relative) {
-	new hash = AsmHashLabel(label);
-	new idx = AsmFindLabelIndex(ctx, hash);
-	new datAddr = ctx[AsmContext_buffer] + ctx[AsmContext_buffer_offset];
-	if (idx == -1) {
-		// Doesn't exist.  Get a free slot.
-		idx = AsmFindLabelIndex(ctx, 0);
-		if (idx == -1) {
-			return AsmRaiseError(ctx, ASM_ERROR_LABEL_OVERFLOW);
-		}
-		ctx[AsmContext_label_names][idx] = hash;
-	} else if (AsmIsLabelResolved(ctx, idx)) {
-		// The label was in the past, jump to that.
-		new cur = AsmGetLabel(ctx, idx);
-		if (relative) {
-			AsmEmitCell(ctx, cur - datAddr - 4);
-		} else {
-			AsmEmitCell(ctx, cur);
-		}
-	} else {
-		// The label is not yet known, store this use in the list.
-		new cur = AsmGetLabel(ctx, idx);
-		if (relative) {
-			AsmEmitCell(ctx, cur | 1);
-		} else {
-			AsmEmitCell(ctx, cur);
-		}
-		AsmSetLabel(ctx, idx, datAddr);
-	}
 	return ASM_ERROR_NONE;
 }
 
