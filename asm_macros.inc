@@ -25,9 +25,18 @@
 
 // Only detect ONE space, so you don't need a trailing space on opcodes with no
 // parameters. Add a space on the end here incase there wasn't one already.
-#define @emit%0\32;%1\10;%3 asm_emit_(ctx,%1 );
+#define @emit%0\32;%1\10;%3 (asm_emit_label:asm_emit_notlabel:asm_emit_(ctx,%1));
+
+// Detect labels (for jump targets).
+#define asm_emit_label:asm_emit_notlabel:asm_emit_(ctx,%1:) AsmEmitLabel(ctx,#%1)
+#define asm_emit_notlabel:asm_emit_(ctx,%1) asm_emit_(ctx,%1 )
+
+// Detect jumps to labels, instead of the labels themselves.
+#define AsmEmitLabel(ctx,#%1\32;%2) asm_emit_%1Label(ctx,#%2)
+
 // NOW detect the second space and use it to extract the opcode name.
 #define asm_emit_(ctx,%1\32;%2) asm_emit_%1(ctx,%2)
+
 // Finally, detect zero parameters.
 #define ctx,) ctx)
 
@@ -554,3 +563,130 @@
 #define asm_emit_SREF AsmEmitSref
 #define asm_emit_STRB AsmEmitStrb
 #define asm_emit_SWAP AsmEmitSwap
+
+// Jumps to labels.
+#define asm_emit_jeqLabel AsmEmitJeqLabel
+#define asm_emit_jeq_labelLabel AsmEmitJeqLabel
+#define asm_emit_jgeqLabel AsmEmitJgeqLabel
+#define asm_emit_jgeq_labelLabel AsmEmitJgeqLabel
+#define asm_emit_jgrtrLabel AsmEmitJgrtrLabel
+#define asm_emit_jgrtr_labelLabel AsmEmitJgrtrLabel
+#define asm_emit_jleqLabel AsmEmitJleqLabel
+#define asm_emit_jleq_labelLabel AsmEmitJleqLabel
+#define asm_emit_jlessLabel AsmEmitJlessLabel
+#define asm_emit_jless_labelLabel AsmEmitJlessLabel
+#define asm_emit_jneqLabel AsmEmitJneqLabel
+#define asm_emit_jneq_labelLabel AsmEmitJneqLabel
+#define asm_emit_jnzLabel AsmEmitJnzLabel
+#define asm_emit_jnz_labelLabel AsmEmitJnzLabel
+#define asm_emit_jsgeqLabel AsmEmitJsgeqLabel
+#define asm_emit_jsgeq_labelLabel AsmEmitJsgeqLabel
+#define asm_emit_jsgrtrLabel AsmEmitJsgrtrLabel
+#define asm_emit_jsgrtr_labelLabel AsmEmitJsgrtrLabel
+#define asm_emit_jsleqLabel AsmEmitJsleqLabel
+#define asm_emit_jsleq_labelLabel AsmEmitJsleqLabel
+#define asm_emit_jslessLabel AsmEmitJslessLabel
+#define asm_emit_jsless_labelLabel AsmEmitJslessLabel
+#define asm_emit_jumpLabel AsmEmitJumpLabel
+#define asm_emit_jump_labelLabel AsmEmitJumpLabel
+#define asm_emit_jzerLabel AsmEmitJzerLabel
+#define asm_emit_jzer_labelLabel AsmEmitJzerLabel
+
+#define asm_emit_jeq_label(ctx,%2) AsmEmitJeqLabel(ctx,#%2)
+#define asm_emit_jgeq_label(ctx,%2) AsmEmitJgeqLabel(ctx,#%2)
+#define asm_emit_jgrtr_label(ctx,%2) AsmEmitJgrtrLabel(ctx,#%2)
+#define asm_emit_jleq_label(ctx,%2) AsmEmitJleqLabel(ctx,#%2)
+#define asm_emit_jless_label(ctx,%2) AsmEmitJlessLabel(ctx,#%2)
+#define asm_emit_jneq_label(ctx,%2) AsmEmitJneqLabel(ctx,#%2)
+#define asm_emit_jnz_label(ctx,%2) AsmEmitJnzLabel(ctx,#%2)
+#define asm_emit_jsgeq_label(ctx,%2) AsmEmitJsgeqLabel(ctx,#%2)
+#define asm_emit_jsgrtr_label(ctx,%2) AsmEmitJsgrtrLabel(ctx,#%2)
+#define asm_emit_jsleq_label(ctx,%2) AsmEmitJsleqLabel(ctx,#%2)
+#define asm_emit_jsless_label(ctx,%2) AsmEmitJslessLabel(ctx,#%2)
+#define asm_emit_jump_label(ctx,%2) AsmEmitJumpLabel(ctx,#%2)
+#define asm_emit_jzer_label(ctx,%2) AsmEmitJzerLabel(ctx,#%2)
+
+#define asm_emit_JEQLabel AsmEmitJeqLabel
+#define asm_emit_JGEQLabel AsmEmitJgeqLabel
+#define asm_emit_JGRTRLabel AsmEmitJgrtrLabel
+#define asm_emit_JLEQLabel AsmEmitJleqLabel
+#define asm_emit_JLESSLabel AsmEmitJlessLabel
+#define asm_emit_JNEQLabel AsmEmitJneqLabel
+#define asm_emit_JNZLabel AsmEmitJnzLabel
+#define asm_emit_JSGEQLabel AsmEmitJsgeqLabel
+#define asm_emit_JSGRTRLabel AsmEmitJsgrtrLabel
+#define asm_emit_JSLEQLabel AsmEmitJsleqLabel
+#define asm_emit_JSLESSLabel AsmEmitJslessLabel
+#define asm_emit_JUMPLabel AsmEmitJumpLabel
+#define asm_emit_JZERLabel AsmEmitJzerLabel
+
+#define asm_emit_JeqLabel AsmEmitJeqLabel
+#define asm_emit_JgeqLabel AsmEmitJgeqLabel
+#define asm_emit_JgrtrLabel AsmEmitJgrtrLabel
+#define asm_emit_JleqLabel AsmEmitJleqLabel
+#define asm_emit_JlessLabel AsmEmitJlessLabel
+#define asm_emit_JneqLabel AsmEmitJneqLabel
+#define asm_emit_JnzLabel AsmEmitJnzLabel
+#define asm_emit_JsgeqLabel AsmEmitJsgeqLabel
+#define asm_emit_JsgrtrLabel AsmEmitJsgrtrLabel
+#define asm_emit_JsleqLabel AsmEmitJsleqLabel
+#define asm_emit_JslessLabel AsmEmitJslessLabel
+#define asm_emit_JumpLabel AsmEmitJumpLabel
+#define asm_emit_JzerLabel AsmEmitJzerLabel
+
+// Only used when they explicitly typed `@emit JUMP.label x`
+#define AsmEmitJeqlabel(ctx,%2) AsmEmitJeqLabel(ctx,#%2)
+#define AsmEmitJgeqlabel(ctx,%2) AsmEmitJgeqLabel(ctx,#%2)
+#define AsmEmitJgrtrlabel(ctx,%2) AsmEmitJgrtrLabel(ctx,#%2)
+#define AsmEmitJleqlabel(ctx,%2) AsmEmitJleqLabel(ctx,#%2)
+#define AsmEmitJlesslabel(ctx,%2) AsmEmitJlessLabel(ctx,#%2)
+#define AsmEmitJneqlabel(ctx,%2) AsmEmitJneqLabel(ctx,#%2)
+#define AsmEmitJnzlabel(ctx,%2) AsmEmitJnzLabel(ctx,#%2)
+#define AsmEmitJsgeqlabel(ctx,%2) AsmEmitJsgeqLabel(ctx,#%2)
+#define AsmEmitJsgrtrlabel(ctx,%2) AsmEmitJsgrtrLabel(ctx,#%2)
+#define AsmEmitJsleqlabel(ctx,%2) AsmEmitJsleqLabel(ctx,#%2)
+#define AsmEmitJslesslabel(ctx,%2) AsmEmitJslessLabel(ctx,#%2)
+#define AsmEmitJumplabel(ctx,%2) AsmEmitJumpLabel(ctx,#%2)
+#define AsmEmitJzerlabel(ctx,%2) AsmEmitJzerLabel(ctx,#%2)
+#define AsmEmitJeqLABEL(ctx,%2) AsmEmitJeqLabel(ctx,#%2)
+#define AsmEmitJgeqLABEL(ctx,%2) AsmEmitJgeqLabel(ctx,#%2)
+#define AsmEmitJgrtrLABEL(ctx,%2) AsmEmitJgrtrLabel(ctx,#%2)
+#define AsmEmitJleqLABEL(ctx,%2) AsmEmitJleqLabel(ctx,#%2)
+#define AsmEmitJlessLABEL(ctx,%2) AsmEmitJlessLabel(ctx,#%2)
+#define AsmEmitJneqLABEL(ctx,%2) AsmEmitJneqLabel(ctx,#%2)
+#define AsmEmitJnzLABEL(ctx,%2) AsmEmitJnzLabel(ctx,#%2)
+#define AsmEmitJsgeqLABEL(ctx,%2) AsmEmitJsgeqLabel(ctx,#%2)
+#define AsmEmitJsgrtrLABEL(ctx,%2) AsmEmitJsgrtrLabel(ctx,#%2)
+#define AsmEmitJsleqLABEL(ctx,%2) AsmEmitJsleqLabel(ctx,#%2)
+#define AsmEmitJslessLABEL(ctx,%2) AsmEmitJslessLabel(ctx,#%2)
+#define AsmEmitJumpLABEL(ctx,%2) AsmEmitJumpLabel(ctx,#%2)
+#define AsmEmitJzerLABEL(ctx,%2) AsmEmitJzerLabel(ctx,#%2)
+
+// Only used when they explicitly typed `@emit JUMP.label x:`
+#define AsmEmitJeqlabelLabel AsmEmitJeqLabel
+#define AsmEmitJgeqlabelLabel AsmEmitJgeqLabel
+#define AsmEmitJgrtrlabelLabel AsmEmitJgrtrLabel
+#define AsmEmitJleqlabelLabel AsmEmitJleqLabel
+#define AsmEmitJlesslabelLabel AsmEmitJlessLabel
+#define AsmEmitJneqlabelLabel AsmEmitJneqLabel
+#define AsmEmitJnzlabelLabel AsmEmitJnzLabel
+#define AsmEmitJsgeqlabelLabel AsmEmitJsgeqLabel
+#define AsmEmitJsgrtrlabelLabel AsmEmitJsgrtrLabel
+#define AsmEmitJsleqlabelLabel AsmEmitJsleqLabel
+#define AsmEmitJslesslabelLabel AsmEmitJslessLabel
+#define AsmEmitJumplabelLabel AsmEmitJumpLabel
+#define AsmEmitJzerlabelLabel AsmEmitJzerLabel
+#define AsmEmitJeqLABELLabel AsmEmitJeqLabel
+#define AsmEmitJgeqLABELLabel AsmEmitJgeqLabel
+#define AsmEmitJgrtrLABELLabel AsmEmitJgrtrLabel
+#define AsmEmitJleqLABELLabel AsmEmitJleqLabel
+#define AsmEmitJlessLABELLabel AsmEmitJlessLabel
+#define AsmEmitJneqLABELLabel AsmEmitJneqLabel
+#define AsmEmitJnzLABELLabel AsmEmitJnzLabel
+#define AsmEmitJsgeqLABELLabel AsmEmitJsgeqLabel
+#define AsmEmitJsgrtrLABELLabel AsmEmitJsgrtrLabel
+#define AsmEmitJsleqLABELLabel AsmEmitJsleqLabel
+#define AsmEmitJslessLABELLabel AsmEmitJslessLabel
+#define AsmEmitJumpLABELLabel AsmEmitJumpLabel
+#define AsmEmitJzerLABELLabel AsmEmitJzerLabel
+
