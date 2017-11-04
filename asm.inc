@@ -155,7 +155,8 @@ stock AsmError:AsmEmitLabelStringize(ctx[AsmContext], const label[]) {
 			return AsmRaiseError(ctx, ASM_ERROR_LABEL_OVERFLOW);
 		}
 		ctx[AsmContext_label_names][idx] = hash;
-	} else if (AsmIsLabelResolved(ctx, idx)) {
+	}
+	if (AsmIsLabelResolved(ctx, idx)) {
 		// Check that no other labels have the same name.
 		return AsmRaiseError(ctx, ASM_ERROR_LABEL_DUPLICATE);
 	} else {
@@ -189,7 +190,8 @@ stock AsmError:AsmEmitJumpStringize(ctx[AsmContext], const label[], bool:relativ
 			return AsmRaiseError(ctx, ASM_ERROR_LABEL_OVERFLOW);
 		}
 		ctx[AsmContext_label_names][idx] = hash;
-	} else if (AsmIsLabelResolved(ctx, idx)) {
+	}
+	if (AsmIsLabelResolved(ctx, idx)) {
 		// The label was in the past, jump to that.
 		new cur = AsmGetLabel(ctx, idx);
 		if (relative) {
@@ -207,7 +209,7 @@ stock AsmError:AsmEmitJumpStringize(ctx[AsmContext], const label[], bool:relativ
 		}
 		if (error == ASM_ERROR_NONE) {
 			// Store to the list only if the output was successful.
-			AsmSetLabel(ctx, idx, datAddr);
+			ctx[AsmContext_labels][idx] = datAddr;
 		}
 	}
 	return error;
@@ -588,6 +590,64 @@ stock AsmError:AsmEmitJzerRel(ctx[AsmContext], offset) {
 
 stock AsmError:AsmEmitJrel(ctx[AsmContext], offset) {
 	return AsmEmitInstruction(ctx, OP_JREL, offset);
+}
+
+stock AsmError:AsmEmitJeqLabelStringize(ctx[AsmContext], const label[]) {
+	return AsmEmitJumpLabelInstruction(ctx, OP_JEQ, label);
+}
+
+stock AsmError:AsmEmitJgeqLabelStringize(ctx[AsmContext], const label[]) {
+	return AsmEmitJumpLabelInstruction(ctx, OP_JGEQ, label);
+}
+
+stock AsmError:AsmEmitJgrtrLabelStringize(ctx[AsmContext], const label[]) {
+	return AsmEmitJumpLabelInstruction(ctx, OP_JGRTR, label);
+}
+
+stock AsmError:AsmEmitJleqLabelStringize(ctx[AsmContext], const label[]) {
+	return AsmEmitJumpLabelInstruction(ctx, OP_JLEQ, label);
+}
+
+stock AsmError:AsmEmitJlessLabelStringize(ctx[AsmContext], const label[]) {
+	return AsmEmitJumpLabelInstruction(ctx, OP_JLESS, label);
+}
+
+stock AsmError:AsmEmitJneqLabelStringize(ctx[AsmContext], const label[]) {
+	return AsmEmitJumpLabelInstruction(ctx, OP_JNEQ, label);
+}
+
+stock AsmError:AsmEmitJnzLabelStringize(ctx[AsmContext], const label[]) {
+	return AsmEmitJumpLabelInstruction(ctx, OP_JNZ, label);
+}
+
+stock AsmError:AsmEmitJsgeqLabelStringize(ctx[AsmContext], const label[]) {
+	return AsmEmitJumpLabelInstruction(ctx, OP_JSGEQ, label);
+}
+
+stock AsmError:AsmEmitJsgrtrLabelStringize(ctx[AsmContext], const label[]) {
+	return AsmEmitJumpLabelInstruction(ctx, OP_JSTRTR, label);
+}
+
+stock AsmError:AsmEmitJsleqLabelStringize(ctx[AsmContext], const label[]) {
+	return AsmEmitJumpLabelInstruction(ctx, OP_JSLEQ, label);
+}
+
+stock AsmError:AsmEmitJslessLabelStringize(ctx[AsmContext], const label[]) {
+	return AsmEmitJumpLabelInstruction(ctx, OP_JSLESS, label);
+}
+
+stock AsmError:AsmEmitJumpLabelStringize(ctx[AsmContext], const label[]) {
+	return AsmEmitJumpLabelInstruction(ctx, OP_JUMP, label);
+}
+
+stock AsmError:AsmEmitJzerLabelStringize(ctx[AsmContext], const label[]) {
+	return AsmEmitJumpLabelInstruction(ctx, OP_JZER, label);
+}
+
+stock AsmError:AsmEmitJrelLabelStringize(ctx[AsmContext], const label[]) {
+	// Despite the name, once compiled this is no longer relative.  Use the
+	// `relative = false` parameter just to make this extra explicit.
+	return AsmEmitJumpLabelInstruction(ctx, OP_JREL, label, false);
 }
 
 stock AsmError:AsmEmitLctrl(ctx[AsmContext], index) {
