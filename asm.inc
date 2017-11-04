@@ -388,6 +388,10 @@ stock AsmError:AsmEmitCallAbs(ctx[AsmContext], address) {
 	return AsmEmitInstruction(ctx, OP_CALL, address + GetAmxBaseAddress() + hdr[AMX_HDR_COD]);
 }
 
+stock AsmError:AsmEmitCallLabelStringize(ctx[AsmContext], const label[]) {
+	return AsmEmitJumpLabelInstruction(ctx, OP_CALL, label);
+}
+
 stock AsmError:AsmEmitCmps(ctx[AsmContext], nbytes) {
 	return AsmEmitInstruction(ctx, OP_CMPS, nbytes);
 }
@@ -589,7 +593,7 @@ stock AsmError:AsmEmitJzerRel(ctx[AsmContext], offset) {
 }
 
 stock AsmError:AsmEmitJrel(ctx[AsmContext], offset) {
-	return AsmEmitInstruction(ctx, OP_JREL, offset);
+	return AsmEmitJumpInstruction(ctx, OP_JREL, offset);
 }
 
 stock AsmError:AsmEmitJeqLabelStringize(ctx[AsmContext], const label[]) {
@@ -645,9 +649,7 @@ stock AsmError:AsmEmitJzerLabelStringize(ctx[AsmContext], const label[]) {
 }
 
 stock AsmError:AsmEmitJrelLabelStringize(ctx[AsmContext], const label[]) {
-	// Despite the name, once compiled this is no longer relative.  Use the
-	// `relative = false` parameter just to make this extra explicit.
-	return AsmEmitJumpLabelInstruction(ctx, OP_JREL, label, false);
+	return AsmEmitJumpLabelInstruction(ctx, OP_JREL, label, true);
 }
 
 stock AsmError:AsmEmitLctrl(ctx[AsmContext], index) {
