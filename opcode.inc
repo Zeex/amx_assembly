@@ -34,6 +34,8 @@
 	#pragma warning disable 238
 #endif
 
+#define OPCODE_MAX_INSN_NAME 15
+
 enum Opcode {
   OP_NONE,         OP_LOAD_PRI,     OP_LOAD_ALT,
   OP_LOAD_S_PRI,   OP_LOAD_S_ALT,   OP_LREF_PRI,
@@ -82,6 +84,153 @@ enum Opcode {
   OP_SWAP_ALT,     OP_PUSH_ADR,     OP_NOP,
   OP_SYSREQ_D,     OP_SYMTAG,       OP_BREAK,
   OP_LAST_
+};
+
+enum OpcodeInsnInfo {
+	OpcodeInsnInfo_name[OPCODE_MAX_INSN_NAME],
+	OpcodeInsnInfo_num_opers,
+	bool:OpcodeInsnInfo_needs_reloc
+}
+
+static stock const insn_table[][OpcodeInsnInfo] = {
+	{ "none",        0, false },
+	{ "load.pri",    1, false },
+	{ "load.alt",    1, false },
+	{ "load.s.pri",  1, false },
+	{ "load.s.alt",  1, false },
+	{ "lref.pri",    1, false },
+	{ "lref.alt",    1, false },
+	{ "lref.s.pri",  1, false },
+	{ "lref.s.alt",  1, false },
+	{ "load.i",      0, false },
+	{ "lodb.i",      1, false },
+	{ "const.pri",   1, false },
+	{ "const.alt",   1, false },
+	{ "addr.pri",    1, false },
+	{ "addr.alt",    1, false },
+	{ "stor.pri",    1, false },
+	{ "stor.alt",    1, false },
+	{ "stor.s.pri",  1, false },
+	{ "stor.s.alt",  1, false },
+	{ "sref.pri",    1, false },
+	{ "sref.alt",    1, false },
+	{ "sref.s.pri",  1, false },
+	{ "sref.s.alt",  1, false },
+	{ "stor.i",      0, false },
+	{ "strb.i",      1, false },
+	{ "lidx",        0, false },
+	{ "lidx.b",      1, false },
+	{ "idxaddr",     0, false },
+	{ "idxaddr.b",   1, false },
+	{ "align.pri",   1, false },
+	{ "align.alt",   1, false },
+	{ "lctrl",       1, false },
+	{ "sctrl",       1, false },
+	{ "move.pri",    0, false },
+	{ "move.alt",    0, false },
+	{ "xchg",        0, false },
+	{ "push.pri",    0, false },
+	{ "push.alt",    0, false },
+	{ "push.r",      1, false },
+	{ "push.c",      1, false },
+	{ "push",        1, false },
+	{ "push.s",      1, false },
+	{ "pop.pri",     0, false },
+	{ "pop.alt",     0, false },
+	{ "stack",       1, false },
+	{ "heap",        1, false },
+	{ "proc",        0, false },
+	{ "ret",         0, false },
+	{ "retn",        0, false },
+	{ "call",        1, true  },
+	{ "call.pri",    0, false },
+	{ "jump",        1, true  },
+	{ "jrel",        1, false },
+	{ "jzer",        1, true  },
+	{ "jnz",         1, true  },
+	{ "jeq",         1, true  },
+	{ "jneq",        1, true  },
+	{ "jless",       1, true  },
+	{ "jleq",        1, true  },
+	{ "jgrtr",       1, true  },
+	{ "jgeq",        1, true  },
+	{ "jsless",      1, true  },
+	{ "jsleq",       1, true  },
+	{ "jsgrtr",      1, true  },
+	{ "jsgeq",       1, true  },
+	{ "shl",         0, false },
+	{ "shr",         0, false },
+	{ "sshr",        0, false },
+	{ "shl.c.pri",   1, false },
+	{ "shl.c.alt",   1, false },
+	{ "shr.c.pri",   1, false },
+	{ "shr.c.alt",   1, false },
+	{ "smul",        0, false },
+	{ "sdiv",        0, false },
+	{ "sdiv.alt",    0, false },
+	{ "umul",        0, false },
+	{ "udiv",        0, false },
+	{ "udiv.alt",    0, false },
+	{ "add",         0, false },
+	{ "sub",         0, false },
+	{ "sub.alt",     0, false },
+	{ "and",         0, false },
+	{ "or",          0, false },
+	{ "xort",        0, false },
+	{ "not",         0, false },
+	{ "neg",         0, false },
+	{ "invert",      0, false },
+	{ "add.c",       1, false },
+	{ "smul.c",      1, false },
+	{ "zero.pri",    0, false },
+	{ "zero.alt",    0, false },
+	{ "zero",        1, false },
+	{ "zero.s",      1, false },
+	{ "sign.pri",    0, false },
+	{ "sign.alt",    0, false },
+	{ "eq",          0, false },
+	{ "neq",         0, false },
+	{ "less",        0, false },
+	{ "leq",         0, false },
+	{ "grtr",        0, false },
+	{ "geq",         0, false },
+	{ "sless",       0, false },
+	{ "sleq",        0, false },
+	{ "sgrtr",       0, false },
+	{ "sgeq",        0, false },
+	{ "eq.c.pri",    1, false },
+	{ "eq.c.alt",    1, false },
+	{ "inc.pri",     0, false },
+	{ "inc.alt",     0, false },
+	{ "inc",         1, false },
+	{ "inc.s",       1, false },
+	{ "inc.i",       0, false },
+	{ "dec.pri",     0, false },
+	{ "dec.alt",     0, false },
+	{ "dec",         1, false },
+	{ "dec.s",       1, false },
+	{ "dec.i",       0, false },
+	{ "movs",        1, false },
+	{ "cmps",        1, false },
+	{ "fill",        1, false },
+	{ "halt",        1, false },
+	{ "bounds",      1, false },
+	{ "sysreq.pri",  1, false },
+	{ "sysreq.c",    1, false },
+	{ "file",       -1, false }, // obsolete
+	{ "line",       -1, false }, // obsolete
+	{ "symbol",     -1, false }, // obsolete
+	{ "srange",     -1, false }, // obsolete
+	{ "jump.pri",    0, false },
+	{ "switch",      1, true },
+	{ "casetbl",    -1, true },
+	{ "swap.pri",    0, false },
+	{ "swap.alt",    0, false },
+	{ "push.adr",    1, false },
+	{ "nop",         0, false },
+	{ "sysreq.d",    1, false },
+	{ "symtag",      1, false }, // obsolete
+	{ "break",       0, false }
 };
 
 const NUM_OPCODES = _:OP_LAST_;
@@ -653,6 +802,10 @@ stock Opcode:RelocateOpcodeNow(Opcode:opcode) {
 static stock Opcode:opcode_table[NUM_OPCODES];
 static stock bool:opcode_table_is_ready = false;
 
+stock bool:IsOpcodeValid(Opcode:opcode) {
+	return (OP_NONE <= opcode < Opcode:NUM_OPCODES);
+}
+
 static stock InitOpcodeTable() {
 	for (new i = 0; i < NUM_OPCODES; i++) {
 		opcode_table[i] = RelocateOpcodeNow(Opcode:i);
@@ -681,3 +834,33 @@ stock Opcode:UnrelocateOpcode(Opcode:opcode) {
 	}
 	return opcode;
 }
+
+stock GetOpcodeInstructionInformation(Opcode:opcode) {
+	if (OP_NONE < opcode < Opcode:NUM_OPCODES) {
+		return insn_table[_:opcode];
+	}
+	return insn_table[0];
+}
+
+stock GetOpcodeInstructionName(Opcode:opcode) {
+	static none[OPCODE_MAX_INSN_NAME] = "none";
+	if (OP_NONE < opcode < Opcode:NUM_OPCODES) {
+		return insn_table[_:opcode][OpcodeInsnInfo_name];
+	}
+	return none;
+}
+
+stock GetOpcodeInstructionParameters(Opcode:opcode) {
+	if (OP_NONE < opcode < Opcode:NUM_OPCODES) {
+		return insn_table[_:opcode][OpcodeInsnInfo_num_opers];
+	}
+	return 0;
+}
+
+stock bool:GetOpcodeInstructionRelocatable(Opcode:opcode) {
+	if (OP_NONE < opcode < Opcode:NUM_OPCODES) {
+		return insn_table[_:opcode][OpcodeInsnInfo_needs_reloc];
+	}
+	return false;
+}
+

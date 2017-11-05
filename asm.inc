@@ -340,6 +340,23 @@ stock AsmError:AsmSetErrorHandlerName(ctx[AsmContext], error_handler[]) {
 	return ASM_ERROR_NONE;
 }
 
+stock AsmEmitPadding(ctx[AsmContext], Opcode:op = OP_NOP) {
+	// Must not have parameters, to make the padding valid.
+	if (!IsOpcodeValid(op) || GetOpcodeInstructionParameters(op)) {
+		op = OP_NOP;
+	}
+	// Resolve it for speed.
+	op = RelocateOpcode(op);
+	new
+		cur = ctx[AsmContext_buffer] + ctx[AsmContext_buffer_offset],
+		end = ctx[AsmContext_buffer] + ctx[AsmContext_buffer_size];
+	while (cur < end) {
+		WriteAmxMemory(cur, _:op);
+		cur += 4;
+	}
+	ctx[AsmContext_buffer_offset] = ctx[AsmContext_buffer_size];
+}
+
 // Low level functions:
 
 stock AsmError:AsmEmitAdd(ctx[AsmContext]) {
