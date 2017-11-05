@@ -299,6 +299,10 @@ stock bool:DisasmNeedReloc(ctx[DisasmContext]) {
 	return ctx[DisasmContext_insn][DisasmInsnInfo_needs_reloc];
 }
 
+stock DisasmReloc(addr) {
+	return addr - gCodBase;
+}
+
 stock DisasmGetNextIp(ctx[DisasmContext]) {
 	return ctx[DisasmContext_nip];
 }
@@ -344,7 +348,7 @@ stock DisasmGetOperandReloc(ctx[DisasmContext], index = 0) {
 	//   
 	// I think the conditional ends up nicer in this rare case.
 	if ((ctx[DisasmContext_opcode] == OP_CASETBL) ? (index & 1) : _:DisasmNeedReloc(ctx)) {
-		return param - gCodBase;
+		return DisasmReloc(param);
 	} else {
 		return param;
 	}
