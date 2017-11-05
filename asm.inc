@@ -820,7 +820,7 @@ stock AsmError:AsmEmitShl(ctx[AsmContext]) {
 }
 
 stock AsmError:AsmEmitShlCAlt(ctx[AsmContext], shift) {
-	return AsmEmitInstruction(ctx, OP_SHL_C_PRI, shift);
+	return AsmEmitInstruction(ctx, OP_SHL_C_ALT, shift);
 }
 
 stock AsmError:AsmEmitShlCPri(ctx[AsmContext], shift) {
@@ -828,7 +828,7 @@ stock AsmError:AsmEmitShlCPri(ctx[AsmContext], shift) {
 }
 
 stock AsmError:AsmEmitShrCAlt(ctx[AsmContext], shift) {
-	return AsmEmitInstruction(ctx, OP_SHR_C_PRI, shift);
+	return AsmEmitInstruction(ctx, OP_SHR_C_ALT, shift);
 }
 
 stock AsmError:AsmEmitShrCPri(ctx[AsmContext], shift) {
