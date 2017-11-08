@@ -38,6 +38,7 @@
 // "O@A_()" always returns "false", the entire other block of code
 // is jumped over.
 #define addressof(%1) (O@A_()?(((CALL@%1),O@V_)?1:2):(O@V_))
+#define CALL@%0\32; CALL@
 
 #define gAddressOfReturnVar_ O@V_
 #define AddressOfGetNextCall_ O@A_
@@ -45,6 +46,7 @@
 #define CALL@O@A_ O@A_()
 
 stock
+	REF,
 	gAddressOfReturnVar_ = 0;
 
 stock bool:AddressOfGetNextCall_() {
