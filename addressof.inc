@@ -45,8 +45,7 @@
 #define CALL@AddressOfGetNextCall_ CALL@O@A_
 #define CALL@O@A_ O@A_()
 
-#define O@A_()?(((CALL@%1<%2>),O@V_)?1:2):(O@V_) TAG@%2:(O@A_()?(((CALL@%1),O@V_)?1:2):(O@V_))
-#define TAG@%0\32; TAG@
+#define O@A_()?(((CALL@%1<%2>),O@V_)?1:2):(O@V_) F@_@%2:(O@A_()?(((CALL@%1),O@V_)?1:2):(O@V_))
 
 stock
 	REF,
