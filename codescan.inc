@@ -147,7 +147,7 @@ stock MyFunc(a, b[], ...)
 	#define CODE_SCAN_MAX_PATTERN (16)
 #endif
 #define CODE_SCAN_MAX_PATTERN_ARRAY (CODE_SCAN_MAX_PATTERN * 4)
-#define CODE_SCAN_MAX_HOLES         (CODE_SCAN_MAX_PATTERN * 2)
+#define CODE_SCAN_MAX_HOLES         (CODE_SCAN_MAX_PATTERN / 2)
 
 #if !defined CODE_SCAN_MAX_PARALLEL
 	#define CODE_SCAN_MAX_PARALLEL (2)
