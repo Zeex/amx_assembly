@@ -82,14 +82,12 @@ stock MyFunc(a, b[], ...)
 #define O@I_ (0) // Type integer.
 #define O@U_ (1) // Type unknown (???).
 #define O@F_ (2) // Type function (&func).
-#define O@N_ (3) // Type none.
 #define O@O_ (4) // Type opcode.
 #define O@S_ (5) // Type skipped.
 
 #define OP_TYPE_INTEGER_  (O@I_) // Type integer.
 #define OP_TYPE_UNKNOWN_  (O@U_) // Type unknown (???).
 #define OP_TYPE_FUNCTION_ (O@F_) // Type function (&func).
-#define OP_TYPE_NONE_     (O@N_) // Type none.
 #define OP_TYPE_OPCODE_   (O@O_) // Type opcode.
 #define OP_TYPE_SKIP_     (O@S_) // Type skipped.
 
@@ -131,9 +129,9 @@ stock MyFunc(a, b[], ...)
 #define O@X_:%9$%0,%1,%2) %0),(_:O@1_:O@2_:O@3_:$%1|||,%2)
 #define O@Y_:%9$%0,%1)    %0),(_:O@1_:O@2_:O@3_:$%1|||)
 #define O@Z_:%9$%0)       %0)
-#define O@W_:%9$%0)       %0),(O@N_),(0)
+#define O@W_:%9$%0)       %0)
 
-#define O@T_:O@O_),(Opcode:O@X_:O@Y_:O@W_:$OP_???%0) O@S_),0,0,(0)
+#define O@T_:O@O_),(Opcode:O@X_:O@Y_:O@W_:$OP_???%0) O@S_),(0)
 
 #define O@1_:%9$%0???%1|||%2) O@U_ ),(_:O@X_:O@Y_:O@Z_:$0%2)
 #define O@2_:%9$%0&%1|||%2)   O@F_),(O@A_()?(((CALL@%1),O@V_)?1:2):_:O@X_:O@Y_:O@Z_:$(O@V_)%2)
@@ -340,54 +338,52 @@ stock CodeScanMatcherPattern_(searcher[CodeScanMatcher], {Opcode, Float, _}:...)
 	if (len > CODE_SCAN_MAX_PATTERN_ARRAY) {
 		return -1;
 	}
-	if (len & 0x03) {
-		// Not a multiple of 4 in the scanner.
+	if (len & 0x01) {
+		// Not a multiple of 2 in the scanner.
 		return -2;
 	}
-	for (new i = 0; i != len; i += 4) {
+	for (new i = 0; i != len; ) {
 		new
-			optype    = getarg(i + 1),
-			Opcode:op = Opcode:getarg(i + 2),
-			partype   = getarg(i + 3),
-			fail = i / 4 + 1;
+			optype = getarg(i + 1),
+			Opcode:op = Opcode:getarg(i + 2);
 		searcher[CodeScanMatcher_code][i + 0] = optype;
 		searcher[CodeScanMatcher_code][i + 1] = _:op;
-		searcher[CodeScanMatcher_code][i + 2] = partype;
-		searcher[CodeScanMatcher_code][i + 3] = getarg(i + 4);
+		i += 2;
 		switch (optype) {
 			case OP_TYPE_OPCODE_: {
-				// Not yet supported.
-				if (op == OP_CASETBL) {
-					return -3;
+				new opcount = GetOpcodeInstructionParameters(op);
+				for (new partype; i != len; )
+				{
+					partype = getarg(i + 1);
+					switch (partype) {
+						case OP_TYPE_INTEGER_, OP_TYPE_UNKNOWN_, OP_TYPE_FUNCTION_: {
+							// Got an unexpected parameter.
+							if (opcount == 0) {
+								return i / 2 + 1;
+							}
+							// Decrement the remaining number of parameters.
+							// The variable OPs like `CASETBL` have negative
+							// parameter counts, so will never not match.
+							--opcount;
+							searcher[CodeScanMatcher_code][i + 0] = partype;
+							searcher[CodeScanMatcher_code][i + 1] = getarg(i + 2);
+							i += 2;
+						}
+						default: {
+							break;
+						}
+					}
 				}
-				switch (partype) {
-					case OP_TYPE_INTEGER_, OP_TYPE_UNKNOWN_, OP_TYPE_FUNCTION_: {
-						if (GetOpcodeInstructionParameters(op) == 1) {
-							break;
-						}
-						else {
-							return fail;
-						}
-					}
-					case OP_TYPE_NONE_: {
-						if (GetOpcodeInstructionParameters(op) == 0) {
-							break;
-						}
-						else {
-							return fail;
-						}
-					}
-					case OP_TYPE_OPCODE_, OP_TYPE_SKIP_: {
-						return fail;
-					}
+				// Missing a required (non-optional) parameter.
+				if (opcount > 0) {
+					return i / 2 + 1;
 				}
 			}
 			case OP_TYPE_SKIP_: {
-				continue;
 			}
 			default: {
 				// Incorrect parameter type.  Return the op where it happened.
-				return fail;
+				return i / 2 + 1;
 			}
 		}
 	}
@@ -470,7 +466,7 @@ static stock bool:CodeScanCheck(Opcode:op, dctx[DisasmContext], cs[CodeScanMatch
 			continue;
 		}
 		if (cs[CodeScanMatcher_code][off] == OP_TYPE_SKIP_) {
-			off += 4;
+			off += 2;
 			if (off == len) {
 				return
 					memcpy(fctx[CodeScanMatch_holes], cs[CodeScanMatcher_holes], idx * CODE_SCAN_MAX_HOLES, cs[CodeScanMatcher_holeidx][idx] * cellbytes, CODE_SCAN_MAX_HOLES),
@@ -488,40 +484,29 @@ static stock bool:CodeScanCheck(Opcode:op, dctx[DisasmContext], cs[CodeScanMatch
 		}
 		if (cs[CodeScanMatcher_code][off] == OP_TYPE_OPCODE_ && Opcode:cs[CodeScanMatcher_code][off + 1] == op) {
 CodeScanCheck_pass:
+			if (off >= 8) printf("match");
 			// Check if there are enough parameters for this opcode.
 			off += 2;
-			if ((len - off) / 2 < cnt) {
-				goto CodeScanCheck_fail;
-			}
-			if (cnt) {
-				for (new i = 0; i != cnt; ++i) {
-					switch (cs[CodeScanMatcher_code][off++]) {
-						// Because we now abstract relocations to the disasm system,
-						// we don't need to differentiate between fixed parameters
-						// and function parameters any more - they are always fully
-						// resolved.
-						case OP_TYPE_INTEGER_, OP_TYPE_FUNCTION_: {
-							if (cs[CodeScanMatcher_code][off++] != DisasmGetOperandReloc(dctx, i)) {
-								goto CodeScanCheck_fail;
-							}
-						}
-						case OP_TYPE_UNKNOWN_: {
-							// Save the parameter.
-							//if (idx * CODE_SCAN_MAX_HOLES + cs[CodeScanMatcher_holeidx][idx] >= CODE_SCAN_MAX_HOLES * CODE_SCAN_MAX_PARALLEL)
-							//	printf("%d %d %d %d %d", idx, off, i, idx * CODE_SCAN_MAX_HOLES + cs[CodeScanMatcher_holeidx][idx], CODE_SCAN_MAX_HOLES * CODE_SCAN_MAX_PARALLEL);
-							++off,
-							cs[CodeScanMatcher_holes][idx * CODE_SCAN_MAX_HOLES + cs[CodeScanMatcher_holeidx][idx]++] = DisasmGetOperandReloc(dctx, i);
-						}
-						case OP_TYPE_NONE_, OP_TYPE_OPCODE_, OP_TYPE_SKIP_: {
+			for (new i = 0; i != cnt; ++i) {
+				switch (cs[CodeScanMatcher_code][off++]) {
+					// Because we now abstract relocations to the disasm system,
+					// we don't need to differentiate between fixed parameters
+					// and function parameters any more - they are always fully
+					// resolved.
+					case OP_TYPE_INTEGER_, OP_TYPE_FUNCTION_: {
+						if (cs[CodeScanMatcher_code][off++] != DisasmGetOperandReloc(dctx, i)) {
 							goto CodeScanCheck_fail;
 						}
 					}
+					case OP_TYPE_UNKNOWN_: {
+						// Save the parameter.
+						++off,
+						cs[CodeScanMatcher_holes][idx * CODE_SCAN_MAX_HOLES + cs[CodeScanMatcher_holeidx][idx]++] = DisasmGetOperandReloc(dctx, i);
+					}
+					case OP_TYPE_OPCODE_, OP_TYPE_SKIP_: {
+						goto CodeScanCheck_fail;
+					}
 				}
-			} else if (cs[CodeScanMatcher_code][off] == OP_TYPE_NONE_) {
-				// No parameters expected, none given.
-				off += 2;
-			} else {
-				goto CodeScanCheck_fail;
 			}
 			if (off == len) {
 				// Get the address of the START of the match.
@@ -530,10 +515,16 @@ CodeScanCheck_pass:
 					fctx[CodeScanMatch_cip] = cs[CodeScanMatcher_start][idx],
 					fctx[CodeScanMatch_size] = DisasmGetNextIp(dctx) - cs[CodeScanMatcher_start][idx],
 					true;
-			} else {
-				// Out of parameters to check but still looking correct.
-				cs[CodeScanMatcher_offset][idx] = off;
-				continue;
+			} else switch (cs[CodeScanMatcher_code][off]) {
+				case OP_TYPE_INTEGER_, OP_TYPE_FUNCTION_, OP_TYPE_UNKNOWN_: {
+					// Parameters remaining, none expected.
+					goto CodeScanCheck_fail;
+				}
+				default: {
+					// Out of parameters to check but still looking correct.
+					cs[CodeScanMatcher_offset][idx] = off;
+					continue;
+				}
 			}
 		}
 CodeScanCheck_fail:
@@ -756,13 +747,14 @@ stock bool:CodeScanStep(dctx[DisasmContext], csState[CodeScanner]) {
 	return CodeScanStepInternal(dctx, csState, csState[CodeScanner_state], csState[CodeScanner_param]);
 }
 
-static stock bool:CodeScanCall(cs[CodeScanMatcher], csState[CodeScanner]) {
+static stock CodeScanCall(cs[CodeScanMatcher], csState[CodeScanner]) {
 	// If I wrote way more assembly I could get away with not calling
 	// `CodeScanDeref(cur)` below, and not need to assign `param` to a variable
 	// before pushing it.  But I'm not going to - it isn't worth the effort.
 	new
 		func = cs[CodeScanMatcher_func];
 	if (cs[CodeScanMatcher_flags] & SCANNER_HAS_USER_DATA) {
+		printf("call with data %08x", func);
 		new
 			param = cs[CodeScanMatcher_user_data];
 		#emit PUSH.S     param
@@ -774,9 +766,10 @@ static stock bool:CodeScanCall(cs[CodeScanMatcher], csState[CodeScanner]) {
 		#emit PUSH.pri
 		#emit LOAD.S.pri func
 		#emit SCTRL      6
-		#emit STACK      8
-		#emit RETN
+		#emit STOR.S.pri func
 	} else {
+		printf("call no data");
+//		#emit HALT 4
 		#emit PUSH.S     csState
 		#emit PUSH.C     4
 		#emit LCTRL      6
@@ -785,11 +778,9 @@ static stock bool:CodeScanCall(cs[CodeScanMatcher], csState[CodeScanner]) {
 		#emit PUSH.pri
 		#emit LOAD.S.pri func
 		#emit SCTRL      6
-		#emit STACK      4
-		#emit RETN
+		#emit STOR.S.pri func
 	}
-	// Never reached.
-	return false;
+	return func;
 }
 
 stock bool:CodeScanRun(csState[CodeScanner]) {
@@ -812,21 +803,23 @@ stock bool:CodeScanRun(csState[CodeScanner]) {
 		// do the actual comparisons to various defined scanners.
 		for (cur = csState[CodeScanner_first], op = DisasmGetOpcode(dctx); cur != -1; ) {
 			if (CodeScanCheck(op, dctx, CodeScanDeref(cur), csState, cur)) {
-				switch (CodeScanCall(CodeScanDeref(cur), csState)) {
-					case -1: {
-						// Want to skip this match.  However, it was a full
-						// match so does need resetting.
+				printf("call");
+				CodeScanCall(CodeScanDeref(cur), csState);
+//				switch (CodeScanCall(CodeScanDeref(cur), csState)) {
+//					case -1: {
+//						// Want to skip this match.  However, it was a full
+//						// match so does need resetting.
 						CodeScanReset(CodeScanDeref(cur), cur);
 						continue;
-					}
-					case 0: {
-						// Do nothing except ignore.
-					}
-					default: {
-						// If code was written, reparse this function.
-						dctx[DisasmContext_nip] = csState[CodeScanMatch_func];
-					}
-				}
+//					}
+//					case 0: {
+//						// Do nothing except ignore.
+//					}
+//					default: {
+//						// If code was written, reparse this function.
+//						dctx[DisasmContext_nip] = csState[CodeScanMatch_func];
+//					}
+//				}
 				// Reset to the start of the function, to reparse.
 				for (cur = csState[CodeScanner_first]; cur != -1; CodeScanReset(CodeScanDeref(cur), cur)) { }
 				break;
