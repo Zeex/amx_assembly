@@ -51,7 +51,7 @@ static stock AddressofResolveFoundStart(scanner[CodeScanner]) {
 static stock AddressofResolveFoundEnd(scanner[CodeScanner]) {
 	// Write a `const` for the function address.
 	new ctx[AsmContext];
-	CodeScanGetMatchAsm(scanner, ctx, 14 * cellbytes);
+	CodeScanGetMatchAsm(scanner, ctx, CodeScanGetMatchLength(scanner) - 2 * cellbytes);
 	AsmEmitConstPri(ctx, CodeScanGetMatchHole(scanner, 0));
 }
 
@@ -86,7 +86,7 @@ stock AddressofResolve() {
 	new scanner[CodeScanner];
 	CodeScanInit(scanner);
 	
-	// Optimised.
+	// Start.
 	new csm1[CodeScanMatcher];
 	CodeScanMatcherInit(csm1, &AddressofResolveFoundStart);
 	CodeScanMatcherPattern(csm1,
@@ -96,7 +96,7 @@ stock AddressofResolve() {
 	);
 	CodeScanAddMatcher(scanner, csm1);
 	
-	// Unoptimised.
+	// End.
 	new csm2[CodeScanMatcher];
 	CodeScanMatcherInit(csm2, &AddressofResolveFoundEnd);
 	CodeScanMatcherPattern(csm2,
@@ -110,6 +110,22 @@ stock AddressofResolve() {
 		OP(LOAD_PRI,   ref(gAddressOfReturnVar_))
 	);
 	CodeScanAddMatcher(scanner, csm2);
+	
+	// End with heap.
+	new csm3[CodeScanMatcher];
+	CodeScanMatcherInit(csm3, &AddressofResolveFoundEnd);
+	CodeScanMatcherPattern(csm3,
+		OP(CALL,       ???)
+		OP(HEAP,       ???)
+		OP(LOAD_PRI,   ref(gAddressOfReturnVar_))
+		OP(JZER,       ???)
+		OP(CONST_PRI,  1)
+		OP(JUMP,       ???)
+		OP(CONST_PRI,  2)
+		OP(JUMP,       ???)
+		OP(LOAD_PRI,   ref(gAddressOfReturnVar_))
+	);
+	CodeScanAddMatcher(scanner, csm3);
 	
 	// Run the scanner.
 	CodeScanRun(scanner);

@@ -484,7 +484,6 @@ static stock bool:CodeScanCheck(Opcode:op, dctx[DisasmContext], cs[CodeScanMatch
 		}
 		if (cs[CodeScanMatcher_code][off] == OP_TYPE_OPCODE_ && Opcode:cs[CodeScanMatcher_code][off + 1] == op) {
 CodeScanCheck_pass:
-			if (off >= 8) printf("match");
 			// Check if there are enough parameters for this opcode.
 			off += 2;
 			for (new i = 0; i != cnt; ++i) {
@@ -754,7 +753,6 @@ static stock CodeScanCall(cs[CodeScanMatcher], csState[CodeScanner]) {
 	new
 		func = cs[CodeScanMatcher_func];
 	if (cs[CodeScanMatcher_flags] & SCANNER_HAS_USER_DATA) {
-		printf("call with data %08x", func);
 		new
 			param = cs[CodeScanMatcher_user_data];
 		#emit PUSH.S     param
@@ -768,8 +766,6 @@ static stock CodeScanCall(cs[CodeScanMatcher], csState[CodeScanner]) {
 		#emit SCTRL      6
 		#emit STOR.S.pri func
 	} else {
-		printf("call no data");
-//		#emit HALT 4
 		#emit PUSH.S     csState
 		#emit PUSH.C     4
 		#emit LCTRL      6
@@ -803,23 +799,21 @@ stock bool:CodeScanRun(csState[CodeScanner]) {
 		// do the actual comparisons to various defined scanners.
 		for (cur = csState[CodeScanner_first], op = DisasmGetOpcode(dctx); cur != -1; ) {
 			if (CodeScanCheck(op, dctx, CodeScanDeref(cur), csState, cur)) {
-				printf("call");
-				CodeScanCall(CodeScanDeref(cur), csState);
-//				switch (CodeScanCall(CodeScanDeref(cur), csState)) {
-//					case -1: {
-//						// Want to skip this match.  However, it was a full
-//						// match so does need resetting.
+				switch (CodeScanCall(CodeScanDeref(cur), csState)) {
+					case -1: {
+						// Want to skip this match.  However, it was a full
+						// match so does need resetting.
 						CodeScanReset(CodeScanDeref(cur), cur);
 						continue;
-//					}
-//					case 0: {
-//						// Do nothing except ignore.
-//					}
-//					default: {
-//						// If code was written, reparse this function.
-//						dctx[DisasmContext_nip] = csState[CodeScanMatch_func];
-//					}
-//				}
+					}
+					case 0: {
+						// Do nothing except ignore.
+					}
+					default: {
+						// If code was written, reparse this function.
+						dctx[DisasmContext_nip] = csState[CodeScanMatch_func];
+					}
+				}
 				// Reset to the start of the function, to reparse.
 				for (cur = csState[CodeScanner_first]; cur != -1; CodeScanReset(CodeScanDeref(cur), cur)) { }
 				break;
