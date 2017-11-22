@@ -423,7 +423,7 @@ static stock bool:CodeScanCheck(Opcode:op, dctx[DisasmContext], cs[CodeScanMatch
 			off += 2;
 			if (off == len) {
 				return
-					memcpy(fctx[CodeScanMatch_holes], cs[CodeScanMatcher_holes], idx * (CODE_SCAN_MAX_PATTERN_ARRAY / 2), cs[CodeScanMatcher_holeidx][idx] * cellbytes, (CODE_SCAN_MAX_PATTERN_ARRAY / 2)),
+					memcpy(fctx[CodeScanMatch_holes], cs[CodeScanMatcher_holes], idx * CODE_SCAN_MAX_HOLES, cs[CodeScanMatcher_holeidx][idx] * cellbytes, CODE_SCAN_MAX_HOLES),
 					fctx[CodeScanMatch_cip] = cs[CodeScanMatcher_start][idx],
 					fctx[CodeScanMatch_size] = DisasmGetNextIp(dctx) - cs[CodeScanMatcher_start][idx],
 					true;
@@ -458,7 +458,7 @@ CodeScanCheck_pass:
 						case OP_TYPE_UNKNOWN_: {
 							// Save the parameter.
 							++off,
-							cs[CodeScanMatcher_holes][idx * (CODE_SCAN_MAX_PATTERN_ARRAY / 2) + cs[CodeScanMatcher_holeidx][idx]++] = DisasmGetOperandReloc(dctx, i);
+							cs[CodeScanMatcher_holes][idx * CODE_SCAN_MAX_HOLES + cs[CodeScanMatcher_holeidx][idx]++] = DisasmGetOperandReloc(dctx, i);
 						}
 						case OP_TYPE_NONE_, OP_TYPE_OPCODE_, OP_TYPE_SKIP_: {
 							goto CodeScanCheck_fail;
@@ -474,7 +474,7 @@ CodeScanCheck_pass:
 			if (off == len) {
 				// Get the address of the START of the match.
 				return
-					memcpy(fctx[CodeScanMatch_holes], cs[CodeScanMatcher_holes][idx * (CODE_SCAN_MAX_PATTERN_ARRAY / 2)], 0, cs[CodeScanMatcher_holeidx][idx] * cellbytes, (CODE_SCAN_MAX_PATTERN_ARRAY / 2)),
+					memcpy(fctx[CodeScanMatch_holes], cs[CodeScanMatcher_holes][idx * CODE_SCAN_MAX_HOLES], 0, cs[CodeScanMatcher_holeidx][idx] * cellbytes, CODE_SCAN_MAX_HOLES),
 					fctx[CodeScanMatch_cip] = cs[CodeScanMatcher_start][idx],
 					fctx[CodeScanMatch_size] = DisasmGetNextIp(dctx) - cs[CodeScanMatcher_start][idx],
 					true;
