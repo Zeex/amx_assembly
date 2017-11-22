@@ -133,7 +133,7 @@ stock MyFunc(a, b[], ...)
 #define O@Z_:%9$%0)       %0)
 #define O@W_:%9$%0)       %0),(O@N_),(0)
 
-#define O@T_:O@O_),(Opcode:O@X_:O@Y_:O@W_:$OP_???%0) O@S_),(0)
+#define O@T_:O@O_),(Opcode:O@X_:O@Y_:O@W_:$OP_???%0) O@S_),0,0,(0)
 
 #define O@1_:%9$%0???%1|||%2) O@U_ ),(_:O@X_:O@Y_:O@Z_:$0%2)
 #define O@2_:%9$%0&%1|||%2)   O@F_),(O@A_()?(((CALL@%1),O@V_)?1:2):_:O@X_:O@Y_:O@Z_:$(O@V_)%2)
@@ -338,12 +338,62 @@ stock CodeScanMatcherPattern_(searcher[CodeScanMatcher], {Opcode, Float, _}:...)
 	new
 		len = numargs() - 1;
 	if (len > CODE_SCAN_MAX_PATTERN_ARRAY) {
-		return;
+		return -1;
+	}
+	if (len & 0x03) {
+		// Not a multiple of 4 in the scanner.
+		return -2;
+	}
+	for (new i = 0; i != len; i += 4) {
+		new
+			optype    = getarg(i + 1),
+			Opcode:op = Opcode:getarg(i + 2),
+			partype   = getarg(i + 3),
+			fail = i / 4 + 1;
+		searcher[CodeScanMatcher_code][i + 0] = optype;
+		searcher[CodeScanMatcher_code][i + 1] = _:op;
+		searcher[CodeScanMatcher_code][i + 2] = partype;
+		searcher[CodeScanMatcher_code][i + 3] = getarg(i + 4);
+		switch (optype) {
+			case OP_TYPE_OPCODE_: {
+				// Not yet supported.
+				if (op == OP_CASETBL) {
+					return -3;
+				}
+				switch (partype) {
+					case OP_TYPE_INTEGER_, OP_TYPE_UNKNOWN_, OP_TYPE_FUNCTION_: {
+						if (GetOpcodeInstructionParameters(op) == 1) {
+							break;
+						}
+						else {
+							return fail;
+						}
+					}
+					case OP_TYPE_NONE_: {
+						if (GetOpcodeInstructionParameters(op) == 0) {
+							break;
+						}
+						else {
+							return fail;
+						}
+					}
+					case OP_TYPE_OPCODE_, OP_TYPE_SKIP_: {
+						return fail;
+					}
+				}
+			}
+			case OP_TYPE_SKIP_: {
+				continue;
+			}
+			default: {
+				// Incorrect parameter type.  Return the op where it happened.
+				return fail;
+			}
+		}
 	}
 	searcher[CodeScanMatcher_len] = len;
-	for (new i = 0; i != len; ++i) {
-		searcher[CodeScanMatcher_code][i] = getarg(i + 1);
-	}
+	// No error.
+	return 0;
 }
 
 // Note the lack of trailing comma.  This is to make the code patterns work.
@@ -420,7 +470,7 @@ static stock bool:CodeScanCheck(Opcode:op, dctx[DisasmContext], cs[CodeScanMatch
 			continue;
 		}
 		if (cs[CodeScanMatcher_code][off] == OP_TYPE_SKIP_) {
-			off += 2;
+			off += 4;
 			if (off == len) {
 				return
 					memcpy(fctx[CodeScanMatch_holes], cs[CodeScanMatcher_holes], idx * CODE_SCAN_MAX_HOLES, cs[CodeScanMatcher_holeidx][idx] * cellbytes, CODE_SCAN_MAX_HOLES),
@@ -457,6 +507,8 @@ CodeScanCheck_pass:
 						}
 						case OP_TYPE_UNKNOWN_: {
 							// Save the parameter.
+							//if (idx * CODE_SCAN_MAX_HOLES + cs[CodeScanMatcher_holeidx][idx] >= CODE_SCAN_MAX_HOLES * CODE_SCAN_MAX_PARALLEL)
+							//	printf("%d %d %d %d %d", idx, off, i, idx * CODE_SCAN_MAX_HOLES + cs[CodeScanMatcher_holeidx][idx], CODE_SCAN_MAX_HOLES * CODE_SCAN_MAX_PARALLEL);
 							++off,
 							cs[CodeScanMatcher_holes][idx * CODE_SCAN_MAX_HOLES + cs[CodeScanMatcher_holeidx][idx]++] = DisasmGetOperandReloc(dctx, i);
 						}
