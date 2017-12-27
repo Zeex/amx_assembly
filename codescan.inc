@@ -350,13 +350,20 @@ stock CodeScanMatcherPattern_(searcher[CodeScanMatcher], {Opcode, Float, _}:...)
 #define CodeScanMatcherPattern(%0, CodeScanMatcherPattern_(%0
 
 static stock CodeScanDeref(v) {
-	static
-		lFakeMatcher[CodeScanMatcher];
+	#if __Pawn != 0x030A
+		static
+			lFakeMatcher[CodeScanMatcher];
+	#endif
+	
 	#pragma unused v
 	#emit load.s.pri 12 // First argument.
 	#emit stor.s.pri 16 // Secret argument.
 	#emit retn
-	return lFakeMatcher; // Make compiler happy, and teach it the array return.
+	#if __Pawn != 0x030A
+		return lFakeMatcher; // Make compiler happy, and teach it the array return.
+	#else
+		#pragma naked
+	#endif
 }
 
 static stock bool:CodeScanCheck(Opcode:op, dctx[DisasmContext], cs[CodeScanMatcher], fctx[CodeScanner], &next) {

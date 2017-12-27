@@ -35,14 +35,22 @@ stock GetCurrentFrame() {
 	#emit stack 4
 	#emit retn
 
-	return 0; // make compiler happy
+	#if __Pawn != 0x030A
+		return 0; // make compiler happy
+	#else
+		#pragma naked
+	#endif
 }
 
 stock GetFramePreviousFrame(frm_addr) {
 	#emit lref.s.pri frm_addr
 	#emit retn
 
-	return 0; // make compiler happy
+	#if __Pawn != 0x030A
+		return 0; // make compiler happy
+	#else
+		#pragma naked
+	#endif
 }
 
 stock GetFrameReturn(frm_addr) {
@@ -55,7 +63,11 @@ stock GetFrameReturn(frm_addr) {
 	#emit stack 4
 	#emit retn
 
-	return 0; // make compiler happy
+	#if __Pawn != 0x030A
+		return 0; // make compiler happy
+	#else
+		#pragma naked
+	#endif
 }
 
 stock SetFramePreviousFrame(frm_addr, addr) {
@@ -154,7 +166,11 @@ stock GetFrameParameterSize(frm_addr) {
 	#emit stack 4
 	#emit retn
 
-	return 0; // make compiler happy
+	#if __Pawn != 0x030A
+		return 0; // make compiler happy
+	#else
+		#pragma naked
+	#endif
 }
 
 stock GetFrameParameterCount(frm_addr) {
@@ -195,7 +211,11 @@ stock GetFrameParameter(frm_addr, param, idx = -1) {
 		#emit retn
 	}
 
-	return 0; // make compiler happy
+	#if __Pawn != 0x030A
+		return 0; // make compiler happy
+	#else
+		#pragma naked
+	#endif
 }
 
 stock GetFrameVariable(frm_addr, param, idx = -1) {
@@ -224,7 +244,11 @@ stock GetFrameVariable(frm_addr, param, idx = -1) {
 		#emit retn
 	}
 
-	return 0; // make compiler happy
+	#if __Pawn != 0x030A
+		return 0; // make compiler happy
+	#else
+		#pragma naked
+	#endif
 }
 
 stock GetFrameLocal(frm_addr, param) {
@@ -256,7 +280,11 @@ stock GetFrameLocal(frm_addr, param) {
 		#emit retn
 	}
 
-	return 0; // make compiler happy
+	#if __Pawn != 0x030A
+		return 0; // make compiler happy
+	#else
+		#pragma naked
+	#endif
 }
 
 stock SetFrameParameter(frm_addr, param, value, idx = -1) {
@@ -298,7 +326,11 @@ stock SetFrameParameter(frm_addr, param, value, idx = -1) {
 		#emit retn
 	}
 
-	return 0; // make compiler happy
+	#if __Pawn != 0x030A
+		return 0; // make compiler happy
+	#else
+		#pragma naked
+	#endif
 }
 
 stock SetFrameVariable(frm_addr, param, value, idx = -1) {
@@ -332,7 +364,11 @@ stock SetFrameVariable(frm_addr, param, value, idx = -1) {
 		#emit retn
 	}
 
-	return 0; // make compiler happy
+	#if __Pawn != 0x030A
+		return 0; // make compiler happy
+	#else
+		#pragma naked
+	#endif
 }
 
 stock SetFrameLocal(frm_addr, param, value) {
@@ -366,7 +402,11 @@ stock SetFrameLocal(frm_addr, param, value) {
 		#emit retn
 	}
 
-	return 0; // make compiler happy
+	#if __Pawn != 0x030A
+		return 0; // make compiler happy
+	#else
+		#pragma naked
+	#endif
 }
 
 static stock GetCallerFrame() {
@@ -381,7 +421,11 @@ static stock GetCallerFrame() {
 	#emit stack 8
 	#emit retn
 
-	return 0; // make compiler happy
+	#if __Pawn != 0x030A
+		return 0; // make compiler happy
+	#else
+		#pragma naked
+	#endif
 }
 
 stock GetCurrentFramePreviousFrame() {

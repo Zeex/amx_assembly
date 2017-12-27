@@ -101,7 +101,12 @@ static stock exit_public() {
 	}
 
 	#emit halt 0
-	return 0; // make compiler happy
+	
+	#if __Pawn != 0x030A
+		return 0; // make compiler happy
+	#else
+		#pragma naked
+	#endif
 }
 
 static stock enter_public(index, address) {
@@ -135,7 +140,11 @@ static stock enter_public(index, address) {
 	#emit load.s.pri address
 	#emit jump.pri
 
-	return 0; // make compiler happy
+	#if __Pawn != 0x030A
+		return 0; // make compiler happy
+	#else
+		#pragma naked
+	#endif
 }
 
 static stock new_pec(index, address, code_start) {
