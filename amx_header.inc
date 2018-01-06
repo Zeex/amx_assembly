@@ -703,12 +703,12 @@ stock bool:IsTagNameEmpty(tag[]) {
 
 stock bool:IsTagIndexStrong(tag) {
 	new info[AMX_FUNCSTUBNT];
-	return (GetTagInfo(index, info) && IsTagIDStrong(info[AMX_FUNCSTUBNT_ID]);
+	return (GetTagInfo(tag, info) && IsTagIDStrong(info[AMX_FUNCSTUBNT_ID]));
 }
 
 stock bool:IsTagIndexWeak(tag) {
 	new info[AMX_FUNCSTUBNT];
-	return (GetTagInfo(index, info) && IsTagIDWeak(info[AMX_FUNCSTUBNT_ID]);
+	return (GetTagInfo(tag, info) && IsTagIDWeak(info[AMX_FUNCSTUBNT_ID]));
 }
 
 stock bool:IsTagIndexEmpty(tag) {

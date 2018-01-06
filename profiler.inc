@@ -43,10 +43,14 @@
 #endif
 
 enum ProfEntryCode {
-	pec_push_address[2],
-	pec_push_index[2],
-	pec_push_8[2],
-	pec_call_enter[2]
+	Opcode:pec_push_c0,
+	pec_push_address,
+	Opcode:pec_push_c1,
+	pec_push_index,
+	Opcode:pec_push_c2,
+	pec_push_8,
+	Opcode:pec_call,
+	pec_call_enter
 }
 
 static stock g_pecs[PROF_MAX_PUBLICS][ProfEntryCode];
@@ -145,20 +149,20 @@ static stock new_pec(index, address, code_start) {
 	if (g_num_pecs < sizeof(g_pecs)) {
 		new pec[ProfEntryCode];
 
-		pec[pec_push_address][0] = RelocateOpcode(OP_PUSH_C);
-		pec[pec_push_address][1] = address;
+		pec[pec_push_c0] = RelocateOpcode(OP_PUSH_C);
+		pec[pec_push_address] = address;
 
-		pec[pec_push_index][0] = RelocateOpcode(OP_PUSH_C);
-		pec[pec_push_index][1] = index;
+		pec[pec_push_c1] = RelocateOpcode(OP_PUSH_C);
+		pec[pec_push_index] = index;
 
-		pec[pec_push_8][0] = RelocateOpcode(OP_PUSH_C);
-		pec[pec_push_8][1] = 8;
+		pec[pec_push_c2] = RelocateOpcode(OP_PUSH_C);
+		pec[pec_push_8] = 8;
 
 		new enter_proc;
 		#emit const.pri enter_public
 		#emit stor.s.pri enter_proc
-		pec[pec_call_enter][0] = RelocateOpcode(OP_CALL);
-		pec[pec_call_enter][1] = code_start + enter_proc;
+		pec[pec_call] = RelocateOpcode(OP_CALL);
+		pec[pec_call_enter] = code_start + enter_proc;
 
 		g_pecs[g_num_pecs] = pec;
 		return g_num_pecs++;
@@ -175,7 +179,7 @@ stock ProfilerInit() {
 	new defsize = hdr[AMX_HDR_DEFSIZE];
 	new num_publics = (hdr[AMX_HDR_NATIVES] - hdr[AMX_HDR_PUBLICS]) / defsize;
 
-	new amx_base = GetAmxBase();
+	new amx_base = GetAmxBaseAddress();
 
 	// Redirect all public calls to ProfileHook().
 	for (new i = 0, cur = publics; i < num_publics; cur += defsize, i++) {

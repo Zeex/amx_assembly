@@ -94,7 +94,7 @@ stock SetFrameParameterSize(frm_addr, size) {
 }
 
 stock SetFrameParameterCount(frm_addr, count) {
-	return SetFrameParameterSize(frm_add, count << 2);
+	SetFrameParameterSize(frm_addr, count << 2);
 }
 
 stock GetFrameTotalSize(frm_addr) {

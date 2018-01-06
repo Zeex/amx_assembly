@@ -843,11 +843,24 @@ stock GetOpcodeInstructionInformation(Opcode:opcode) {
 }
 
 stock GetOpcodeInstructionName(Opcode:opcode) {
-	static none[OPCODE_MAX_INSN_NAME] = "none";
+	static const ret[OPCODE_MAX_INSN_NAME] = "none";
 	if (OP_NONE < opcode < Opcode:NUM_OPCODES) {
-		return insn_table[_:opcode][OpcodeInsnInfo_name];
+		// This doesn't work.
+		//return insn_table[_:opcode][OpcodeInsnInfo_name];
+		// Fake it without requiring `strcpy`.
+		#emit CONST.alt    insn_table
+		#emit LOAD.S.pri   opcode
+		#emit IDXADDR
+		#emit MOVE.alt
+		#emit LOAD.I
+		#emit ADD
+		#emit LOAD.S.alt   16
+		#emit MOVS         60 // 15 * 4
+		#emit RETN
+		// Check that the code is correct for the size of "OPCODE_MAX_INSN_NAME".
+		#assert OPCODE_MAX_INSN_NAME == 15
 	}
-	return none;
+	return ret;
 }
 
 stock GetOpcodeInstructionParameters(Opcode:opcode) {

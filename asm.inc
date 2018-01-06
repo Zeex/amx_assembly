@@ -390,7 +390,7 @@ stock AsmError:AsmEmitAnd(ctx[AsmContext]) {
 }
 
 stock AsmError:AsmEmitBounds(ctx[AsmContext], bound) {
-	return AsmEmitInstruction(ctx, OP_BOUDNS, bound);
+	return AsmEmitInstruction(ctx, OP_BOUNDS, bound);
 }
 
 stock AsmError:AsmEmitBreak(ctx[AsmContext]) {
@@ -572,11 +572,11 @@ stock AsmError:AsmEmitJsgeqRel(ctx[AsmContext], offset) {
 }
 
 stock AsmError:AsmEmitJsgrtr(ctx[AsmContext], address) {
-	return AsmEmitInstruction(ctx, OP_JSTRTR, address);
+	return AsmEmitInstruction(ctx, OP_JSGRTR, address);
 }
 
 stock AsmError:AsmEmitJsgrtrRel(ctx[AsmContext], offset) {
-	return AsmEmitJumpInstruction(ctx, OP_JSTRTR, offset);
+	return AsmEmitJumpInstruction(ctx, OP_JSGRTR, offset);
 }
 
 stock AsmError:AsmEmitJsleq(ctx[AsmContext], address) {
@@ -648,7 +648,7 @@ stock AsmError:AsmEmitJsgeqLabelStringize(ctx[AsmContext], const label[]) {
 }
 
 stock AsmError:AsmEmitJsgrtrLabelStringize(ctx[AsmContext], const label[]) {
-	return AsmEmitJumpLabelInstruction(ctx, OP_JSTRTR, label);
+	return AsmEmitJumpLabelInstruction(ctx, OP_JSGRTR, label);
 }
 
 stock AsmError:AsmEmitJsleqLabelStringize(ctx[AsmContext], const label[]) {
