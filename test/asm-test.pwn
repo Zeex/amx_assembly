@@ -1,5 +1,7 @@
-#include "../asm"
-#include "../dynamic_call"
+#include <a_samp>
+
+#include "..\asm"
+#include "..\dynamic_call"
 
 forward HandleAsmError(ctx[AsmContext], AsmError:error);
 

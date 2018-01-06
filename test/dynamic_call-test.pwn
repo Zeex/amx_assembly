@@ -1,4 +1,6 @@
-#include "dynamic_call"
+#include <a_samp>
+
+#include "..\dynamic_call"
 
 forward test(i, &j, s[], t[]);
 

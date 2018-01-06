@@ -1,4 +1,6 @@
-#include "amx"
+#include <a_samp>
+
+#include "..\amx"
 
 main() {
 	// This must output "1".

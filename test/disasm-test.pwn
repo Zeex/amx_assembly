@@ -1,6 +1,6 @@
 #include <a_samp>
 
-#include "disasm"
+#include "..\disasm"
 
 forward funny_public();
 

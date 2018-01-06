@@ -1,7 +1,7 @@
 #include <a_samp>
 
-#include "../amx_header"
-#include "../stack_trace"
+#include "..\amx_header"
+#include "..\stack_trace"
 
 forward f1();
 forward f3();

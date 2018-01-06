@@ -1,7 +1,7 @@
 #include <a_samp>
 
-#include "amx"
-#include "phys_memory"
+#include "..\amx"
+#include "..\phys_memory"
 
 ToCharString(s[], size = sizeof(s)) {
 	for (new i = 0; i < size; i++) {
