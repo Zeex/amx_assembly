@@ -235,7 +235,7 @@ stock bool:ProfilerWriteData(const filename[]) {
 				g_publics[i][ppi_total_time] - g_publics[i][ppi_child_time],
 				g_publics[i][ppi_total_time]
 			);
-		#else if defined format
+		#elseif defined format
 			format(buffer, sizeof(buffer), "| %32s |%15d |%15d |%15d |\n",
 				name,
 				g_publics[i][ppi_num_calls],
