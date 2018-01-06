@@ -24,6 +24,7 @@
 #define DISASM_INC
 
 #include <string>
+#include <file>
 
 #include "amx_base"
 #include "amx_header"

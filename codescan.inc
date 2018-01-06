@@ -29,8 +29,7 @@
 
 forward TailCall_FoundCallback(m[CodeScanner])
 
-main()
-{
+main() {
 	new scanner[CodeScanner];
 	CodeScanInit(scanner);
 	
@@ -65,6 +64,8 @@ stock MyFunc(a, b[], ...)
 }
 
 */
+
+#include <core>
 
 #include "frame_info"
 #include "disasm"

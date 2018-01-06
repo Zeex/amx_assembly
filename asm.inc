@@ -23,6 +23,8 @@
 #endif
 #define ASM_INC
 
+#include <core>
+
 #include "amx_base"
 #include "amx_header"
 #include "amx_memory"

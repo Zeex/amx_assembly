@@ -23,7 +23,10 @@
 #endif
 #define PROFILER_INC
 
-#include <a_samp>
+#include <file>
+#include <time>
+#include <string>
+#tryinclude <console>
 
 #include "amx_base"
 #include "amx_header"
@@ -77,7 +80,7 @@ static stock exit_public() {
 
 		if (index < g_num_publics) {
 			new i = g_call_depth;
-			new tick = GetTickCount();
+			new tick = tickcount();
 			new time = tick - g_call_stack[i][pci_start_time];
 			if (time < 0) {
 				// Work around negative intervals due to tick count overflow
@@ -114,7 +117,7 @@ static stock enter_public(index, address) {
 	if (g_call_depth < sizeof(g_call_stack)) {
 		new pci[ProfCallInfo];
 		pci[pci_index] = index;
-		pci[pci_start_time] = GetTickCount();
+		pci[pci_start_time] = tickcount();
 		g_call_stack[g_call_depth] = pci;
 	} else {
 		printf("profiler warning: PROF_MAX_CALL_STACK is set to %d but current level is %d", PROF_MAX_CALL_STACK, g_call_depth);
@@ -219,16 +222,30 @@ stock bool:ProfilerWriteData(const filename[]) {
 	fwrite(file, "+----------------------------------+----------------+----------------+----------------+\n");
 
 	for (new i = 0; i < g_num_publics; i++) {
-		new name[32];
-		GetPublicNameByIndex(i, name);
-		format(buffer, sizeof(buffer), "| %32s |%15d |%15d |%15d |\n",
-			name,
-			g_publics[i][ppi_num_calls],
-			g_publics[i][ppi_total_time] - g_publics[i][ppi_child_time],
-			g_publics[i][ppi_total_time]
-		);
-		fwrite(file, buffer);
-		fwrite(file, "+----------------------------------+----------------+----------------+----------------+\n");
+			new name[32];
+			GetPublicNameFromIndex(i, name);
+		#if defined strformat
+			strformat(buffer, sizeof(buffer), false, "| %32s |%15d |%15d |%15d |\n",
+				name,
+				g_publics[i][ppi_num_calls],
+				g_publics[i][ppi_total_time] - g_publics[i][ppi_child_time],
+				g_publics[i][ppi_total_time]
+			);
+		#else if defined format
+			format(buffer, sizeof(buffer), "| %32s |%15d |%15d |%15d |\n",
+				name,
+				g_publics[i][ppi_num_calls],
+				g_publics[i][ppi_total_time] - g_publics[i][ppi_child_time],
+				g_publics[i][ppi_total_time]
+			);
+		#else
+			// Generate proper compiler errors for the missing symbols - ONLY IF the function is
+			// actually used.
+			format(buffer, 0, "You need this function or strformat");
+			strformat(buffer, 0, false, "You need this function or format");
+		#endif
+			fwrite(file, buffer);
+			fwrite(file, "+----------------------------------+----------------+----------------+----------------+\n");
 	}
 
 	fclose(file);

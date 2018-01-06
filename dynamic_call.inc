@@ -23,8 +23,6 @@
 #endif
 #define DYNAMIC_CALL_INC
 
-#include <a_samp>
-
 #include "amx_jit"
 #include "amx_header"
 #include "amx_memory"
@@ -49,16 +47,6 @@ forward CallNativeByAddress(address, {Float,_}:...);
 
 static stock g_nargs = 0;
 static stock g_args[DYNAMIC_CALL_MAX_ARGS];
-
-forward DynamicCallFunctionInclusion_();
-
-public DynamicCallFunctionInclusion_() {
-	// When doing "sysreq.c func" on a native function not used anywhere else in
-	// code, old compilers would crash.  This function ensures that the native
-	// is used in at least one other place so that it will be included in the
-	// native function table.
-	numargs();
-}
 
 stock bool:Push(arg) {
 	if (g_nargs < sizeof(g_args)) {

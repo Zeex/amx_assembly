@@ -23,6 +23,8 @@
 #endif
 #define STACK_TRACE_INC
 
+#tryinclude <console>
+
 #include "amx_base"
 #include "amx_header"
 #include "frame_info"

@@ -23,6 +23,8 @@
 #endif
 #define STACK_DUMP_INC
 
+#tryinclude <console>
+
 /////////////////////////////////////////////////
 //                  Stack layout
 /////////////////////////////////////////////////
@@ -52,8 +54,6 @@
 //        <BOTTOM>     |         0
 //-----------------------------------------------
 
-#include <a_samp>
-
 #include "amx_memory"
 
 stock DumpStack()
@@ -82,3 +82,4 @@ stock DumpStack()
 
 	print("------------------------");
 }
+
