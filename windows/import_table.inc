@@ -18,7 +18,12 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include <a_samp>
+#if defined IMPORT_TABLE_INC
+	#endinput
+#endif
+#define IMPORT_TABLE_INC
+
+#include <core>
 #include "../phys_memory"
 
 // Helpful resources:

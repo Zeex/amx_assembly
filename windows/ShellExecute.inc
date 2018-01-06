@@ -18,6 +18,11 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+#if defined SHELL_EXECUTE_INC
+	#endinput
+#endif
+#define SHELL_EXECUTE_INC
+
 #include "import_table"
 #include "../amx_header"
 #include "../amx_memory"
