@@ -48,8 +48,7 @@ main() {
 	CodeScanRun(scanner);
 }
 
-public TailCall_FoundCallback(m[CodeScanner])
-{
+public TailCall_FoundCallback(m[CodeScanner]) {
 	// Do something with the found address (of the START of the match), and the
 	// stack size (of the END of the match) - different for reasons...
 }
@@ -58,8 +57,7 @@ public TailCall_FoundCallback(m[CodeScanner])
 // and take the address in "OP".  Note that you do NOT need to do this for
 // scanner callbacks if you only use their address in "CodeScanMatcherInit".
 #define CALL@MyFunc MyFunc(0, "")
-stock MyFunc(a, b[], ...)
-{
+stock MyFunc(a, b[], ...) {
 	// Normal function.
 }
 
@@ -204,8 +202,7 @@ static stock
 	gBase,
 	gDat;
 
-static stock bool:CodeScanCheckJumpTarget(cip, deloc, &stk, &hea, jumpTargets[CodeScanner], num = CODE_SCAN_MAX_JUMP_TARGETS)
-{
+static stock bool:CodeScanCheckJumpTarget(cip, deloc, &stk, &hea, jumpTargets[CodeScanner], num = CODE_SCAN_MAX_JUMP_TARGETS) {
 	// Use "minn" to restrict the number of jump targets that we check.  Returns
 	// "true" if the current address is equal to an address that any jump goes
 	// to.
@@ -240,16 +237,14 @@ static stock bool:CodeScanCheckJumpTarget(cip, deloc, &stk, &hea, jumpTargets[Co
 	return false;
 }
 
-static stock CodeScanResetJumpTargets(jumpTargets[CodeScanner], num = CODE_SCAN_MAX_JUMP_TARGETS)
-{
+static stock CodeScanResetJumpTargets(jumpTargets[CodeScanner], num = CODE_SCAN_MAX_JUMP_TARGETS) {
 	jumpTargets[CodeScanner_minn] = num;
 	while (num--) {
 		jumpTargets[CodeScanner_jump_target][num] = 0;
 	}
 }
 
-static stock CodeScanAddJumpTarget(cip, stk, hea, jumpTargets[CodeScanner], num = CODE_SCAN_MAX_JUMP_TARGETS)
-{
+static stock CodeScanAddJumpTarget(cip, stk, hea, jumpTargets[CodeScanner], num = CODE_SCAN_MAX_JUMP_TARGETS) {
 	while (num--) {
 		// Multiple jumps to the same place?
 		if (jumpTargets[CodeScanner_jump_target][num] == cip) {
@@ -265,8 +260,7 @@ static stock CodeScanAddJumpTarget(cip, stk, hea, jumpTargets[CodeScanner], num 
 	}
 }
 
-static stock CodeScanAddSwitchTarget(dctx[DisasmContext], stk, hea, jumpTargets[CodeScanner], num = CODE_SCAN_MAX_JUMP_TARGETS)
-{
+static stock CodeScanAddSwitchTarget(dctx[DisasmContext], stk, hea, jumpTargets[CodeScanner], num = CODE_SCAN_MAX_JUMP_TARGETS) {
 	new
 		sip = DisasmGetOperand(dctx) - gBase,
 		codepos = sip + gHdr[AMX_HDR_DAT] - gHdr[AMX_HDR_COD];
@@ -536,8 +530,7 @@ CodeScanCheck_fail:
 		false;
 }
 
-static stock bool:CodeScanGetFuncName(addr, name[])
-{
+static stock bool:CodeScanGetFuncName(addr, name[]) {
 	// The "name" parameter is longer than 32 (which is the maximum function
 	// name length normally) beacause we append states to some.
 	// Name not found.
