@@ -33,3 +33,7 @@ Include in your code and begin using the library:
 ```pawn
 #include <amx_assembly\include_name_here>
 ```
+
+## Usage
+
+There are a few example scripts in the `test` directory that show how to use some of these includes.
