@@ -4,8 +4,8 @@ Some useful AMX assembly snippets and proof-of-concept scripts.
 
 ## Overview
 
-* [`amx.inc`](amx.inc) - Read/write contents of the AMX strcture (`struct AMX` in C code)
-* [`amx_base.inc`](amx_base.inc) - Get base address of the AMX in memory (`amx->base`)
+* [`amx.inc`](amx.inc) - Read/write contents of the AMX strcture (`struct AMX` in C code).
+* [`amx_base.inc`](amx_base.inc) - Get base address of the AMX in memory (`amx->base`).
 * [`amx_header.inc`](amx_header.inc) - Read contents of the AMX header (`AMX_HEADER`) and query header tables such as publics, natives, tags, etc.
 * [`amx_memory.inc`](amx_memory.inc) - Utility functions for reading/writing AMX memory.
 * [`codescan.inc`](codescan.inc) - Find patterns in bytecode.
