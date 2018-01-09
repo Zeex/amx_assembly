@@ -255,7 +255,11 @@ static stock Opcode:ReadOpcodeNearThis(offset = 0) {
 	#emit stack 4
 	#emit retn
 
-	return OP_NONE; // make compiler happy
+	#if __Pawn != 0x030A
+		return OP_NONE; // make compiler happy
+	#else
+		#pragma naked
+	#endif
 }
 
 static stock bool:HaveToRelocateOpcodes() {

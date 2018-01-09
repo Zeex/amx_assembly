@@ -180,7 +180,11 @@ stock CallFunction(address, {Float,_}:...) {
 	#emit stack 0x10
 	#emit retn
 
-	return 0; // make compiler happy
+	#if __Pawn != 0x030A
+		return 0; // make compiler happy
+	#else
+		#pragma naked
+	#endif
 }
 
 stock SysreqC(index, bool:auto_pop = true) {

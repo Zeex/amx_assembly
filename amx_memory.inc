@@ -30,16 +30,29 @@ stock ref(...) {
 	assert(numargs() == 1);
 	#emit load.s.pri 12 // first argument
 	#emit retn
-	return 0; // make compiler happy
+	
+	#if __Pawn != 0x030A
+		return 0; // make compiler happy
+	#else
+		#pragma naked
+	#endif
 }
 
 // Returns an array from an address.
 stock deref(v) {
-	static gFake[1];
+	#if __Pawn != 0x030A
+		static gFake[1];
+	#endif
+	
 	#emit load.s.pri  v // first argument
 	#emit stor.s.pri 16 // secret argument
 	#emit retn
-	return gFake; // make compiler happy
+	
+	#if __Pawn != 0x030A
+		return gFake; // make compiler happy
+	#else
+		#pragma naked
+	#endif
 }
 
 // Returns the address of a variable parameter.
@@ -49,12 +62,19 @@ stock argref(n) {
 	#emit add.c 3
 	#emit lidx
 	#emit retn
-	return 0; // make compiler happy
+	
+	#if __Pawn != 0x030A
+		return 0; // make compiler happy
+	#else
+		#pragma naked
+	#endif
 }
 
 // Returns an array from a variable parameter.
 stock argderef(n) {
-	static gFake[1];
+	#if __Pawn != 0x030A
+		static gFake[1];
+	#endif
 	
 	#emit load.s.alt 0
 	#emit load.s.pri n
@@ -62,13 +82,23 @@ stock argderef(n) {
 	#emit lidx
 	#emit stor.s.pri 16 // secret argument
 	#emit retn
-	return gFake; // make compiler happy
+
+	#if __Pawn != 0x030A
+		return gFake; // make compiler happy
+	#else
+		#pragma naked
+	#endif
 }
 
 stock ReadAmxMemory(address) {
 	#emit lref.s.pri address
 	#emit retn
-	return 0; // make compiler happy
+	
+	#if __Pawn != 0x030A
+		return 0; // make compiler happy
+	#else
+		#pragma naked
+	#endif
 }
 
 stock ReadAmxMemoryArray(address, values[], size = sizeof(values)) {
@@ -81,7 +111,12 @@ stock WriteAmxMemory(address, value) {
 	#emit load.s.pri value
 	#emit sref.s.pri address
 	#emit retn
-	return 0; // make compiler happy
+	
+	#if __Pawn != 0x030A
+		return 0; // make compiler happy
+	#else
+		#pragma naked
+	#endif
 }
 
 stock WriteAmxMemoryArray(address, const values[], size = sizeof(values)) {
@@ -98,7 +133,12 @@ stock GetAmxNextInstructionPointer()
 	// directly after the call.  This is at least well defined.
 	#emit load.s.pri 4
 	#emit retn
-	return 0;
+	
+	#if __Pawn != 0x030A
+		return 0; // make compiler happy
+	#else
+		#pragma naked
+	#endif
 }
 
 stock GetAmxHeapBase()
@@ -112,7 +152,12 @@ stock GetAmxHeapBase()
 	#emit lref.s.pri 0xfffffffc
 	#emit stack 4
 	#emit retn
-	return 0;
+
+	#if __Pawn != 0x030A
+		return 0; // make compiler happy
+	#else
+		#pragma naked
+	#endif
 }
 
 stock GetAmxHeapTop()
@@ -120,14 +165,24 @@ stock GetAmxHeapTop()
 	// Current heap pointer.
 	#emit lctrl 2
 	#emit retn
-	return 0;
+	
+	#if __Pawn != 0x030A
+		return 0; // make compiler happy
+	#else
+		#pragma naked
+	#endif
 }
 
 stock GetAmxStackBase()
 {
 	#emit lctrl 3
 	#emit retn
-	return 0;
+	
+	#if __Pawn != 0x030A
+		return 0; // make compiler happy
+	#else
+		#pragma naked
+	#endif
 }
 
 stock GetAmxStackBottom()
@@ -135,7 +190,12 @@ stock GetAmxStackBottom()
 	#emit lctrl 4
 	#emit add.c 12
 	#emit retn
-	return 0;
+	
+	#if __Pawn != 0x030A
+		return 0; // make compiler happy
+	#else
+		#pragma naked
+	#endif
 }
 
 stock GetAmxFrame()
@@ -144,7 +204,12 @@ stock GetAmxFrame()
 	// never called.  Doing that would only return this function's frame.
 	#emit load.s.pri 0
 	#emit retn
-	return 0;
+	
+	#if __Pawn != 0x030A
+		return 0; // make compiler happy
+	#else
+		#pragma naked
+	#endif
 }
 
 stock SetAmxHeapTop(ptr)

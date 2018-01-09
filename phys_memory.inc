@@ -30,7 +30,12 @@
 static stock GetDat() {
 	#emit lctrl 1
 	#emit retn
-	return 0; // make compiler happy
+	
+	#if __Pawn != 0x030A
+		return 0; // make compiler happy
+	#else
+		#pragma naked
+	#endif
 }
 
 static stock AbsToRel(address) {
@@ -70,7 +75,11 @@ stock ReadPhysMemory(address, dest[], num = sizeof(dest)) {
 	#emit stack 12
 	#emit retn
 
-	return 0; // make compiler happy
+	#if __Pawn != 0x030A
+		return 0; // make compiler happy
+	#else
+		#pragma naked
+	#endif
 }
 
 stock WritePhysMemory(address, src[], num = sizeof(src)) {
@@ -93,7 +102,11 @@ stock WritePhysMemory(address, src[], num = sizeof(src)) {
 	#emit stack 12
 	#emit retn
 
-	return 0; // make compiler happy
+	#if __Pawn != 0x030A
+		return 0; // make compiler happy
+	#else
+		#pragma naked
+	#endif
 }
 
 stock ReadPhysMemoryCell(address) {
@@ -101,7 +114,12 @@ stock ReadPhysMemoryCell(address) {
 	#emit lref.s.pri rel_addr
 	#emit stack 4
 	#emit retn
-	return 0; // make compiler happy
+	
+	#if __Pawn != 0x030A
+		return 0; // make compiler happy
+	#else
+		#pragma naked
+	#endif
 }
 
 stock WritePhysMemoryCell(address, what) {
@@ -110,5 +128,10 @@ stock WritePhysMemoryCell(address, what) {
 	#emit sref.s.pri rel_addr
 	#emit stack 4
 	#emit retn
-	return 0; // make compiler happy
+	
+	#if __Pawn != 0x030A
+		return 0; // make compiler happy
+	#else
+		#pragma naked
+	#endif
 }
