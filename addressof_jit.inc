@@ -27,9 +27,6 @@
 #include "codescan"
 #include "asm"
 
-static stock
-	bool:gAddressofResolved = false;
-
 // `addressof` works by reading data directly out of the stack to get a return
 // address, then reading information from that location in memory to get the
 // next `CALL` OpCode.  This fails with the JIT because the return address is in
@@ -56,6 +53,8 @@ static stock AddressofResolveFoundEnd(scanner[CodeScanner]) {
 }
 
 stock AddressofResolve() {
+	static
+		bool:gAddressofResolved = false;
 	if (gAddressofResolved)
 		return;
 	gAddressofResolved = true;
