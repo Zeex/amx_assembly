@@ -45,7 +45,21 @@
 #define CALL@AddressOfGetNextCall_ CALL@O@A_
 #define CALL@O@A_ O@A_()
 
-#define O@A_()?(((CALL@%1<%2>),O@V_)?1:2):(O@V_) F@_@%2:(O@A_()?(((CALL@%1),O@V_)?1:2):(O@V_))
+#define O@A_()?(((CALL@%1<%2>),O@V_)?1:2):(O@V_) F@_@%2:(O@A_()?(((_CALL@$%1()<%2>),O@V_)?1:2):(O@V_))
+
+// Enable parameter checks for `Func<xxx>` types.
+#define _CALL@ _CALL@i:_CALL@t:_CALL@f:_CALL@v:_CALL@s:_CALL@a:_CALL@x:_CALL@z
+
+#define _CALL@z$%0(%1)<%2> _CALL@y:%0(%1)
+#define _CALL@y:%0(,%1) %0(%1)
+
+#define _CALL@i:%8$%0(%1)<i%2> _CALL@$%0(%1,0)<%2>
+#define _CALL@t:%8$%0(%1)<t%5:%2> _CALL@_$%0(%1,%5:0)<%2>
+#define _CALL@f:%8$%0(%1)<f%2> _CALL@_$%0(%1,0.0)<%2>
+#define _CALL@v:%8$%0(%1)<v%2> _CALL@_$%0(%1,REF)<%2>
+#define _CALL@s:%8$%0(%1)<s%2> _CALL@_$%0(%1,"")<%2>
+#define _CALL@a:%8$%0(%1)<a%2> _CALL@_$%0(%1,"")<%2>
+#define _CALL@x:%8$%0(%1)<x%2> _CALL@z$%0(%1)<>
 
 stock
 	REF,
