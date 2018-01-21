@@ -45,7 +45,7 @@
 #define CALL@AddressOfGetNextCall_ CALL@O@A_
 #define CALL@O@A_ O@A_()
 
-#define O@A_()?(((CALL@%1<%2>),O@V_)?1:2):(O@V_) F@_@%2:(O@A_()?(((_ADDR@$%1()<%2>),O@V_)?1:2):(O@V_))
+#define O@A_()?(((CALL@%1<%2>),O@V_)?1:2):(O@V_) (O@A_()?(((_ADDR@$%1()<%2>),O@V_)?(F@_@:1):(F@_@:2)):(F@_@:O@V_))
 
 // Enable parameter checks for `Func<xxx>` types.
 #define _ADDR@ _ADDR@i:_ADDR@t:_ADDR@f:_ADDR@v:_ADDR@s:_ADDR@a:_ADDR@x:_ADDR@z
@@ -53,13 +53,13 @@
 #define _ADDR@z$%0(%1)<%2> _ADDR@y:%0(%1)
 #define _ADDR@y:%0(,%1) %0(%1)
 
-#define _ADDR@i:%8$%0(%1)<i%2> _ADDR@$%0(%1,0)<%2>
-#define _ADDR@t:%8$%0(%1)<t%5:%2> _ADDR@_$%0(%1,%5:0)<%2>
-#define _ADDR@f:%8$%0(%1)<f%2> _ADDR@_$%0(%1,0.0)<%2>
-#define _ADDR@v:%8$%0(%1)<v%2> _ADDR@_$%0(%1,REF)<%2>
-#define _ADDR@s:%8$%0(%1)<s%2> _ADDR@_$%0(%1,"")<%2>
-#define _ADDR@a:%8$%0(%1)<a%2> _ADDR@_$%0(%1,"")<%2>
-#define _ADDR@x:%8$%0(%1)<x%2> _ADDR@z$%0(%1)<>
+#define _ADDR@i:%8$%0(%1)<i%2>),O@V_)?(%9:1):(%9:2)):(%9:O@V_)) _ADDR@$%0(%1,0)<%2>),O@V_)?(%9i:1):(%9i:2)):(%9i:O@V_))
+#define _ADDR@t:%8$%0(%1)<t%5:%2>),O@V_)?(%9:1):(%9:2)):(%9:O@V_)) _ADDR@$%0(%1,%5:0)<%2>),O@V_)?(%9i:1):(%9i:2)):(%9i:O@V_))
+#define _ADDR@f:%8$%0(%1)<f%2>),O@V_)?(%9:1):(%9:2)):(%9:O@V_)) _ADDR@$%0(%1,0.0)<%2>),O@V_)?(%9f:1):(%9f:2)):(%9f:O@V_))
+#define _ADDR@v:%8$%0(%1)<v%2>),O@V_)?(%9:1):(%9:2)):(%9:O@V_)) _ADDR@$%0(%1,REF)<%2>),O@V_)?(%9v:1):(%9v:2)):(%9v:O@V_))
+#define _ADDR@s:%8$%0(%1)<s%2>),O@V_)?(%9:1):(%9:2)):(%9:O@V_)) _ADDR@$%0(%1,"")<%2>),O@V_)?(%9s:1):(%9s:2)):(%9s:O@V_))
+#define _ADDR@a:%8$%0(%1)<a%2>),O@V_)?(%9:1):(%9:2)):(%9:O@V_)) _ADDR@$%0(%1,"")<%2>),O@V_)?(%9a:1):(%9a:2)):(%9a:O@V_))
+#define _ADDR@x:%8$%0(%1)<x%2>),O@V_)?(%9:1):(%9:2)):(%9:O@V_)) _ADDR@z$%0(%1)<>),O@V_)?(%9x:1):(%9x:2)):(%9x:O@V_))
 
 stock
 	REF,
