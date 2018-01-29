@@ -235,10 +235,12 @@ static stock NtCompare(s1, const s2[]) {
 	new c1, c2;
 	new diff;
 
+	printf("Search: %s", s2);
 	do {
 		c1 = ReadAmxMemory(s1++) & 0xFF;
 		c2 = s2[index++];
 		diff = c1 - c2;
+		printf("Comparing: %c %c", c1, c2);
 		if (diff != 0) {
 			break;
 		}
@@ -301,34 +303,7 @@ stock bool:GetPublicInfo(index, info[AMX_FUNCSTUBNT]) {
 	return true;
 }
 
-stock GetPublicIndexFromName(const name[]) {
-	InitStaticAmxHeader();
-
-	new num_publics = GetNumPublics(gHdr);
-
-	// Binary search
-	new first = 0;
-	new last = num_publics - 1;
-	new mid;
-
-	while (first <= last) {
-		mid = (first + last) / 2;
-
-		new off = gHdr[AMX_HDR_PUBLICS] - gHdr[AMX_HDR_DAT] + mid * gHdr[AMX_HDR_DEFSIZE];
-		new nameofs = ReadAmxMemory(off + 4) - gHdr[AMX_HDR_DAT];
-
-		new diff = NtCompare(nameofs, name);
-		if (diff < 0) {
-			first = mid + 1;
-		} else if (diff > 0) {
-			last = mid - 1;
-		} else {
-			return mid;
-		}
-	}
-
-	return -1;
-}
+native GetPublicIndexFromName(const name[]) = funcidx;
 
 stock GetPublicAddressFromIndex(index) {
 	new info[AMX_FUNCSTUBNT];
