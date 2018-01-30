@@ -646,6 +646,8 @@ stock bool:GetTagNameFromID(id, name[], size = sizeof(name)) {
 	return GetTagNameFromIndex(GetTagIndexFromID(id), name, size);
 }
 
+#define AMX_ASSEMBLY_NO_BUGGED_TAGS 1
+
 stock bool:IsTagIDStrong(tag) {
 	return !!(tag & AMX_TAG_STRONG);
 }
