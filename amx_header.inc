@@ -563,7 +563,6 @@ stock GetTagIndexFromName(const name[]) {
 
 	new num_tags = GetNumTags(gHdr);
 
-	printf("%s", name);
 	// Binary search
 	new first = 0;
 	new last = num_tags;
@@ -571,15 +570,11 @@ stock GetTagIndexFromName(const name[]) {
 
 	while (last != first) {
 		mid = (last - first) / 2 + first;
-		printf("%d %d %d %d", num_tags, first, last, mid);
 
 		new off = gHdr[AMX_HDR_TAGS] - gHdr[AMX_HDR_DAT] + mid * gHdr[AMX_HDR_DEFSIZE];
-		printf("off = %d", off);
 		new nameofs = ReadAmxMemory(off + 4) - gHdr[AMX_HDR_DAT];
-		printf("nameofs = %d", nameofs);
 
 		new diff = NtCompare(nameofs, name);
-		printf("diff = %d", diff);
 		if (diff < 0) {
 			first = mid + 1;
 		} else if (diff > 0) {
