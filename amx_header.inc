@@ -472,8 +472,8 @@ stock GetPubVarIndexFromName(const name[]) {
 	new last = num_pubvars;
 	new mid;
 
-	while (first != last) {
-		mid = (first + last) / 2 + first;
+	while (last != first) {
+		mid = (last - first) / 2 + first;
 
 		new off = gHdr[AMX_HDR_PUBVARS] - gHdr[AMX_HDR_DAT] + mid * gHdr[AMX_HDR_DEFSIZE];
 		new nameofs = ReadAmxMemory(off + 4) - gHdr[AMX_HDR_DAT];
@@ -563,18 +563,23 @@ stock GetTagIndexFromName(const name[]) {
 
 	new num_tags = GetNumTags(gHdr);
 
+	printf("%s", name);
 	// Binary search
 	new first = 0;
 	new last = num_tags;
 	new mid;
 
-	while (first != last) {
-		mid = (first + last) / 2 + first;
+	while (last != first) {
+		mid = (last - first) / 2 + first;
+		printf("%d %d %d %d", num_tags, first, last, mid);
 
 		new off = gHdr[AMX_HDR_TAGS] - gHdr[AMX_HDR_DAT] + mid * gHdr[AMX_HDR_DEFSIZE];
+		printf("off = %d", off);
 		new nameofs = ReadAmxMemory(off + 4) - gHdr[AMX_HDR_DAT];
+		printf("nameofs = %d", nameofs);
 
 		new diff = NtCompare(nameofs, name);
+		printf("diff = %d", diff);
 		if (diff < 0) {
 			first = mid + 1;
 		} else if (diff > 0) {
@@ -646,7 +651,7 @@ stock bool:GetTagNameFromID(id, name[], size = sizeof(name)) {
 	return GetTagNameFromIndex(GetTagIndexFromID(id), name, size);
 }
 
-#define AMX_ASSEMBLY_NO_BUGGED_TAGS 1
+#define AMX_ASSEMBLY_NO_BUGGED_TAGS 2
 
 stock bool:IsTagIDStrong(tag) {
 	return !!(tag & AMX_TAG_STRONG);
