@@ -28,11 +28,7 @@
 #include "opcode"
 
 stock GetCurrentFrame() {
-	#emit lctrl 5
-	#emit push.pri
-	#emit lref.s.pri 0xfffffffc
-
-	#emit stack 4
+	#emit load.s.pri 0
 	#emit retn
 
 	return 0; // make compiler happy
@@ -48,48 +44,33 @@ stock GetFramePreviousFrame(frm_addr) {
 stock GetFrameReturn(frm_addr) {
 	#emit load.s.pri frm_addr
 	#emit add.c 4
-
-	#emit push.pri
-	#emit lref.s.pri 0xfffffffc
-
-	#emit stack 4
+	#emit load.i
 	#emit retn
 
 	return 0; // make compiler happy
 }
 
 stock SetFramePreviousFrame(frm_addr, addr) {
-	#emit load.s.pri frm_addr
-
-	#emit push.pri
-	#emit load.s.alt addr
-	#emit sref.s.alt 0xfffffffc
-
-	#emit stack 4
+	#emit load.s.pri addr
+	#emit sref.s.pri frm_addr
 	#emit retn
 }
 
 stock SetFrameReturn(frm_addr, addr) {
+	#emit load.s.alt addr
 	#emit load.s.pri frm_addr
 	#emit add.c 4
-
-	#emit push.pri
-	#emit load.s.alt addr
-	#emit sref.s.alt 0xfffffffc
-
-	#emit stack 4
+	#emit xchg
+	#emit stor.i
 	#emit retn
 }
 
 stock SetFrameParameterSize(frm_addr, size) {
+	#emit load.s.alt addr
 	#emit load.s.pri frm_addr
 	#emit add.c 8
-
-	#emit push.pri
-	#emit load.s.pri size
-	#emit sref.s.pri 0xfffffffc
-
-	#emit stack 4
+	#emit xchg
+	#emit stor.i
 	#emit retn
 }
 
@@ -147,11 +128,7 @@ stock GetFrameHeaderCount(frm_addr) {
 stock GetFrameParameterSize(frm_addr) {
 	#emit load.s.pri frm_addr
 	#emit add.c 8
-
-	#emit push.pri
-	#emit lref.s.pri 0xfffffffc
-
-	#emit stack 4
+	#emit load.i
 	#emit retn
 
 	return 0; // make compiler happy
