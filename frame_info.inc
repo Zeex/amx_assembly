@@ -66,7 +66,7 @@ stock SetFrameReturn(frm_addr, addr) {
 }
 
 stock SetFrameParameterSize(frm_addr, size) {
-	#emit load.s.alt addr
+	#emit load.s.alt size
 	#emit load.s.pri frm_addr
 	#emit add.c 8
 	#emit xchg
