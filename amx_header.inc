@@ -301,7 +301,34 @@ stock bool:GetPublicInfo(index, info[AMX_FUNCSTUBNT]) {
 	return true;
 }
 
-native GetPublicIndexFromName(const name[]) = funcidx;
+stock GetPublicIndexFromName(const name[]) {
+	InitStaticAmxHeader();
+
+	new num_publics = GetNumPublics(gHdr);
+
+	// Binary search
+	new first = 0;
+	new last = num_publics - 1;
+	new mid;
+
+	while (first <= last) {
+		mid = (first + last) / 2;
+
+		new off = gHdr[AMX_HDR_PUBLICS] - gHdr[AMX_HDR_DAT] + mid * gHdr[AMX_HDR_DEFSIZE];
+		new nameofs = ReadAmxMemory(off + 4) - gHdr[AMX_HDR_DAT];
+
+		new diff = NtCompare(nameofs, name);
+		if (diff < 0) {
+			first = mid + 1;
+		} else if (diff > 0) {
+			last = mid - 1;
+		} else {
+			return mid;
+		}
+	}
+
+	return -1;
+}
 
 stock GetPublicAddressFromIndex(index) {
 	new info[AMX_FUNCSTUBNT];
