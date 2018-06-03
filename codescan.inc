@@ -783,7 +783,8 @@ stock bool:CodeScanRun(csState[CodeScanner]) {
 		Opcode:op,
 		parseState = 4,
 		parseParam;
-	DisasmInit(dctx);
+	// Enable scans to start at a non-zero position.
+	DisasmInit(dctx, scanner[CodeScanMatch_cip]);
 	for (cur = csState[CodeScanner_first]; cur != -1; CodeScanReset(CodeScanDeref(cur), cur)) { }
 	while (CodeScanStepInternal(dctx, csState, parseState, parseParam)) {
 		// Check the address - if it is a jump target that changes the stack
@@ -794,6 +795,10 @@ stock bool:CodeScanRun(csState[CodeScanner]) {
 		for (cur = csState[CodeScanner_first], op = DisasmGetOpcode(dctx); cur != -1; ) {
 			if (CodeScanCheck(op, dctx, CodeScanDeref(cur), csState, cur)) {
 				switch (CodeScanCall(CodeScanDeref(cur), csState)) {
+					case cellmin: {
+						// End right now.
+						return true;
+					}
 					case -1: {
 						// Want to skip this match.  However, it was a full
 						// match so does need resetting.
@@ -825,13 +830,19 @@ stock CodeScanInit(scanner[CodeScanner]) {
 	gBase = GetAmxBaseAddress() + gHdr[AMX_HDR_DAT],
 	gDat = gHdr[AMX_HDR_COD] - gHdr[AMX_HDR_DAT],
 	CodeScanResetJumpTargets(scanner),
-	scanner[CodeScanMatch_type] =
-	 scanner[CodeScanMatch_name] =
-	  scanner[CodeScanner_param] =
-	   scanner[CodeScanner_state] =
-	    scanner[CodeScanMatch_heap] =
-	     scanner[CodeScanMatch_stack] = 0,
+	scanner[CodeScanMatch_cip] =
+	 scanner[CodeScanMatch_type] =
+	  scanner[CodeScanMatch_name] =
+	   scanner[CodeScanner_param] =
+	    scanner[CodeScanner_state] =
+	     scanner[CodeScanMatch_heap] =
+	      scanner[CodeScanMatch_stack] = 0,
 	scanner[CodeScanMatch_params] = cellmin,
+	scanner[CodeScanner_first] = -1;
+}
+
+stock CodeScanClone(dest[CodeScanner], src[CodeScanner]) {
+	dest = src,
 	scanner[CodeScanner_first] = -1;
 }
 
@@ -915,6 +926,16 @@ stock CodeScanGetMatchAddressData(csm[CodeScanner]) {
 
 stock CodeScanGetMatchLength(csm[CodeScanner]) {
 	return csm[CodeScanMatch_size];
+}
+
+stock CodeScanNOPMatch(csm[CodeScanner]) {
+	new
+		nop = _:RelocateOpcode(OP_NOP);
+	for (new dest = csm[CodeScanMatch_cip], end = dest + csm[CodeScanMatch_size]; dest != end; dest += cellbytes) {
+		#emit LOAD.S.pri   nop
+		#emit SREF.S.pri   i
+	}
+	{}
 }
 
 stock CodeScanGetMatchType(csm[CodeScanner]) {
