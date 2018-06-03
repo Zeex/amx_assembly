@@ -784,7 +784,7 @@ stock bool:CodeScanRun(csState[CodeScanner]) {
 		parseState = 4,
 		parseParam;
 	// Enable scans to start at a non-zero position.
-	DisasmInit(dctx, scanner[CodeScanMatch_cip]);
+	DisasmInit(dctx, csState[CodeScanMatch_cip] - gDat);
 	for (cur = csState[CodeScanner_first]; cur != -1; CodeScanReset(CodeScanDeref(cur), cur)) { }
 	while (CodeScanStepInternal(dctx, csState, parseState, parseParam)) {
 		// Check the address - if it is a jump target that changes the stack
@@ -830,20 +830,20 @@ stock CodeScanInit(scanner[CodeScanner]) {
 	gBase = GetAmxBaseAddress() + gHdr[AMX_HDR_DAT],
 	gDat = gHdr[AMX_HDR_COD] - gHdr[AMX_HDR_DAT],
 	CodeScanResetJumpTargets(scanner),
-	scanner[CodeScanMatch_cip] =
-	 scanner[CodeScanMatch_type] =
-	  scanner[CodeScanMatch_name] =
-	   scanner[CodeScanner_param] =
-	    scanner[CodeScanner_state] =
-	     scanner[CodeScanMatch_heap] =
-	      scanner[CodeScanMatch_stack] = 0,
+	scanner[CodeScanMatch_cip] = gDat;
+	scanner[CodeScanMatch_type] =
+	 scanner[CodeScanMatch_name] =
+	  scanner[CodeScanner_param] =
+	   scanner[CodeScanner_state] =
+	    scanner[CodeScanMatch_heap] =
+	     scanner[CodeScanMatch_stack] = 0,
 	scanner[CodeScanMatch_params] = cellmin,
 	scanner[CodeScanner_first] = -1;
 }
 
 stock CodeScanClone(dest[CodeScanner], src[CodeScanner]) {
 	dest = src,
-	scanner[CodeScanner_first] = -1;
+	dest[CodeScanner_first] = -1;
 }
 
 stock CodeScanGetFunctionScanner(csm[CodeScanner], ret[CodeScanner], ctx[DisasmContext]) {
@@ -933,7 +933,7 @@ stock CodeScanNOPMatch(csm[CodeScanner]) {
 		nop = _:RelocateOpcode(OP_NOP);
 	for (new dest = csm[CodeScanMatch_cip], end = dest + csm[CodeScanMatch_size]; dest != end; dest += cellbytes) {
 		#emit LOAD.S.pri   nop
-		#emit SREF.S.pri   i
+		#emit SREF.S.pri   dest
 	}
 	{}
 }
