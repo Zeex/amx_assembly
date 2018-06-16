@@ -263,7 +263,7 @@ static stock NtCopy(src, dest[], size = sizeof(dest)) {
 	return i;
 }
 
-stock GetNumPublics(amxhdr[AMX_HDR]) {
+stock GetNumPublics(const amxhdr[AMX_HDR]) {
 	new num_publics = (amxhdr[AMX_HDR_NATIVES] - amxhdr[AMX_HDR_PUBLICS]) / amxhdr[AMX_HDR_DEFSIZE];
 	return num_publics;
 }
@@ -369,7 +369,7 @@ stock HookPublic(index, address) {
 	return old_address;
 }
 
-stock GetNumNatives(amxhdr[AMX_HDR]) {
+stock GetNumNatives(const amxhdr[AMX_HDR]) {
 	return (amxhdr[AMX_HDR_LIBRARIES] - amxhdr[AMX_HDR_NATIVES]) / amxhdr[AMX_HDR_DEFSIZE];
 }
 
@@ -469,7 +469,7 @@ stock HookNative(index, address) {
 	return old_address;
 }
 
-stock GetNumPubVars(amxhdr[AMX_HDR]) {
+stock GetNumPubVars(const amxhdr[AMX_HDR]) {
 	return (amxhdr[AMX_HDR_TAGS] - amxhdr[AMX_HDR_PUBVARS]) / amxhdr[AMX_HDR_DEFSIZE];
 }
 
@@ -558,7 +558,7 @@ stock bool:GetPubVarNameFromAddress(address, name[], size = sizeof(name)) {
 	return GetPubVarNameFromIndex(GetPubVarIndexFromAddress(address), name, size);
 }
 
-stock GetNumTags(amxhdr[AMX_HDR]) {
+stock GetNumTags(const amxhdr[AMX_HDR]) {
 	return (amxhdr[AMX_HDR_NAMETABLE] - amxhdr[AMX_HDR_TAGS]) / amxhdr[AMX_HDR_DEFSIZE];
 }
 
@@ -687,15 +687,15 @@ stock bool:IsTagIDEmpty(tag) {
 	return !(tag & ~AMX_TAG_MASK);
 }
 
-stock bool:IsTagNameStrong(tag[]) {
+stock bool:IsTagNameStrong(const tag[]) {
 	return ('A' <= tag[0] <= 'Z');
 }
 
-stock bool:IsTagNameWeak(tag[]) {
+stock bool:IsTagNameWeak(const tag[]) {
 	return !('A' <= tag[0] <= 'Z');
 }
 
-stock bool:IsTagNameEmpty(tag[]) {
+stock bool:IsTagNameEmpty(const tag[]) {
 	return (tag[0] == '_' && tag[1] == '\0');
 }
 

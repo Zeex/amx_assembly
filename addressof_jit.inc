@@ -35,7 +35,7 @@
 // resolutions.  Actually, there's no reason why this should be restricted to
 // JIT only.
 
-static stock AddressofResolveFoundStart(scanner[CodeScanner]) {
+static stock AddressofResolveFoundStart(const scanner[CodeScanner]) {
 	// Skip over now superfluous code.
 	new ctx[AsmContext];
 	CodeScanGetMatchAsm(scanner, ctx);
@@ -45,7 +45,7 @@ static stock AddressofResolveFoundStart(scanner[CodeScanner]) {
 	AsmEmitJump(ctx, CodeScanGetMatchHole(scanner, 0) + GetAmxBaseAddress() + hdr[AMX_HDR_COD]);
 }
 
-static stock AddressofResolveFoundEnd(scanner[CodeScanner]) {
+static stock AddressofResolveFoundEnd(const scanner[CodeScanner]) {
 	// Write a `const` for the function address.
 	new ctx[AsmContext];
 	CodeScanGetMatchAsm(scanner, ctx, CodeScanGetMatchLength(scanner) - 2 * cellbytes);

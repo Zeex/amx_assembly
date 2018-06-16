@@ -260,7 +260,7 @@ static stock CodeScanAddJumpTarget(cip, stk, hea, jumpTargets[CodeScanner], num 
 	}
 }
 
-static stock CodeScanAddSwitchTarget(dctx[DisasmContext], stk, hea, jumpTargets[CodeScanner], num = CODE_SCAN_MAX_JUMP_TARGETS) {
+static stock CodeScanAddSwitchTarget(const dctx[DisasmContext], stk, hea, jumpTargets[CodeScanner], num = CODE_SCAN_MAX_JUMP_TARGETS) {
 	new
 		sip = DisasmGetOperand(dctx) - gBase,
 		codepos = sip + gHdr[AMX_HDR_DAT] - gHdr[AMX_HDR_COD];
@@ -740,7 +740,7 @@ stock bool:CodeScanStep(dctx[DisasmContext], csState[CodeScanner]) {
 	return CodeScanStepInternal(dctx, csState, csState[CodeScanner_state], csState[CodeScanner_param]);
 }
 
-static stock CodeScanCall(cs[CodeScanMatcher], csState[CodeScanner]) {
+static stock CodeScanCall(const cs[CodeScanMatcher], csState[CodeScanner]) {
 	// If I wrote way more assembly I could get away with not calling
 	// `CodeScanDeref(cur)` below, and not need to assign `param` to a variable
 	// before pushing it.  But I'm not going to - it isn't worth the effort.
@@ -841,12 +841,12 @@ stock CodeScanInit(scanner[CodeScanner]) {
 	scanner[CodeScanner_first] = -1;
 }
 
-stock CodeScanClone(dest[CodeScanner], src[CodeScanner]) {
+stock CodeScanClone(dest[CodeScanner], const src[CodeScanner]) {
 	dest = src,
 	dest[CodeScanner_first] = -1;
 }
 
-stock CodeScanGetFunctionScanner(csm[CodeScanner], ret[CodeScanner], ctx[DisasmContext]) {
+stock CodeScanGetFunctionScanner(const csm[CodeScanner], ret[CodeScanner], ctx[DisasmContext]) {
 	// Doesn't do any decompilation, just gets the information for decompiling
 	// the whole of the current function.
 	CodeScanInit(ret),
@@ -862,7 +862,7 @@ stock CodeScanGetFunctionScanner(csm[CodeScanner], ret[CodeScanner], ctx[DisasmC
 	}
 }
 
-stock CodeScanGetMatchScanner(csm[CodeScanner], ret[CodeScanner], ctx[DisasmContext], bool:accurate = false) {
+stock CodeScanGetMatchScanner(const csm[CodeScanner], ret[CodeScanner], ctx[DisasmContext], bool:accurate = false) {
 	// Doesn't do any decompilation, just gets the information for decompiling
 	// the currently found match.
 	CodeScanGetFunctionScanner(csm, ret, ctx);
@@ -878,57 +878,57 @@ stock CodeScanGetMatchScanner(csm[CodeScanner], ret[CodeScanner], ctx[DisasmCont
 	}
 }
 
-stock CodeScanGetFunctionDisasm(csm[CodeScanner], ctx[DisasmContext], offset = 0) {
+stock CodeScanGetFunctionDisasm(const csm[CodeScanner], ctx[DisasmContext], offset = 0) {
 	// Doesn't do any decompilation, just gets the information for decompiling
 	// the whole of the current function.
 	ctx[DisasmContext_end_ip] = 0,
 	ctx[DisasmContext_start_ip] = ctx[DisasmContext_nip] = ctx[DisasmContext_cip] = csm[CodeScanMatch_func] + offset;
 }
 
-stock CodeScanGetMatchDisasm(csm[CodeScanner], ctx[DisasmContext], offset = 0) {
+stock CodeScanGetMatchDisasm(const csm[CodeScanner], ctx[DisasmContext], offset = 0) {
 	// Doesn't do any decompilation, just gets the information for decompiling
 	// the currently found match.
 	ctx[DisasmContext_end_ip] = 0,
 	ctx[DisasmContext_start_ip] = ctx[DisasmContext_nip] = ctx[DisasmContext_cip] = csm[CodeScanMatch_cip] + offset;
 }
 
-stock CodeScanGetFunctionAsm(csm[CodeScanner], ctx[AsmContext], offset = 0) {
+stock CodeScanGetFunctionAsm(const csm[CodeScanner], ctx[AsmContext], offset = 0) {
 	// Doesn't do any decompilation, just gets the information for writing to
 	// the whole of the current function.
 	AsmInitPtr(ctx, csm[CodeScanMatch_func] + offset, cellmax);
 }
 
-stock CodeScanGetMatchAsm(csm[CodeScanner], ctx[AsmContext], offset = 0) {
+stock CodeScanGetMatchAsm(const csm[CodeScanner], ctx[AsmContext], offset = 0) {
 	// Doesn't do any decompilation, just gets the information for writing to
 	// the currently found match.
 	AsmInitPtr(ctx, csm[CodeScanMatch_cip] + offset, cellmax);
 }
 
-stock CodeScanGetMatchFunc(csm[CodeScanner]) {
+stock CodeScanGetMatchFunc(const csm[CodeScanner]) {
 	// The stored value is relative to "DAT", return relative to "COD".
 	return csm[CodeScanMatch_func] - gDat;
 }
 
-stock CodeScanGetMatchAddress(csm[CodeScanner]) {
+stock CodeScanGetMatchAddress(const csm[CodeScanner]) {
 	// The stored value is relative to "DAT", return relative to "COD".
 	return csm[CodeScanMatch_cip] - gDat;
 }
 
-stock CodeScanGetMatchFuncData(csm[CodeScanner]) {
+stock CodeScanGetMatchFuncData(const csm[CodeScanner]) {
 	// Return relative to "DAT".
 	return csm[CodeScanMatch_func];
 }
 
-stock CodeScanGetMatchAddressData(csm[CodeScanner]) {
+stock CodeScanGetMatchAddressData(const csm[CodeScanner]) {
 	// Return relative to "DAT".
 	return csm[CodeScanMatch_cip];
 }
 
-stock CodeScanGetMatchLength(csm[CodeScanner]) {
+stock CodeScanGetMatchLength(const csm[CodeScanner]) {
 	return csm[CodeScanMatch_size];
 }
 
-stock CodeScanNOPMatch(csm[CodeScanner]) {
+stock CodeScanNOPMatch(const csm[CodeScanner]) {
 	new
 		nop = _:RelocateOpcode(OP_NOP);
 	for (new dest = csm[CodeScanMatch_cip], end = dest + csm[CodeScanMatch_size]; dest != end; dest += cellbytes) {
@@ -966,19 +966,19 @@ stock CodeScanGetMatchType(csm[CodeScanner]) {
 	return csm[CodeScanMatch_type];
 }
 
-stock CodeScanGetMatchHeap(csm[CodeScanner]) {
+stock CodeScanGetMatchHeap(const csm[CodeScanner]) {
 	return csm[CodeScanMatch_heap];
 }
 
-stock CodeScanGetMatchStack(csm[CodeScanner]) {
+stock CodeScanGetMatchStack(const csm[CodeScanner]) {
 	return csm[CodeScanMatch_stack];
 }
 
-stock CodeScanGetMatchHole(csm[CodeScanner], idx) {
+stock CodeScanGetMatchHole(const csm[CodeScanner], idx) {
 	return csm[CodeScanMatch_holes][idx];
 }
 
-stock CodeScanGetMatchName(csm[CodeScanner], name[]) {
+stock CodeScanGetMatchName(const csm[CodeScanner], name[]) {
 	if (csm[CodeScanMatch_type] >= SCANNER_FUNC_UNKNOWN) {
 		// We get the type, because the type is based on the name.
 		CodeScanGetMatchType(csm);

@@ -130,7 +130,7 @@ static stock AsmHashLabel(const label[]) {
 	return hash;
 }
 
-static stock AsmFindLabelIndex(ctx[AsmContext], hash) {
+static stock AsmFindLabelIndex(const ctx[AsmContext], hash) {
 	for (new i = 0; i != ASM_MAX_LABELS; ++i) {
 		if (ctx[AsmContext_label_names][i] == hash) {
 			return i;
@@ -254,7 +254,7 @@ stock AsmError:AsmEmitInstruction(ctx[AsmContext], Opcode:opcode, ...) {
 	return ASM_ERROR_NONE;
 }
 
-stock AsmGetJumpAddressFromOffset(ctx[AsmContext], offset) {
+stock AsmGetJumpAddressFromOffset(const ctx[AsmContext], offset) {
 	new amxhdr[AMX_HDR];
 	GetAmxHeader(amxhdr);
 
@@ -298,7 +298,7 @@ stock AsmGetPreviousWriteOffset() {
 	return gPreviousWriteOffset;
 }
 
-stock AsmGetBufferSize(ctx[AsmContext]) {
+stock AsmGetBufferSize(const ctx[AsmContext]) {
 	return ctx[AsmContext_buffer_size] - ctx[AsmContext_buffer_offset];
 }
 
@@ -316,7 +316,7 @@ stock AsmGetCodeSize(const ctx[AsmContext]) {
 	return ctx[AsmContext_buffer_offset];
 }
 
-stock AsmError:AsmGetError(ctx[AsmContext]) {
+stock AsmError:AsmGetError(const ctx[AsmContext]) {
 	return AsmError:ctx[AsmContext_error];
 }
 
@@ -337,7 +337,7 @@ stock AsmError:AsmSetErrorHandler(ctx[AsmContext], error_handler) {
 	return ASM_ERROR_NONE;
 }
 
-stock AsmError:AsmSetErrorHandlerName(ctx[AsmContext], error_handler[]) {
+stock AsmError:AsmSetErrorHandlerName(ctx[AsmContext], const error_handler[]) {
 	ctx[AsmContext_error_handler] = GetPublicAddressFromName(error_handler);
 	return ASM_ERROR_NONE;
 }

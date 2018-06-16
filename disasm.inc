@@ -136,19 +136,19 @@ stock Opcode:DisasmNextInsn(ctx[DisasmContext]) {
 	return OP_NONE;
 }
 
-stock Opcode:DisasmGetOpcode(ctx[DisasmContext]) {
+stock Opcode:DisasmGetOpcode(const ctx[DisasmContext]) {
 	return ctx[DisasmContext_opcode];
 }
 
-stock DisasmGetOperand(ctx[DisasmContext], index = 0) {
+stock DisasmGetOperand(const ctx[DisasmContext], index = 0) {
 	return ReadAmxMemory(ctx[DisasmContext_cip] + (index + 1) * 4);
 }
 
-stock DisasmGetNumOperands(ctx[DisasmContext]) {
+stock DisasmGetNumOperands(const ctx[DisasmContext]) {
 	return ctx[DisasmContext_insn][OpcodeInsnInfo_num_opers];
 }
 
-stock bool:DisasmNeedReloc(ctx[DisasmContext]) {
+stock bool:DisasmNeedReloc(const ctx[DisasmContext]) {
 	return ctx[DisasmContext_insn][OpcodeInsnInfo_needs_reloc];
 }
 
@@ -156,24 +156,24 @@ stock DisasmReloc(addr) {
 	return addr - gCodBase;
 }
 
-stock DisasmGetNextIp(ctx[DisasmContext]) {
+stock DisasmGetNextIp(const ctx[DisasmContext]) {
 	return ctx[DisasmContext_nip];
 }
 
-stock DisasmGetCurIp(ctx[DisasmContext]) {
+stock DisasmGetCurIp(const ctx[DisasmContext]) {
 	return ctx[DisasmContext_cip];
 }
 
-stock DisasmGetRemaining(ctx[DisasmContext]) {
+stock DisasmGetRemaining(const ctx[DisasmContext]) {
 	return ctx[DisasmContext_end_ip] - ctx[DisasmContext_nip];
 }
 
-stock DisasmGetInsnName(ctx[DisasmContext], name[], size = sizeof(name)) {
+stock DisasmGetInsnName(const ctx[DisasmContext], name[], size = sizeof(name)) {
 	name[0] = '\0';
 	strcat(name, ctx[DisasmContext_insn][OpcodeInsnInfo_name], size);
 }
 
-stock DisasmGetOperandReloc(ctx[DisasmContext], index = 0) {
+stock DisasmGetOperandReloc(const ctx[DisasmContext], index = 0) {
 	new param = DisasmGetOperand(ctx, index);
 	// Needs special code for dealing with "CASETBL", which has multiple
 	// parameters - not all of them to be relocated.  If the opcode is NOT that,
