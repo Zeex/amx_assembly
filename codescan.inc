@@ -400,7 +400,7 @@ static stock CodeScanDeref(v) {
 	return lFakeMatcher; // Make compiler happy, and teach it the array return.
 }
 
-static stock bool:CodeScanCheck(Opcode:op, dctx[DisasmContext], cs[CodeScanMatcher], fctx[CodeScanner], &next) {
+static stock bool:CodeScanCheck(Opcode:op, const dctx[DisasmContext], cs[CodeScanMatcher], fctx[CodeScanner], &next) {
 	// Returns an address of a callback if it passes.
 	if (!cs[CodeScanMatcher_len]) {
 		return
