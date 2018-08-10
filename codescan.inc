@@ -157,14 +157,15 @@ stock MyFunc(a, b[], ...) {
 // All the information for scanning through an AMX and extracting lots of nice
 // information about it.
 enum CodeScanner {
-	CodeScanMatch_func,     // Start of the containing function.
-	CodeScanMatch_size,     // Size of the match.
-	CodeScanMatch_type,     // Public, normal, automata, etc.
-	CodeScanMatch_heap,     // At the point of this scanner.
-	CodeScanMatch_stack,    // At the point of this scanner.
-	CodeScanMatch_params,   // Likely unknown statically.
-	CodeScanMatch_cip,      // The point of the pattern match.
+	CodeScanMatch_func,       // Start of the containing function.
+	CodeScanMatch_size,       // Size of the match.
+	CodeScanMatch_type,       // Public, normal, automata, etc.
+	CodeScanMatch_heap,       // At the point of this scanner.
+	CodeScanMatch_stack,      // At the point of this scanner.
+	CodeScanMatch_params,     // Likely unknown statically.
+	CodeScanMatch_cip,        // The point of the pattern match.
 	CodeScanMatch_holes[CODE_SCAN_MAX_HOLES], // Results of "???"s.
+	CodeScanMatch_hole_count, // How many holes were seen.
 	CodeScanMatch_name[32 char],
 	CodeScanner_first,
 	CodeScanner_minn,
@@ -465,6 +466,7 @@ static stock bool:CodeScanCheck(Opcode:op, const dctx[DisasmContext], cs[CodeSca
 			if (off == len) {
 				return
 					memcpy(fctx[CodeScanMatch_holes], cs[CodeScanMatcher_holes], idx * CODE_SCAN_MAX_HOLES, cs[CodeScanMatcher_holeidx][idx] * cellbytes, CODE_SCAN_MAX_HOLES),
+					fctx[CodeScanMatch_hole_count] = cs[CodeScanMatcher_holeidx][idx],
 					fctx[CodeScanMatch_cip] = cs[CodeScanMatcher_start][idx],
 					fctx[CodeScanMatch_size] = DisasmGetNextIp(dctx) - cs[CodeScanMatcher_start][idx],
 					true;
@@ -506,6 +508,7 @@ CodeScanCheck_pass:
 				// Get the address of the START of the match.
 				return
 					memcpy(fctx[CodeScanMatch_holes], cs[CodeScanMatcher_holes][idx * CODE_SCAN_MAX_HOLES], 0, cs[CodeScanMatcher_holeidx][idx] * cellbytes, CODE_SCAN_MAX_HOLES),
+					fctx[CodeScanMatch_hole_count] = cs[CodeScanMatcher_holeidx][idx],
 					fctx[CodeScanMatch_cip] = cs[CodeScanMatcher_start][idx],
 					fctx[CodeScanMatch_size] = DisasmGetNextIp(dctx) - cs[CodeScanMatcher_start][idx],
 					true;
@@ -976,6 +979,10 @@ stock CodeScanGetMatchStack(const csm[CodeScanner]) {
 
 stock CodeScanGetMatchHole(const csm[CodeScanner], idx) {
 	return csm[CodeScanMatch_holes][idx];
+}
+
+stock CodeScanGetHoleCount(const csm[CodeScanner]) {
+	return csm[CodeScanMatch_hole_count];
 }
 
 stock CodeScanGetMatchName(const csm[CodeScanner], name[]) {
