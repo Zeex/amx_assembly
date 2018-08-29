@@ -493,26 +493,18 @@ stock GetPubVarIndexFromName(const name[]) {
 	InitStaticAmxHeader();
 
 	new num_pubvars = GetNumPubVars(gHdr);
+	new off = gHdr[AMX_HDR_PUBVARS] - gHdr[AMX_HDR_DAT];
 
-	// Binary search
-	new first = 0;
-	new last = num_pubvars - 1;
-	new mid;
-
-	while (first <= last) {
-		mid = (first + last) / 2;
-
-		new off = gHdr[AMX_HDR_PUBVARS] - gHdr[AMX_HDR_DAT] + mid * gHdr[AMX_HDR_DEFSIZE];
+	// Linear search
+	for (new i = 0; i < num_pubvars; i++) {
 		new nameofs = ReadAmxMemory(off + 4) - gHdr[AMX_HDR_DAT];
 
 		new diff = NtCompare(nameofs, name);
-		if (diff < 0) {
-			first = mid + 1;
-		} else if (diff > 0) {
-			last = mid - 1;
-		} else {
-			return mid;
+		if (diff == 0) {
+			return i;
 		}
+
+		off += gHdr[AMX_HDR_DEFSIZE];
 	}
 
 	return -1;
@@ -584,31 +576,21 @@ stock bool:GetTagInfo(index, info[AMX_FUNCSTUBNT]) {
 }
 
 stock GetTagIndexFromName(const name[]) {
-	if (name[0] == '_' && name[1] == '\0')
-		return 0;
 	InitStaticAmxHeader();
 
 	new num_tags = GetNumTags(gHdr);
+	new off = gHdr[AMX_HDR_TAGS] - gHdr[AMX_HDR_DAT];
 
-	// Binary search
-	new first = 0;
-	new last = num_tags - 1;
-	new mid;
-
-	while (first <= last) {
-		mid = (first + last) / 2;
-
-		new off = gHdr[AMX_HDR_TAGS] - gHdr[AMX_HDR_DAT] + mid * gHdr[AMX_HDR_DEFSIZE];
+	// Linear search
+	for (new i = 0; i < num_tags; i++) {
 		new nameofs = ReadAmxMemory(off + 4) - gHdr[AMX_HDR_DAT];
 
 		new diff = NtCompare(nameofs, name);
-		if (diff < 0) {
-			first = mid + 1;
-		} else if (diff > 0) {
-			last = mid - 1;
-		} else {
-			return mid;
+		if (diff == 0) {
+			return i;
 		}
+
+		off += gHdr[AMX_HDR_DEFSIZE];
 	}
 
 	return -1;
