@@ -572,7 +572,6 @@ static stock bool:CodeScanStepInternal(dctx[DisasmContext], csState[CodeScanner]
 				Opcode:op = DisasmGetOpcode(dctx);
 			// The compiler sometimes inserts extra instructions like "NOP" and
 			// "BREAK" for debugging and padding (as do we) - maybe ignore them.
-			CodeScanCheckJumpTarget(cip, cip + gBase, stk, hea, csState);
 			switch (op) {
 				case OP_HALT: {
 					if (parseState == 4) {
@@ -692,10 +691,14 @@ static stock bool:CodeScanStepInternal(dctx[DisasmContext], csState[CodeScanner]
 						case 5: {
 							stk = cellmin;
 						}
+						case 6: {
+							cip = DisasmGetNextIp(dctx),
+							CodeScanCheckJumpTarget(cip, cip + gBase, stk, hea, csState);
+						}
 					}
 					parseState = 0;
 				}
-				case OP_JUMP, OP_JZER, OP_JNZ, OP_JEQ, OP_JNEQ, OP_JLESS, OP_JLEQ, OP_JGRTR, OP_JGEQ, OP_JSLESS, OP_JSLEQ, OP_JSGRTR, OP_JSGEQ: {
+				case OP_JZER, OP_JNZ, OP_JEQ, OP_JNEQ, OP_JLESS, OP_JLEQ, OP_JGRTR, OP_JGEQ, OP_JSLESS, OP_JSLEQ, OP_JSGRTR, OP_JSGEQ: {
 					// Add a jump target.  These require relocation as they are
 					// translated to absolute RAM locations.  "DisasmNeedReloc"
 					// will return "true", but we don't need to call it.
@@ -717,13 +720,24 @@ static stock bool:CodeScanStepInternal(dctx[DisasmContext], csState[CodeScanner]
 						CodeScanAddJumpTarget(parseParam, stk, hea, csState, DisasmGetNextIp(dctx));
 					}
 				}
+				case OP_JUMP: {
+					parseParam = DisasmGetOperand(dctx) - gBase,
+					parseState = 0,
+					cip = DisasmGetNextIp(dctx);
+					if (parseParam >= cip) {
+						CodeScanAddJumpTarget(parseParam, stk, hea, csState, cip);
+					}
+					CodeScanCheckJumpTarget(cip, cip + gBase, stk, hea, csState);
+				}
 				case OP_JREL: {
 					// Add a jump target.  Only jumps that go forwards.
 					parseParam = DisasmGetOperand(dctx) + cip,
-					parseState = 0;
-					if (parseParam > cip) {
-						CodeScanAddJumpTarget(parseParam, stk, hea, csState, DisasmGetNextIp(dctx));
+					parseState = 0,
+					cip = DisasmGetNextIp(dctx);
+					if (parseParam >= cip) {
+						CodeScanAddJumpTarget(parseParam, stk, hea, csState, cip);
 					}
+					CodeScanCheckJumpTarget(cip, cip + gBase, stk, hea, csState);
 				}
 				case OP_SWITCH: {
 					// Add a jump target.  These are always forwards.
