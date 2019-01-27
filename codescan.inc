@@ -199,6 +199,7 @@ stock
 	gCodeScanCallback_match[CodeScanner];
 
 static stock
+	gFirstProc,
 	gHdr[AMX_HDR],
 	gBase,
 	gDat;
@@ -851,14 +852,20 @@ stock bool:CodeScanRun(csState[CodeScanner]) {
 }
 
 stock CodeScanInit(scanner[CodeScanner]) {
-	// I debated inlining DisasmInit to avoid two calls to "GetAmxHeader", but
-	// it isn't worth the effort and code duplication.  No "start" and "end"
-	// parameters, so scans the entire code range.
-	GetAmxHeader(gHdr),
-	gBase = GetAmxBaseAddress() + gHdr[AMX_HDR_DAT],
-	gDat = gHdr[AMX_HDR_COD] - gHdr[AMX_HDR_DAT],
+	if (gFirstProc == 0) {
+		new
+			dctx[DisasmContext];
+		DisasmInit(dctx);
+		while (DisasmNextInsn(dctx) != OP_PROC) {}
+		// This is the first time any code scanner has been set up.  Skip all
+		// the initial state stubs and error traps.
+		gFirstProc = DisasmGetCurIp(dctx),
+		GetAmxHeader(gHdr),
+		gBase = GetAmxBaseAddress() + gHdr[AMX_HDR_DAT],
+		gDat = gHdr[AMX_HDR_COD] - gHdr[AMX_HDR_DAT];
+	}
 	CodeScanResetJumpTargets(scanner),
-	scanner[CodeScanMatch_cip] = gDat;
+	scanner[CodeScanMatch_cip] = gFirstProc,
 	scanner[CodeScanMatch_type] =
 	 scanner[CodeScanMatch_name] =
 	  scanner[CodeScanner_param] =
