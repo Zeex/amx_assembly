@@ -245,7 +245,7 @@ static stock CodeScanResetJumpTargets(jumpTargets[CodeScanner], num = CODE_SCAN_
 	}
 }
 
-static stock CodeScanAddJumpTarget(cip, stk, hea, jumpTargets[CodeScanner], next) {
+static stock CodeScanAddJumpTarget(cip, stk, hea, jumpTargets[CodeScanner], next, sip = 0) {
 	new
 		num = jumpTargets[CodeScanner_minn];
 	// Add an address to the list of addresses known to be jumped to.  We keep
@@ -268,10 +268,12 @@ static stock CodeScanAddJumpTarget(cip, stk, hea, jumpTargets[CodeScanner], next
 			// still dealing with the effects of the previous instruction.
 		}
 		jumpTargets[CodeScanner_minn] = next = ++num;
-		// Check this entry doesn't already exist.
-		while (num--) {
-			if (jumpTargets[CodeScanner_jump_target][num] == cip) {
-				return;
+		if (sip == 0) {
+			// Check this entry doesn't already exist, unless in a `switch`.
+			while (num--) {
+				if (jumpTargets[CodeScanner_jump_target][num] == cip) {
+					return;
+				}
 			}
 		}
 		for (num = next; num-- && jumpTargets[CodeScanner_jump_target][num] < cip; next--) {
@@ -283,13 +285,13 @@ static stock CodeScanAddJumpTarget(cip, stk, hea, jumpTargets[CodeScanner], next
 		++num;
 	}
 	++jumpTargets[CodeScanner_minn],
-	jumpTargets[CodeScanner_jump_switch][num] = 0,
+	jumpTargets[CodeScanner_jump_switch][num] = sip,
 	jumpTargets[CodeScanner_jump_target][num] = cip,
 	jumpTargets[CodeScanner_jump_stack][num] = stk,
 	jumpTargets[CodeScanner_jump_heap][num] = hea;
 }
 
-static stock CodeScanAddSwitchTarget(const dctx[DisasmContext], stk, hea, jumpTargets[CodeScanner], num = CODE_SCAN_MAX_JUMP_TARGETS) {
+static stock CodeScanAddSwitchTarget(const dctx[DisasmContext], stk, hea, jumpTargets[CodeScanner], next) {
 	new
 		sip = DisasmGetOperand(dctx) - gBase,
 		codepos = sip + gHdr[AMX_HDR_DAT] - gHdr[AMX_HDR_COD];
@@ -298,17 +300,7 @@ static stock CodeScanAddSwitchTarget(const dctx[DisasmContext], stk, hea, jumpTa
 		// explicit "#emit switch 0" in.
 		return;
 	}
-	while (num--) {
-		// Multiple jumps to the same place?
-		if (!jumpTargets[CodeScanner_jump_target][num]) {
-			jumpTargets[CodeScanner_jump_switch][num] = sip + cellbytes,
-			jumpTargets[CodeScanner_jump_target][num] = ReadAmxMemory(sip + cellbytes) + 1,
-			jumpTargets[CodeScanner_jump_stack][num] = stk,
-			jumpTargets[CodeScanner_jump_heap][num] = hea,
-			jumpTargets[CodeScanner_minn] = min(jumpTargets[CodeScanner_minn], num);
-			return;
-		}
-	}
+	CodeScanAddJumpTarget(ReadAmxMemory(sip + cellbytes) + 1, stk, hea, jumpTargets, next, sip + cellbytes);
 }
 
 static stock CodeScanReset(cs[CodeScanMatcher], &next) {
