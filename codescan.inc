@@ -245,20 +245,48 @@ static stock CodeScanResetJumpTargets(jumpTargets[CodeScanner], num = CODE_SCAN_
 	}
 }
 
-static stock CodeScanAddJumpTarget(cip, stk, hea, jumpTargets[CodeScanner], num = CODE_SCAN_MAX_JUMP_TARGETS) {
-	while (num--) {
-		// Multiple jumps to the same place?
-		if (jumpTargets[CodeScanner_jump_target][num] == cip) {
-			return;
-		} else if (!jumpTargets[CodeScanner_jump_target][num]) {
-			jumpTargets[CodeScanner_jump_switch][num] = 0;
-			jumpTargets[CodeScanner_jump_target][num] = cip;
-			jumpTargets[CodeScanner_jump_stack][num] = stk;
-			jumpTargets[CodeScanner_jump_heap][num] = hea;
-			jumpTargets[CodeScanner_minn] = min(jumpTargets[CodeScanner_minn], num);
-			return;
+static stock CodeScanAddJumpTarget(cip, stk, hea, jumpTargets[CodeScanner], next) {
+	new
+		num = jumpTargets[CodeScanner_minn];
+	// Add an address to the list of addresses known to be jumped to.  We keep
+	// this list sorted in a very simple fashion.  Since 99% of calls to this
+	// code will be from control structures, their layout is already well
+	// defined.  In the rare case that they aren't, this is probably from a
+	// `goto` (and a `goto` that jumps outside a control structure at that),
+	// thus we can optimise for the common case and fall back on searching and
+	// shifting after that.  Check that the last address on the stack is GREATER
+	// than the address being pushed.
+	if (num && jumpTargets[CodeScanner_jump_target][num - 1] <= cip) {
+		// We only ever jump forward.  Thus if we get to this point we know
+		// `cip` is in the future, and `CodeScanner_jump_target` is before
+		// `cip`.  Thus there is one possibility left -
+		// `CodeScanner_jump_target` is in the past and no longer needs checking
+		// for.
+		while (num-- && jumpTargets[CodeScanner_jump_target][num] < next) {
+			// Just forget about this target.  NOT `<=` because at this point
+			// we haven't yet checked this address as a jump target - we are
+			// still dealing with the effects of the previous instruction.
 		}
+		jumpTargets[CodeScanner_minn] = next = ++num;
+		// Check this entry doesn't already exist.
+		while (num--) {
+			if (jumpTargets[CodeScanner_jump_target][num] == cip) {
+				return;
+			}
+		}
+		for (num = next; num-- && jumpTargets[CodeScanner_jump_target][num] < cip; next--) {
+			jumpTargets[CodeScanner_jump_switch][next] = jumpTargets[CodeScanner_jump_switch][num],
+			jumpTargets[CodeScanner_jump_target][next] = jumpTargets[CodeScanner_jump_target][num],
+			jumpTargets[CodeScanner_jump_stack][next] = jumpTargets[CodeScanner_jump_stack][num],
+			jumpTargets[CodeScanner_jump_heap][next] = jumpTargets[CodeScanner_jump_heap][num],
+		}
+		++num;
 	}
+	++jumpTargets[CodeScanner_minn],
+	jumpTargets[CodeScanner_jump_switch][num] = 0,
+	jumpTargets[CodeScanner_jump_target][num] = cip,
+	jumpTargets[CodeScanner_jump_stack][num] = stk,
+	jumpTargets[CodeScanner_jump_heap][num] = hea;
 }
 
 static stock CodeScanAddSwitchTarget(const dctx[DisasmContext], stk, hea, jumpTargets[CodeScanner], num = CODE_SCAN_MAX_JUMP_TARGETS) {
