@@ -726,7 +726,7 @@ static stock bool:CodeScanStepInternal(dctx[DisasmContext], csState[CodeScanner]
 					parseParam = DisasmGetOperand(dctx) - gBase,
 					parseState = 0;
 					if (parseParam > cip) {
-						CodeScanAddJumpTarget(parseParam, stk, hea, csState);
+						CodeScanAddJumpTarget(parseParam, stk, hea, csState, DisasmGetNextIp(dctx));
 					}
 				}
 				case OP_JREL: {
@@ -734,12 +734,12 @@ static stock bool:CodeScanStepInternal(dctx[DisasmContext], csState[CodeScanner]
 					parseParam = DisasmGetOperand(dctx) + cip,
 					parseState = 0;
 					if (parseParam > cip) {
-						CodeScanAddJumpTarget(parseParam, stk, hea, csState);
+						CodeScanAddJumpTarget(parseParam, stk, hea, csState, DisasmGetNextIp(dctx));
 					}
 				}
 				case OP_SWITCH: {
 					// Add a jump target.  These are always forwards.
-					CodeScanAddSwitchTarget(dctx, stk, hea, csState),
+					CodeScanAddSwitchTarget(dctx, stk, hea, csState, DisasmGetNextIp(dctx)),
 					parseState = 0;
 				}
 				default: {
