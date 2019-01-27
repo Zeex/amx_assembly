@@ -203,46 +203,27 @@ static stock
 	gBase,
 	gDat;
 
-static stock bool:CodeScanCheckJumpTarget(cip, deloc, &stk, &hea, jumpTargets[CodeScanner], num = CODE_SCAN_MAX_JUMP_TARGETS) {
-	// Use "minn" to restrict the number of jump targets that we check.  Returns
-	// "true" if the current address is equal to an address that any jump goes
-	// to.
-	new
-		minn = jumpTargets[CodeScanner_minn],
-		sip,
-		count;
-	while (num-- > minn) {
-		if (jumpTargets[CodeScanner_jump_target][num]) {
-			if ((sip = jumpTargets[CodeScanner_jump_switch][num])) {
-				count = ReadAmxMemory(sip) + 1,
-				sip += cellbytes;
-				while (count--) {
-					if (ReadAmxMemory(sip) == deloc) {
-						return
-							--jumpTargets[CodeScanner_jump_target][num],
-							stk = jumpTargets[CodeScanner_jump_stack][num],
-							hea = jumpTargets[CodeScanner_jump_heap][num],
-							true;
-					}
-					sip += 2 * cellbytes;
-				}
-			} else if (jumpTargets[CodeScanner_jump_target][num] == cip) {
-				return
-					jumpTargets[CodeScanner_jump_target][num] = 0,
+static stock bool:CodeScanCheckJumpTarget(cip, deloc, &stk, &hea, jumpTargets[CodeScanner]) {
+	for (new num = jumpTargets[CodeScanner_minn], sip; num--; ) {
+		if ((sip = jumpTargets[CodeScanner_jump_switch][num])) {
+			for (new count = ReadAmxMemory(sip + cellbytes) + 1; count; --count) {
+				if (ReadAmxMemory(sip + (2 * cellbytes) * count) == deloc) {
 					stk = jumpTargets[CodeScanner_jump_stack][num],
-					hea = jumpTargets[CodeScanner_jump_heap][num],
-					true;
+					hea = jumpTargets[CodeScanner_jump_heap][num];
+					return;
+				}
 			}
+		} else if (jumpTargets[CodeScanner_jump_target][num] == cip) {
+			jumpTargets[CodeScanner_minn] = num,
+			stk = jumpTargets[CodeScanner_jump_stack][num],
+			hea = jumpTargets[CodeScanner_jump_heap][num];
+			return;
 		}
 	}
-	return false;
 }
 
-static stock CodeScanResetJumpTargets(jumpTargets[CodeScanner], num = CODE_SCAN_MAX_JUMP_TARGETS) {
-	jumpTargets[CodeScanner_minn] = num;
-	while (num--) {
-		jumpTargets[CodeScanner_jump_target][num] = 0;
-	}
+static stock CodeScanResetJumpTargets(jumpTargets[CodeScanner]) {
+	jumpTargets[CodeScanner_minn] = 0;
 }
 
 static stock CodeScanAddJumpTarget(cip, stk, hea, jumpTargets[CodeScanner], next, sip = 0) {
@@ -268,19 +249,17 @@ static stock CodeScanAddJumpTarget(cip, stk, hea, jumpTargets[CodeScanner], next
 			// still dealing with the effects of the previous instruction.
 		}
 		jumpTargets[CodeScanner_minn] = next = ++num;
-		if (sip == 0) {
-			// Check this entry doesn't already exist, unless in a `switch`.
-			while (num--) {
-				if (jumpTargets[CodeScanner_jump_target][num] == cip) {
-					return;
-				}
+		// Check this entry doesn't already exist.
+		while (num--) {
+			if (jumpTargets[CodeScanner_jump_target][num] == cip) {
+				return;
 			}
 		}
 		for (num = next; num-- && jumpTargets[CodeScanner_jump_target][num] < cip; next--) {
 			jumpTargets[CodeScanner_jump_switch][next] = jumpTargets[CodeScanner_jump_switch][num],
 			jumpTargets[CodeScanner_jump_target][next] = jumpTargets[CodeScanner_jump_target][num],
 			jumpTargets[CodeScanner_jump_stack][next] = jumpTargets[CodeScanner_jump_stack][num],
-			jumpTargets[CodeScanner_jump_heap][next] = jumpTargets[CodeScanner_jump_heap][num],
+			jumpTargets[CodeScanner_jump_heap][next] = jumpTargets[CodeScanner_jump_heap][num];
 		}
 		++num;
 	}
@@ -300,7 +279,16 @@ static stock CodeScanAddSwitchTarget(const dctx[DisasmContext], stk, hea, jumpTa
 		// explicit "#emit switch 0" in.
 		return;
 	}
-	CodeScanAddJumpTarget(ReadAmxMemory(sip + cellbytes) + 1, stk, hea, jumpTargets, next, sip + cellbytes);
+	// Find the largest address in the switch.  This is what we'll use for
+	// inserting it in to the sorted list of targets.  Thus it can be easily
+	// removed once out of scope, and doesn't have a different lifespan to
+	// normal jumps.
+	new
+		largest = cellmin;
+	for (new num = ReadAmxMemory(sip + cellbytes) + 1; num; --num) {
+		largest = max(ReadAmxMemory(sip + (2 * cellbytes) * num), largest);
+	}
+	CodeScanAddJumpTarget(largest - gBase, stk, hea, jumpTargets, next, sip);
 }
 
 static stock CodeScanReset(cs[CodeScanMatcher], &next) {
