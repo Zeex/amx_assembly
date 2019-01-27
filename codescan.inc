@@ -203,65 +203,77 @@ static stock
 	gBase,
 	gDat;
 
-static stock bool:CodeScanCheckJumpTarget(cip, deloc, &stk, &hea, jumpTargets[CodeScanner], num = CODE_SCAN_MAX_JUMP_TARGETS) {
-	// Use "minn" to restrict the number of jump targets that we check.  Returns
-	// "true" if the current address is equal to an address that any jump goes
-	// to.
-	new
-		minn = jumpTargets[CodeScanner_minn],
-		sip,
-		count;
-	while (num-- > minn) {
-		if (jumpTargets[CodeScanner_jump_target][num]) {
-			if ((sip = jumpTargets[CodeScanner_jump_switch][num])) {
-				count = ReadAmxMemory(sip) + 1,
-				sip += cellbytes;
-				while (count--) {
-					if (ReadAmxMemory(sip) == deloc) {
-						return
-							--jumpTargets[CodeScanner_jump_target][num],
-							stk = jumpTargets[CodeScanner_jump_stack][num],
-							hea = jumpTargets[CodeScanner_jump_heap][num],
-							true;
-					}
-					sip += 2 * cellbytes;
-				}
-			} else if (jumpTargets[CodeScanner_jump_target][num] == cip) {
-				return
-					jumpTargets[CodeScanner_jump_target][num] = 0,
+static stock bool:CodeScanCheckJumpTarget(cip, deloc, &stk, &hea, jumpTargets[CodeScanner]) {
+	for (new num = jumpTargets[CodeScanner_minn], sip; num--; ) {
+		if ((sip = jumpTargets[CodeScanner_jump_switch][num])) {
+			for (new count = ReadAmxMemory(sip + cellbytes) + 1; count; --count) {
+				if (ReadAmxMemory(sip + (2 * cellbytes) * count) == deloc) {
 					stk = jumpTargets[CodeScanner_jump_stack][num],
-					hea = jumpTargets[CodeScanner_jump_heap][num],
-					true;
+					hea = jumpTargets[CodeScanner_jump_heap][num];
+					return;
+				}
+			}
+		} else if (jumpTargets[CodeScanner_jump_target][num] == cip) {
+			jumpTargets[CodeScanner_minn] = num,
+			stk = jumpTargets[CodeScanner_jump_stack][num],
+			hea = jumpTargets[CodeScanner_jump_heap][num];
+			return;
+		} else if (jumpTargets[CodeScanner_jump_target][num] < cip) {
+			jumpTargets[CodeScanner_minn] = num;
+			return;
+		}
+	}
+}
+
+static stock CodeScanResetJumpTargets(jumpTargets[CodeScanner]) {
+	jumpTargets[CodeScanner_minn] = 0;
+}
+
+static stock CodeScanAddJumpTarget(cip, stk, hea, jumpTargets[CodeScanner], next, sip = 0) {
+	new
+		num = jumpTargets[CodeScanner_minn];
+	// Add an address to the list of addresses known to be jumped to.  We keep
+	// this list sorted in a very simple fashion.  Since 99% of calls to this
+	// code will be from control structures, their layout is already well
+	// defined.  In the rare case that they aren't, this is probably from a
+	// `goto` (and a `goto` that jumps outside a control structure at that),
+	// thus we can optimise for the common case and fall back on searching and
+	// shifting after that.  Check that the last address on the stack is GREATER
+	// than the address being pushed.
+	if (num && jumpTargets[CodeScanner_jump_target][num - 1] <= cip) {
+		// We only ever jump forward.  Thus if we get to this point we know
+		// `cip` is in the future, and `CodeScanner_jump_target` is before
+		// `cip`.  Thus there is one possibility left -
+		// `CodeScanner_jump_target` is in the past and no longer needs checking
+		// for.
+		while (num-- && jumpTargets[CodeScanner_jump_target][num] < next) {
+			// Just forget about this target.  NOT `<=` because at this point
+			// we haven't yet checked this address as a jump target - we are
+			// still dealing with the effects of the previous instruction.
+		}
+		jumpTargets[CodeScanner_minn] = next = ++num;
+		// Check this entry doesn't already exist.
+		while (num--) {
+			if (jumpTargets[CodeScanner_jump_target][num] == cip) {
+				return;
 			}
 		}
-	}
-	return false;
-}
-
-static stock CodeScanResetJumpTargets(jumpTargets[CodeScanner], num = CODE_SCAN_MAX_JUMP_TARGETS) {
-	jumpTargets[CodeScanner_minn] = num;
-	while (num--) {
-		jumpTargets[CodeScanner_jump_target][num] = 0;
-	}
-}
-
-static stock CodeScanAddJumpTarget(cip, stk, hea, jumpTargets[CodeScanner], num = CODE_SCAN_MAX_JUMP_TARGETS) {
-	while (num--) {
-		// Multiple jumps to the same place?
-		if (jumpTargets[CodeScanner_jump_target][num] == cip) {
-			return;
-		} else if (!jumpTargets[CodeScanner_jump_target][num]) {
-			jumpTargets[CodeScanner_jump_switch][num] = 0;
-			jumpTargets[CodeScanner_jump_target][num] = cip;
-			jumpTargets[CodeScanner_jump_stack][num] = stk;
-			jumpTargets[CodeScanner_jump_heap][num] = hea;
-			jumpTargets[CodeScanner_minn] = min(jumpTargets[CodeScanner_minn], num);
-			return;
+		for (num = next; num-- && jumpTargets[CodeScanner_jump_target][num] < cip; next--) {
+			jumpTargets[CodeScanner_jump_switch][next] = jumpTargets[CodeScanner_jump_switch][num],
+			jumpTargets[CodeScanner_jump_target][next] = jumpTargets[CodeScanner_jump_target][num],
+			jumpTargets[CodeScanner_jump_stack][next] = jumpTargets[CodeScanner_jump_stack][num],
+			jumpTargets[CodeScanner_jump_heap][next] = jumpTargets[CodeScanner_jump_heap][num];
 		}
+		++num;
 	}
+	++jumpTargets[CodeScanner_minn],
+	jumpTargets[CodeScanner_jump_switch][num] = sip,
+	jumpTargets[CodeScanner_jump_target][num] = cip,
+	jumpTargets[CodeScanner_jump_stack][num] = stk,
+	jumpTargets[CodeScanner_jump_heap][num] = hea;
 }
 
-static stock CodeScanAddSwitchTarget(const dctx[DisasmContext], stk, hea, jumpTargets[CodeScanner], num = CODE_SCAN_MAX_JUMP_TARGETS) {
+static stock CodeScanAddSwitchTarget(const dctx[DisasmContext], stk, hea, jumpTargets[CodeScanner], next) {
 	new
 		sip = DisasmGetOperand(dctx) - gBase,
 		codepos = sip + gHdr[AMX_HDR_DAT] - gHdr[AMX_HDR_COD];
@@ -270,17 +282,16 @@ static stock CodeScanAddSwitchTarget(const dctx[DisasmContext], stk, hea, jumpTa
 		// explicit "#emit switch 0" in.
 		return;
 	}
-	while (num--) {
-		// Multiple jumps to the same place?
-		if (!jumpTargets[CodeScanner_jump_target][num]) {
-			jumpTargets[CodeScanner_jump_switch][num] = sip + cellbytes,
-			jumpTargets[CodeScanner_jump_target][num] = ReadAmxMemory(sip + cellbytes) + 1,
-			jumpTargets[CodeScanner_jump_stack][num] = stk,
-			jumpTargets[CodeScanner_jump_heap][num] = hea,
-			jumpTargets[CodeScanner_minn] = min(jumpTargets[CodeScanner_minn], num);
-			return;
-		}
+	// Find the largest address in the switch.  This is what we'll use for
+	// inserting it in to the sorted list of targets.  Thus it can be easily
+	// removed once out of scope, and doesn't have a different lifespan to
+	// normal jumps.
+	new
+		largest = cellmin;
+	for (new num = ReadAmxMemory(sip + cellbytes) + 1; num; --num) {
+		largest = max(ReadAmxMemory(sip + (2 * cellbytes) * num), largest);
 	}
+	CodeScanAddJumpTarget(largest - gBase, stk, hea, jumpTargets, next, sip);
 }
 
 static stock CodeScanReset(cs[CodeScanMatcher], &next) {
@@ -564,7 +575,6 @@ static stock bool:CodeScanStepInternal(dctx[DisasmContext], csState[CodeScanner]
 				Opcode:op = DisasmGetOpcode(dctx);
 			// The compiler sometimes inserts extra instructions like "NOP" and
 			// "BREAK" for debugging and padding (as do we) - maybe ignore them.
-			CodeScanCheckJumpTarget(cip, cip + gBase, stk, hea, csState);
 			switch (op) {
 				case OP_HALT: {
 					if (parseState == 4) {
@@ -684,10 +694,14 @@ static stock bool:CodeScanStepInternal(dctx[DisasmContext], csState[CodeScanner]
 						case 5: {
 							stk = cellmin;
 						}
+						case 6: {
+							cip = DisasmGetNextIp(dctx),
+							CodeScanCheckJumpTarget(cip, cip + gBase, stk, hea, csState);
+						}
 					}
 					parseState = 0;
 				}
-				case OP_JUMP, OP_JZER, OP_JNZ, OP_JEQ, OP_JNEQ, OP_JLESS, OP_JLEQ, OP_JGRTR, OP_JGEQ, OP_JSLESS, OP_JSLEQ, OP_JSGRTR, OP_JSGEQ: {
+				case OP_JZER, OP_JNZ, OP_JEQ, OP_JNEQ, OP_JLESS, OP_JLEQ, OP_JGRTR, OP_JGEQ, OP_JSLESS, OP_JSLEQ, OP_JSGRTR, OP_JSGEQ: {
 					// Add a jump target.  These require relocation as they are
 					// translated to absolute RAM locations.  "DisasmNeedReloc"
 					// will return "true", but we don't need to call it.
@@ -706,20 +720,31 @@ static stock bool:CodeScanStepInternal(dctx[DisasmContext], csState[CodeScanner]
 					parseParam = DisasmGetOperand(dctx) - gBase,
 					parseState = 0;
 					if (parseParam > cip) {
-						CodeScanAddJumpTarget(parseParam, stk, hea, csState);
+						CodeScanAddJumpTarget(parseParam, stk, hea, csState, DisasmGetNextIp(dctx));
 					}
+				}
+				case OP_JUMP: {
+					parseParam = DisasmGetOperand(dctx) - gBase,
+					parseState = 0,
+					cip = DisasmGetNextIp(dctx);
+					if (parseParam >= cip) {
+						CodeScanAddJumpTarget(parseParam, stk, hea, csState, cip);
+					}
+					CodeScanCheckJumpTarget(cip, cip + gBase, stk, hea, csState);
 				}
 				case OP_JREL: {
 					// Add a jump target.  Only jumps that go forwards.
 					parseParam = DisasmGetOperand(dctx) + cip,
-					parseState = 0;
-					if (parseParam > cip) {
-						CodeScanAddJumpTarget(parseParam, stk, hea, csState);
+					parseState = 0,
+					cip = DisasmGetNextIp(dctx);
+					if (parseParam >= cip) {
+						CodeScanAddJumpTarget(parseParam, stk, hea, csState, cip);
 					}
+					CodeScanCheckJumpTarget(cip, cip + gBase, stk, hea, csState);
 				}
 				case OP_SWITCH: {
 					// Add a jump target.  These are always forwards.
-					CodeScanAddSwitchTarget(dctx, stk, hea, csState),
+					CodeScanAddSwitchTarget(dctx, stk, hea, csState, DisasmGetNextIp(dctx)),
 					parseState = 0;
 				}
 				default: {
