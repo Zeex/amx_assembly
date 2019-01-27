@@ -218,6 +218,9 @@ static stock bool:CodeScanCheckJumpTarget(cip, deloc, &stk, &hea, jumpTargets[Co
 			stk = jumpTargets[CodeScanner_jump_stack][num],
 			hea = jumpTargets[CodeScanner_jump_heap][num];
 			return;
+		} else if (jumpTargets[CodeScanner_jump_target][num] < cip) {
+			jumpTargets[CodeScanner_minn] = num;
+			return;
 		}
 	}
 }
