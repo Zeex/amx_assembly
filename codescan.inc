@@ -146,10 +146,6 @@ stock MyFunc(a, b[], ...) {
 #define CODE_SCAN_MAX_PATTERN_ARRAY (CODE_SCAN_MAX_PATTERN * 4)
 #define CODE_SCAN_MAX_HOLES         (CODE_SCAN_MAX_PATTERN / 2)
 
-#if !defined CODE_SCAN_MAX_PARALLEL
-	#define CODE_SCAN_MAX_PARALLEL (2)
-#endif
-
 #if !defined CODE_SCAN_MAX_JUMP_TARGETS
 	#define CODE_SCAN_MAX_JUMP_TARGETS (32)
 #endif
@@ -182,10 +178,10 @@ enum CodeScanMatcher {
 	CodeScanMatcher_user_data, // User data to pass to their callback.
 	CodeScanMatcher_code[CODE_SCAN_MAX_PATTERN_ARRAY], // The code to look for.
 	CodeScanMatcher_len,
-	CodeScanMatcher_offset[CODE_SCAN_MAX_PARALLEL], // Where the current scanner is in this code.
-	CodeScanMatcher_start[CODE_SCAN_MAX_PARALLEL],
-	CodeScanMatcher_holeidx[CODE_SCAN_MAX_PARALLEL],
-	CodeScanMatcher_holes[CODE_SCAN_MAX_PARALLEL * CODE_SCAN_MAX_HOLES],
+	CodeScanMatcher_offset, // Where the current scanner is in this code.
+	CodeScanMatcher_start,
+	CodeScanMatcher_holeidx,
+	CodeScanMatcher_holes[CODE_SCAN_MAX_HOLES],
 	CodeScanMatcher_next,      // The next match array.
 	CodeScanMatcher_flags      // Customisation.
 }
@@ -296,11 +292,8 @@ static stock CodeScanAddSwitchTarget(const dctx[DisasmContext], stk, hea, jumpTa
 }
 
 static stock CodeScanReset(cs[CodeScanMatcher], &next) {
-	static
-		lReset[CODE_SCAN_MAX_PARALLEL];
 	next = cs[CodeScanMatcher_next],
-	cs[CodeScanMatcher_offset] = lReset,
-	cs[CodeScanMatcher_holeidx] = lReset;
+	cs[CodeScanMatcher_offset] = cs[CodeScanMatcher_holeidx] = 0;
 	if (!cs[CodeScanMatcher_func]) {
 		cs[CodeScanMatcher_len] = 0;
 	}
@@ -421,7 +414,7 @@ static stock bool:CodeScanCheck(Opcode:op, const dctx[DisasmContext], cs[CodeSca
 			false;
 	}
 	new
-		bool:zero = true,
+	//	bool:zero = true,
 		off = cs[CodeScanMatcher_flags];
 	if (off) {
 		// To deal with differences in different compilation modes, we just mark
@@ -461,26 +454,25 @@ static stock bool:CodeScanCheck(Opcode:op, const dctx[DisasmContext], cs[CodeSca
 	new
 		cnt = DisasmGetNumOperands(dctx),
 		len = cs[CodeScanMatcher_len];
-	for (new idx = 0; idx != CODE_SCAN_MAX_PARALLEL; ++idx) {
-	off = cs[CodeScanMatcher_offset][idx];
+	off = cs[CodeScanMatcher_offset];
 	// Ensure that only one of the parallel scanners starts from the
 	// beginning on each instruction.
-	if (off) {
-	} else if (zero) {
+	if (!off) {
+	//} else if (zero) {
 		// Get the start point of this match.
-		cs[CodeScanMatcher_start][idx] = DisasmGetCurIp(dctx),
-		zero = false;
-	} else {
-		continue;
+		cs[CodeScanMatcher_start] = DisasmGetCurIp(dctx);
+	//	zero = false;
+	//} else {
+	//	goto CodeScanCheck_end;//continue;
 	}
 	if (cs[CodeScanMatcher_code][off] == OP_TYPE_SKIP_) {
 		off += 2;
 		if (off == len) {
 			return
-				memcpy(fctx[CodeScanMatch_holes], cs[CodeScanMatcher_holes], idx * CODE_SCAN_MAX_HOLES, cs[CodeScanMatcher_holeidx][idx] * cellbytes, CODE_SCAN_MAX_HOLES),
-				fctx[CodeScanMatch_hole_count] = cs[CodeScanMatcher_holeidx][idx],
-				fctx[CodeScanMatch_cip] = cs[CodeScanMatcher_start][idx],
-				fctx[CodeScanMatch_size] = DisasmGetNextIp(dctx) - cs[CodeScanMatcher_start][idx],
+				memcpy(fctx[CodeScanMatch_holes], cs[CodeScanMatcher_holes], 0, CODE_SCAN_MAX_HOLES * cellbytes, CODE_SCAN_MAX_HOLES),
+				fctx[CodeScanMatch_hole_count] = cs[CodeScanMatcher_holeidx],
+				fctx[CodeScanMatch_cip] = cs[CodeScanMatcher_start],
+				fctx[CodeScanMatch_size] = DisasmGetNextIp(dctx) - cs[CodeScanMatcher_start],
 				true;
 		} else if (cs[CodeScanMatcher_code][off] == OP_TYPE_OPCODE_ && Opcode:cs[CodeScanMatcher_code][off + 1] == op) {
 			// Found the match after the current "missing" instruction.
@@ -488,7 +480,7 @@ static stock bool:CodeScanCheck(Opcode:op, const dctx[DisasmContext], cs[CodeSca
 		} else {
 			// The "== op" check is done twice because in this case we don't
 			// want to fail the scanner if it doesn't match.
-			continue;
+			goto CodeScanCheck_end;//continue;
 		}
 	}
 	if (cs[CodeScanMatcher_code][off] == OP_TYPE_OPCODE_ && Opcode:cs[CodeScanMatcher_code][off + 1] == op) {
@@ -508,8 +500,12 @@ CodeScanCheck_pass:
 				}
 				case OP_TYPE_UNKNOWN_: {
 					// Save the parameter.
-					++off,
-					cs[CodeScanMatcher_holes][idx * CODE_SCAN_MAX_HOLES + cs[CodeScanMatcher_holeidx][idx]++] = DisasmGetOperandReloc(dctx, i);
+					++off;
+					if (cs[CodeScanMatcher_holeidx] == CODE_SCAN_MAX_HOLES) {
+						printf("CodeScan Error: CODE_SCAN_MAX_HOLES exceeded.");
+					} else {
+						cs[CodeScanMatcher_holes][cs[CodeScanMatcher_holeidx]++] = DisasmGetOperandReloc(dctx, i);
+					}
 				}
 				case OP_TYPE_OPCODE_, OP_TYPE_SKIP_: {
 					goto CodeScanCheck_fail;
@@ -519,10 +515,10 @@ CodeScanCheck_pass:
 		if (off == len) {
 			// Get the address of the START of the match.
 			return
-				memcpy(fctx[CodeScanMatch_holes], cs[CodeScanMatcher_holes][idx * CODE_SCAN_MAX_HOLES], 0, cs[CodeScanMatcher_holeidx][idx] * cellbytes, CODE_SCAN_MAX_HOLES),
-				fctx[CodeScanMatch_hole_count] = cs[CodeScanMatcher_holeidx][idx],
-				fctx[CodeScanMatch_cip] = cs[CodeScanMatcher_start][idx],
-				fctx[CodeScanMatch_size] = DisasmGetNextIp(dctx) - cs[CodeScanMatcher_start][idx],
+				memcpy(fctx[CodeScanMatch_holes], cs[CodeScanMatcher_holes], 0, CODE_SCAN_MAX_HOLES * cellbytes, CODE_SCAN_MAX_HOLES),
+				fctx[CodeScanMatch_hole_count] = cs[CodeScanMatcher_holeidx],
+				fctx[CodeScanMatch_cip] = cs[CodeScanMatcher_start],
+				fctx[CodeScanMatch_size] = DisasmGetNextIp(dctx) - cs[CodeScanMatcher_start],
 				true;
 		} else switch (cs[CodeScanMatcher_code][off]) {
 			case OP_TYPE_INTEGER_, OP_TYPE_FUNCTION_, OP_TYPE_UNKNOWN_: {
@@ -531,15 +527,15 @@ CodeScanCheck_pass:
 			}
 			default: {
 				// Out of parameters to check but still looking correct.
-				cs[CodeScanMatcher_offset][idx] = off;
-				continue;
+				cs[CodeScanMatcher_offset] = off;
+				goto CodeScanCheck_end;//continue;
 			}
 		}
 	}
 CodeScanCheck_fail:
 	// The parameter is wrong.
-	cs[CodeScanMatcher_holeidx][idx] = cs[CodeScanMatcher_offset][idx] = 0;
-	}
+	cs[CodeScanMatcher_holeidx] = cs[CodeScanMatcher_offset] = 0;
+CodeScanCheck_end:
 	return
 		next = cs[CodeScanMatcher_next],
 		false;
