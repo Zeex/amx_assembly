@@ -207,74 +207,82 @@ static stock
 	gDat;
 
 static stock bool:CodeScanCheckJumpTarget(cip, deloc, &stk, &hea, jumpTargets[CodeScanner]) {
-	// Use "minn" to restrict the number of jump targets that we check.  Returns
-	// "true" if the current address is equal to an address that any jump goes
-	// to.
-	new
-		num = CODE_SCAN_MAX_JUMP_TARGETS,
-		minn = jumpTargets[CodeScanner_minn],
-		sip,
-		count;
-	while (num-- > minn) {
-		if (jumpTargets[CodeScanner_jump_target][num]) {
-			if ((sip = jumpTargets[CodeScanner_jump_switch][num])) {
-				count = ReadAmxMemory(sip) + 1,
-				sip += cellbytes;
-				while (count--) {
-					if (ReadAmxMemory(sip) == deloc) {
-						return
-							--jumpTargets[CodeScanner_jump_target][num],
-							stk = jumpTargets[CodeScanner_jump_stack][num],
-							hea = jumpTargets[CodeScanner_jump_heap][num],
-							true;
-					}
-					sip += 2 * cellbytes;
-				}
-			} else if (jumpTargets[CodeScanner_jump_target][num] == cip) {
-				return
-					jumpTargets[CodeScanner_jump_target][num] = 0,
+	for (new num = jumpTargets[CodeScanner_minn], sip; num--; ) {
+		if ((sip = jumpTargets[CodeScanner_jump_switch][num])) {
+			for (new count = ReadAmxMemory(sip + cellbytes) + 1; count; --count) {
+				if (ReadAmxMemory(sip + (2 * cellbytes) * count) == deloc) {
 					stk = jumpTargets[CodeScanner_jump_stack][num],
-					hea = jumpTargets[CodeScanner_jump_heap][num],
-					true;
+					hea = jumpTargets[CodeScanner_jump_heap][num];
+					return;
+				}
 			}
+		} else if (jumpTargets[CodeScanner_jump_target][num] == cip) {
+			jumpTargets[CodeScanner_minn] = num,
+			stk = jumpTargets[CodeScanner_jump_stack][num],
+			hea = jumpTargets[CodeScanner_jump_heap][num];
+			return;
+		} else if (jumpTargets[CodeScanner_jump_target][num] < cip) {
+			jumpTargets[CodeScanner_minn] = num;
+			return;
 		}
 	}
-	return false;
 }
 
 static stock CodeScanResetJumpTargets(jumpTargets[CodeScanner]) {
-	new
-		num = CODE_SCAN_MAX_JUMP_TARGETS;
-	jumpTargets[CodeScanner_minn] = num;
-	while (num--) {
-		jumpTargets[CodeScanner_jump_target][num] = 0;
-	}
+	jumpTargets[CodeScanner_minn] = 0;
 }
 
-static stock CodeScanAddJumpTarget(cip, stk, hea, jumpTargets[CodeScanner], next) {
+static stock CodeScanAddJumpTarget(cip, stk, hea, jumpTargets[CodeScanner], next, sip = 0) {
 	new
-		num = CODE_SCAN_MAX_JUMP_TARGETS;
-	while (num--) {
-		// Multiple jumps to the same place?
-		if (jumpTargets[CodeScanner_jump_target][num] == cip) {
-			return;
-		} else if (!jumpTargets[CodeScanner_jump_target][num] || (!jumpTargets[CodeScanner_jump_switch][num] && jumpTargets[CodeScanner_jump_target][num] < next)) {
-			// In the past.
-			jumpTargets[CodeScanner_jump_switch][num] = 0;
-			jumpTargets[CodeScanner_jump_target][num] = cip;
-			jumpTargets[CodeScanner_jump_stack][num] = stk;
-			jumpTargets[CodeScanner_jump_heap][num] = hea;
-			jumpTargets[CodeScanner_minn] = min(jumpTargets[CodeScanner_minn], num);
-			return;
+		num = jumpTargets[CodeScanner_minn];
+	// Add an address to the list of addresses known to be jumped to.  We keep
+	// this list sorted in a very simple fashion.  Since 99% of calls to this
+	// code will be from control structures, their layout is already well
+	// defined.  In the rare case that they aren't, this is probably from a
+	// `goto` (and a `goto` that jumps outside a control structure at that),
+	// thus we can optimise for the common case and fall back on searching and
+	// shifting after that.  Check that the last address on the stack is GREATER
+	// than the address being pushed.
+	if (num && jumpTargets[CodeScanner_jump_target][num - 1] <= cip) {
+		// We only ever jump forward.  Thus if we get to this point we know
+		// `cip` is in the future, and `CodeScanner_jump_target` is before
+		// `cip`.  Thus there is one possibility left -
+		// `CodeScanner_jump_target` is in the past and no longer needs checking
+		// for.
+		while (num-- && jumpTargets[CodeScanner_jump_target][num] < next) {
+			// Just forget about this target.  NOT `<=` because at this point
+			// we haven't yet checked this address as a jump target - we are
+			// still dealing with the effects of the previous instruction.
 		}
+		jumpTargets[CodeScanner_minn] = next = ++num;
+		// Check this entry doesn't already exist.
+		while (num--) {
+			if (jumpTargets[CodeScanner_jump_target][num] == cip) {
+				return;
+			}
+		}
+		for (num = next; num-- && jumpTargets[CodeScanner_jump_target][num] < cip; next--) {
+			jumpTargets[CodeScanner_jump_switch][next] = jumpTargets[CodeScanner_jump_switch][num],
+			jumpTargets[CodeScanner_jump_target][next] = jumpTargets[CodeScanner_jump_target][num],
+			jumpTargets[CodeScanner_jump_stack][next] = jumpTargets[CodeScanner_jump_stack][num],
+			jumpTargets[CodeScanner_jump_heap][next] = jumpTargets[CodeScanner_jump_heap][num];
+		}
+		++num;
 	}
-	printf("CodeScan Error: Could not add jump target to scanner.");
-	printf(" - Try `#define CODE_SCAN_MAX_JUMP_TARGETS (64)` or greater.");
+	if (num < CODE_SCAN_MAX_JUMP_TARGETS) {
+		++jumpTargets[CodeScanner_minn],
+		jumpTargets[CodeScanner_jump_switch][num] = sip,
+		jumpTargets[CodeScanner_jump_target][num] = cip,
+		jumpTargets[CodeScanner_jump_stack][num] = stk,
+		jumpTargets[CodeScanner_jump_heap][num] = hea;
+	} else {
+		printf("CodeScan Error: Could not add jump target to scanner.");
+		printf(" - Try `#define CODE_SCAN_MAX_JUMP_TARGETS (64)` or greater.");
+	}
 }
 
 static stock CodeScanAddSwitchTarget(const dctx[DisasmContext], stk, hea, jumpTargets[CodeScanner], next) {
 	new
-		num = CODE_SCAN_MAX_JUMP_TARGETS,
 		sip = DisasmGetOperand(dctx) - gBase,
 		codepos = sip + gHdr[AMX_HDR_DAT] - gHdr[AMX_HDR_COD];
 	if (codepos < 0 || codepos > gHdr[AMX_HDR_DAT] || ReadAmxMemory(sip) != gOP_CASETBL) {
@@ -282,19 +290,16 @@ static stock CodeScanAddSwitchTarget(const dctx[DisasmContext], stk, hea, jumpTa
 		// explicit "#emit switch 0" in.
 		return;
 	}
-	while (num--) {
-		// Multiple jumps to the same place?
-		if (!jumpTargets[CodeScanner_jump_target][num] || (!jumpTargets[CodeScanner_jump_switch][num] && jumpTargets[CodeScanner_jump_target][num] < next)) {
-			jumpTargets[CodeScanner_jump_switch][num] = sip + cellbytes,
-			jumpTargets[CodeScanner_jump_target][num] = ReadAmxMemory(sip + cellbytes) + 1,
-			jumpTargets[CodeScanner_jump_stack][num] = stk,
-			jumpTargets[CodeScanner_jump_heap][num] = hea,
-			jumpTargets[CodeScanner_minn] = min(jumpTargets[CodeScanner_minn], num);
-			return;
-		}
+	// Find the largest address in the switch.  This is what we'll use for
+	// inserting it in to the sorted list of targets.  Thus it can be easily
+	// removed once out of scope, and doesn't have a different lifespan to
+	// normal jumps.
+	new
+		largest = cellmin;
+	for (new num = ReadAmxMemory(sip + cellbytes) + 1; num; --num) {
+		largest = max(ReadAmxMemory(sip + (2 * cellbytes) * num), largest);
 	}
-	printf("CodeScan Error: Could not add switch target to scanner.");
-	printf(" - Try `#define CODE_SCAN_MAX_JUMP_TARGETS (64)` or greater.");
+	CodeScanAddJumpTarget(largest - gBase, stk, hea, jumpTargets, next, sip);
 }
 
 static stock CodeScanReset(cs[CodeScanMatcher], &next) {
@@ -389,8 +394,8 @@ stock CodeScanMatcherPattern_(searcher[CodeScanMatcher], {Opcode, Float, _}:...)
 					return i / 2 + 1;
 				}
 			}
-			//case OP_TYPE_SKIP_: {
-			//}
+			case OP_TYPE_SKIP_: {
+			}
 			default: {
 				// Incorrect parameter type.  Return the op where it happened.
 				return i / 2 + 1;
@@ -464,83 +469,83 @@ static stock bool:CodeScanCheck(Opcode:op, const dctx[DisasmContext], cs[CodeSca
 		cnt = DisasmGetNumOperands(dctx),
 		len = cs[CodeScanMatcher_len];
 	for (new idx = 0; idx != CODE_SCAN_MAX_PARALLEL; ++idx) {
-	off = cs[CodeScanMatcher_offset][idx];
-	// Ensure that only one of the parallel scanners starts from the
-	// beginning on each instruction.
-	if (off) {
-	} else if (zero) {
-		// Get the start point of this match.
-		cs[CodeScanMatcher_start][idx] = DisasmGetCurIp(dctx),
-		zero = false;
-	} else {
-		continue;
-	}
-	if (cs[CodeScanMatcher_code][off] == OP_TYPE_SKIP_) {
-		off += 2;
-		if (off == len) {
-			return
-				memcpy(fctx[CodeScanMatch_holes], cs[CodeScanMatcher_holes], idx * CODE_SCAN_MAX_HOLES, cs[CodeScanMatcher_holeidx][idx] * cellbytes, CODE_SCAN_MAX_HOLES),
-				fctx[CodeScanMatch_hole_count] = cs[CodeScanMatcher_holeidx][idx],
-				fctx[CodeScanMatch_cip] = cs[CodeScanMatcher_start][idx],
-				fctx[CodeScanMatch_size] = DisasmGetNextIp(dctx) - cs[CodeScanMatcher_start][idx],
-				true;
-		} else if (cs[CodeScanMatcher_code][off] == OP_TYPE_OPCODE_ && Opcode:cs[CodeScanMatcher_code][off + 1] == op) {
-			// Found the match after the current "missing" instruction.
-			goto CodeScanCheck_pass;
+		off = cs[CodeScanMatcher_offset][idx];
+		// Ensure that only one of the parallel scanners starts from the
+		// beginning on each instruction.
+		if (off) {
+		} else if (zero) {
+			// Get the start point of this match.
+			cs[CodeScanMatcher_start][idx] = DisasmGetCurIp(dctx),
+			zero = false;
 		} else {
-			// The "== op" check is done twice because in this case we don't
-			// want to fail the scanner if it doesn't match.
 			continue;
 		}
-	}
-	if (cs[CodeScanMatcher_code][off] == OP_TYPE_OPCODE_ && Opcode:cs[CodeScanMatcher_code][off + 1] == op) {
-CodeScanCheck_pass:
-		// Check if there are enough parameters for this opcode.
-		off += 2;
-		for (new i = 0; i != cnt; ++i) {
-			switch (cs[CodeScanMatcher_code][off++]) {
-				// Because we now abstract relocations to the disasm system,
-				// we don't need to differentiate between fixed parameters
-				// and function parameters any more - they are always fully
-				// resolved.
-				case OP_TYPE_INTEGER_, OP_TYPE_FUNCTION_: {
-					if (cs[CodeScanMatcher_code][off++] != DisasmGetOperandReloc(dctx, i)) {
-						goto CodeScanCheck_fail;
-					}
-				}
-				case OP_TYPE_UNKNOWN_: {
-					// Save the parameter.
-					++off,
-					cs[CodeScanMatcher_holes][idx * CODE_SCAN_MAX_HOLES + cs[CodeScanMatcher_holeidx][idx]++] = DisasmGetOperandReloc(dctx, i);
-				}
-				case OP_TYPE_OPCODE_, OP_TYPE_SKIP_: {
-					goto CodeScanCheck_fail;
-				}
-			}
-		}
-		if (off == len) {
-			// Get the address of the START of the match.
-			return
-				memcpy(fctx[CodeScanMatch_holes], cs[CodeScanMatcher_holes][idx * CODE_SCAN_MAX_HOLES], 0, cs[CodeScanMatcher_holeidx][idx] * cellbytes, CODE_SCAN_MAX_HOLES),
-				fctx[CodeScanMatch_hole_count] = cs[CodeScanMatcher_holeidx][idx],
-				fctx[CodeScanMatch_cip] = cs[CodeScanMatcher_start][idx],
-				fctx[CodeScanMatch_size] = DisasmGetNextIp(dctx) - cs[CodeScanMatcher_start][idx],
-				true;
-		} else switch (cs[CodeScanMatcher_code][off]) {
-			case OP_TYPE_INTEGER_, OP_TYPE_FUNCTION_, OP_TYPE_UNKNOWN_: {
-				// Parameters remaining, none expected.
-				goto CodeScanCheck_fail;
-			}
-			default: {
-				// Out of parameters to check but still looking correct.
-				cs[CodeScanMatcher_offset][idx] = off;
+		if (cs[CodeScanMatcher_code][off] == OP_TYPE_SKIP_) {
+			off += 2;
+			if (off == len) {
+				return
+					memcpy(fctx[CodeScanMatch_holes], cs[CodeScanMatcher_holes], idx * CODE_SCAN_MAX_HOLES, cs[CodeScanMatcher_holeidx][idx] * cellbytes, CODE_SCAN_MAX_HOLES),
+					fctx[CodeScanMatch_hole_count] = cs[CodeScanMatcher_holeidx][idx],
+					fctx[CodeScanMatch_cip] = cs[CodeScanMatcher_start][idx],
+					fctx[CodeScanMatch_size] = DisasmGetNextIp(dctx) - cs[CodeScanMatcher_start][idx],
+					true;
+			} else if (cs[CodeScanMatcher_code][off] == OP_TYPE_OPCODE_ && Opcode:cs[CodeScanMatcher_code][off + 1] == op) {
+				// Found the match after the current "missing" instruction.
+				goto CodeScanCheck_pass;
+			} else {
+				// The "== op" check is done twice because in this case we don't
+				// want to fail the scanner if it doesn't match.
 				continue;
 			}
 		}
-	}
+		if (cs[CodeScanMatcher_code][off] == OP_TYPE_OPCODE_ && Opcode:cs[CodeScanMatcher_code][off + 1] == op) {
+CodeScanCheck_pass:
+			// Check if there are enough parameters for this opcode.
+			off += 2;
+			for (new i = 0; i != cnt; ++i) {
+				switch (cs[CodeScanMatcher_code][off++]) {
+					// Because we now abstract relocations to the disasm system,
+					// we don't need to differentiate between fixed parameters
+					// and function parameters any more - they are always fully
+					// resolved.
+					case OP_TYPE_INTEGER_, OP_TYPE_FUNCTION_: {
+						if (cs[CodeScanMatcher_code][off++] != DisasmGetOperandReloc(dctx, i)) {
+							goto CodeScanCheck_fail;
+						}
+					}
+					case OP_TYPE_UNKNOWN_: {
+						// Save the parameter.
+						++off,
+						cs[CodeScanMatcher_holes][idx * CODE_SCAN_MAX_HOLES + cs[CodeScanMatcher_holeidx][idx]++] = DisasmGetOperandReloc(dctx, i);
+					}
+					case OP_TYPE_OPCODE_, OP_TYPE_SKIP_: {
+						goto CodeScanCheck_fail;
+					}
+				}
+			}
+			if (off == len) {
+				// Get the address of the START of the match.
+				return
+					memcpy(fctx[CodeScanMatch_holes], cs[CodeScanMatcher_holes][idx * CODE_SCAN_MAX_HOLES], 0, cs[CodeScanMatcher_holeidx][idx] * cellbytes, CODE_SCAN_MAX_HOLES),
+					fctx[CodeScanMatch_hole_count] = cs[CodeScanMatcher_holeidx][idx],
+					fctx[CodeScanMatch_cip] = cs[CodeScanMatcher_start][idx],
+					fctx[CodeScanMatch_size] = DisasmGetNextIp(dctx) - cs[CodeScanMatcher_start][idx],
+					true;
+			} else switch (cs[CodeScanMatcher_code][off]) {
+				case OP_TYPE_INTEGER_, OP_TYPE_FUNCTION_, OP_TYPE_UNKNOWN_: {
+					// Parameters remaining, none expected.
+					goto CodeScanCheck_fail;
+				}
+				default: {
+					// Out of parameters to check but still looking correct.
+					cs[CodeScanMatcher_offset][idx] = off;
+					continue;
+				}
+			}
+		}
 CodeScanCheck_fail:
-	// The parameter is wrong.
-	cs[CodeScanMatcher_holeidx][idx] = cs[CodeScanMatcher_offset][idx] = 0;
+		// The parameter is wrong.
+		cs[CodeScanMatcher_holeidx][idx] = cs[CodeScanMatcher_offset][idx] = 0;
 	}
 	return
 		next = cs[CodeScanMatcher_next],
