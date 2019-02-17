@@ -199,6 +199,9 @@ stock
 	gCodeScanCallback_match[CodeScanner];
 
 static stock
+	gOP_NOP,
+	gOP_CASETBL,
+	gFirstProc,
 	gHdr[AMX_HDR],
 	gBase,
 	gDat;
@@ -266,18 +269,23 @@ static stock CodeScanAddJumpTarget(cip, stk, hea, jumpTargets[CodeScanner], next
 		}
 		++num;
 	}
-	++jumpTargets[CodeScanner_minn],
-	jumpTargets[CodeScanner_jump_switch][num] = sip,
-	jumpTargets[CodeScanner_jump_target][num] = cip,
-	jumpTargets[CodeScanner_jump_stack][num] = stk,
-	jumpTargets[CodeScanner_jump_heap][num] = hea;
+	if (num < CODE_SCAN_MAX_JUMP_TARGETS) {
+		++jumpTargets[CodeScanner_minn],
+		jumpTargets[CodeScanner_jump_switch][num] = sip,
+		jumpTargets[CodeScanner_jump_target][num] = cip,
+		jumpTargets[CodeScanner_jump_stack][num] = stk,
+		jumpTargets[CodeScanner_jump_heap][num] = hea;
+	} else {
+		printf("CodeScan Error: Could not add jump target to scanner.");
+		printf(" - Try `#define CODE_SCAN_MAX_JUMP_TARGETS (64)` or greater.");
+	}
 }
 
 static stock CodeScanAddSwitchTarget(const dctx[DisasmContext], stk, hea, jumpTargets[CodeScanner], next) {
 	new
 		sip = DisasmGetOperand(dctx) - gBase,
 		codepos = sip + gHdr[AMX_HDR_DAT] - gHdr[AMX_HDR_COD];
-	if (codepos < 0 || codepos > gHdr[AMX_HDR_DAT] || UnrelocateOpcode(Opcode:ReadAmxMemory(sip)) != OP_CASETBL) {
+	if (codepos < 0 || codepos > gHdr[AMX_HDR_DAT] || ReadAmxMemory(sip) != gOP_CASETBL) {
 		// Can happen when we parse "RelocateOpcodeNow" because it has an
 		// explicit "#emit switch 0" in.
 		return;
@@ -354,7 +362,7 @@ stock CodeScanMatcherPattern_(searcher[CodeScanMatcher], {Opcode, Float, _}:...)
 			optype = getarg(i + 1),
 			Opcode:op = Opcode:getarg(i + 2);
 		searcher[CodeScanMatcher_code][i + 0] = optype;
-		searcher[CodeScanMatcher_code][i + 1] = _:op;
+		searcher[CodeScanMatcher_code][i + 1] = _:RelocateOpcode(op);
 		i += 2;
 		switch (optype) {
 			case OP_TYPE_OPCODE_: {
@@ -575,6 +583,7 @@ static stock bool:CodeScanStepInternal(dctx[DisasmContext], csState[CodeScanner]
 				Opcode:op = DisasmGetOpcode(dctx);
 			// The compiler sometimes inserts extra instructions like "NOP" and
 			// "BREAK" for debugging and padding (as do we) - maybe ignore them.
+			CodeScanCheckJumpTarget(cip, cip + gBase, stk, hea, csState);
 			switch (op) {
 				case OP_HALT: {
 					if (parseState == 4) {
@@ -694,14 +703,10 @@ static stock bool:CodeScanStepInternal(dctx[DisasmContext], csState[CodeScanner]
 						case 5: {
 							stk = cellmin;
 						}
-						case 6: {
-							cip = DisasmGetNextIp(dctx),
-							CodeScanCheckJumpTarget(cip, cip + gBase, stk, hea, csState);
-						}
 					}
 					parseState = 0;
 				}
-				case OP_JZER, OP_JNZ, OP_JEQ, OP_JNEQ, OP_JLESS, OP_JLEQ, OP_JGRTR, OP_JGEQ, OP_JSLESS, OP_JSLEQ, OP_JSGRTR, OP_JSGEQ: {
+				case OP_JUMP, OP_JZER, OP_JNZ, OP_JEQ, OP_JNEQ, OP_JLESS, OP_JLEQ, OP_JGRTR, OP_JGEQ, OP_JSLESS, OP_JSLEQ, OP_JSGRTR, OP_JSGEQ: {
 					// Add a jump target.  These require relocation as they are
 					// translated to absolute RAM locations.  "DisasmNeedReloc"
 					// will return "true", but we don't need to call it.
@@ -723,24 +728,13 @@ static stock bool:CodeScanStepInternal(dctx[DisasmContext], csState[CodeScanner]
 						CodeScanAddJumpTarget(parseParam, stk, hea, csState, DisasmGetNextIp(dctx));
 					}
 				}
-				case OP_JUMP: {
-					parseParam = DisasmGetOperand(dctx) - gBase,
-					parseState = 0,
-					cip = DisasmGetNextIp(dctx);
-					if (parseParam >= cip) {
-						CodeScanAddJumpTarget(parseParam, stk, hea, csState, cip);
-					}
-					CodeScanCheckJumpTarget(cip, cip + gBase, stk, hea, csState);
-				}
 				case OP_JREL: {
 					// Add a jump target.  Only jumps that go forwards.
 					parseParam = DisasmGetOperand(dctx) + cip,
-					parseState = 0,
-					cip = DisasmGetNextIp(dctx);
-					if (parseParam >= cip) {
-						CodeScanAddJumpTarget(parseParam, stk, hea, csState, cip);
+					parseState = 0;
+					if (parseParam > cip) {
+						CodeScanAddJumpTarget(parseParam, stk, hea, csState, DisasmGetNextIp(dctx));
 					}
-					CodeScanCheckJumpTarget(cip, cip + gBase, stk, hea, csState);
 				}
 				case OP_SWITCH: {
 					// Add a jump target.  These are always forwards.
@@ -851,14 +845,22 @@ stock bool:CodeScanRun(csState[CodeScanner]) {
 }
 
 stock CodeScanInit(scanner[CodeScanner]) {
-	// I debated inlining DisasmInit to avoid two calls to "GetAmxHeader", but
-	// it isn't worth the effort and code duplication.  No "start" and "end"
-	// parameters, so scans the entire code range.
-	GetAmxHeader(gHdr),
-	gBase = GetAmxBaseAddress() + gHdr[AMX_HDR_DAT],
-	gDat = gHdr[AMX_HDR_COD] - gHdr[AMX_HDR_DAT],
+	if (gFirstProc == 0) {
+		new
+			dctx[DisasmContext];
+		DisasmInit(dctx);
+		while (DisasmNextInsn(dctx) != OP_PROC) {}
+		// This is the first time any code scanner has been set up.  Skip all
+		// the initial state stubs and error traps.
+		gFirstProc = DisasmGetCurIp(dctx),
+		GetAmxHeader(gHdr),
+		gBase = GetAmxBaseAddress() + gHdr[AMX_HDR_DAT],
+		gDat = gHdr[AMX_HDR_COD] - gHdr[AMX_HDR_DAT],
+		gOP_NOP = _:RelocateOpcode(OP_NOP);
+		gOP_CASETBL = _:RelocateOpcode(OP_CASETBL);
+	}
 	CodeScanResetJumpTargets(scanner),
-	scanner[CodeScanMatch_cip] = gDat;
+	scanner[CodeScanMatch_cip] = gFirstProc,
 	scanner[CodeScanMatch_type] =
 	 scanner[CodeScanMatch_name] =
 	  scanner[CodeScanner_param] =
@@ -957,10 +959,8 @@ stock CodeScanGetMatchLength(const csm[CodeScanner]) {
 }
 
 stock CodeScanNOPMatch(const csm[CodeScanner]) {
-	new
-		nop = _:RelocateOpcode(OP_NOP);
 	for (new dest = csm[CodeScanMatch_cip], end = dest + csm[CodeScanMatch_size]; dest != end; dest += cellbytes) {
-		#emit LOAD.S.pri   nop
+		#emit LOAD.pri     gOP_NOP
 		#emit SREF.S.pri   dest
 	}
 	{}
