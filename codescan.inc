@@ -212,22 +212,19 @@ static stock bool:CodeScanCheckJumpTarget(cip, deloc, &stk, &hea, jumpTargets[Co
 	// to.
 	new
 		minn = jumpTargets[CodeScanner_minn],
-		sip,
-		count;
+		sip;
 	while (num-- > minn) {
 		if (jumpTargets[CodeScanner_jump_target][num]) {
 			if ((sip = jumpTargets[CodeScanner_jump_switch][num])) {
-				count = ReadAmxMemory(sip) + 1,
-				sip += cellbytes;
-				while (count--) {
-					if (ReadAmxMemory(sip) == deloc) {
+				sip -= cellbytes;
+				for (new count = ReadAmxMemory(sip + cellbytes) + 1; count; --count) {
+					if (ReadAmxMemory(sip + (count << 3)) == deloc) {
 						return
 							--jumpTargets[CodeScanner_jump_target][num],
 							stk = jumpTargets[CodeScanner_jump_stack][num],
 							hea = jumpTargets[CodeScanner_jump_heap][num],
 							true;
 					}
-					sip += 2 * cellbytes;
 				}
 			} else if (jumpTargets[CodeScanner_jump_target][num] == cip) {
 				return
