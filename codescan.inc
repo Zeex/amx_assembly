@@ -268,7 +268,7 @@ static stock CodeScanAddSwitchTarget(const dctx[DisasmContext], stk, hea, jumpTa
 	new
 		sip = DisasmGetOperand(dctx) - gBase,
 		codepos = sip + gHdr[AMX_HDR_DAT] - gHdr[AMX_HDR_COD];
-	if (codepos < 0 || codepos > gHdr[AMX_HDR_DAT] || UnrelocateOpcode(Opcode:ReadAmxMemory(sip)) != OP_CASETBL) {
+	if (codepos < 0 || codepos > gHdr[AMX_HDR_DAT] || ReadAmxMemory(sip) != gOP_CASETBL) {
 		// Can happen when we parse "RelocateOpcodeNow" because it has an
 		// explicit "#emit switch 0" in.
 		return;
