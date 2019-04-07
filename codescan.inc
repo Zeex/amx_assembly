@@ -201,7 +201,6 @@ stock
 static stock
 	gOP_NOP,
 	gOP_CASETBL,
-	gFirstProc,
 	gHdr[AMX_HDR],
 	gBase,
 	gDat;
@@ -216,7 +215,6 @@ static stock bool:CodeScanCheckJumpTarget(cip, deloc, &stk, &hea, jumpTargets[Co
 	while (num-- > minn) {
 		if (jumpTargets[CodeScanner_jump_target][num]) {
 			if ((sip = jumpTargets[CodeScanner_jump_switch][num])) {
-				sip -= cellbytes;
 				for (new count = ReadAmxMemory(sip + cellbytes) + 1; count; --count) {
 					if (ReadAmxMemory(sip + (count << 3)) == deloc) {
 						return
@@ -273,7 +271,7 @@ static stock CodeScanAddSwitchTarget(const dctx[DisasmContext], stk, hea, jumpTa
 	while (num--) {
 		// Multiple jumps to the same place?
 		if (!jumpTargets[CodeScanner_jump_target][num]) {
-			jumpTargets[CodeScanner_jump_switch][num] = sip + cellbytes,
+			jumpTargets[CodeScanner_jump_switch][num] = sip,
 			jumpTargets[CodeScanner_jump_target][num] = ReadAmxMemory(sip + cellbytes) + 1,
 			jumpTargets[CodeScanner_jump_stack][num] = stk,
 			jumpTargets[CodeScanner_jump_heap][num] = hea,
@@ -826,14 +824,7 @@ stock bool:CodeScanRun(csState[CodeScanner]) {
 }
 
 stock CodeScanInit(scanner[CodeScanner]) {
-	if (gFirstProc == 0) {
-		new
-			dctx[DisasmContext];
-		DisasmInit(dctx);
-		while (DisasmNextInsn(dctx) != OP_PROC) {}
-		// This is the first time any code scanner has been set up.  Skip all
-		// the initial state stubs and error traps.
-		gFirstProc = DisasmGetCurIp(dctx),
+	if (gDat == 0) {
 		GetAmxHeader(gHdr),
 		gBase = GetAmxBaseAddress() + gHdr[AMX_HDR_DAT],
 		gDat = gHdr[AMX_HDR_COD] - gHdr[AMX_HDR_DAT],
@@ -841,7 +832,7 @@ stock CodeScanInit(scanner[CodeScanner]) {
 		gOP_CASETBL = _:RelocateOpcode(OP_CASETBL);
 	}
 	CodeScanResetJumpTargets(scanner),
-	scanner[CodeScanMatch_cip] = gFirstProc,
+	scanner[CodeScanMatch_cip] = gDat,
 	scanner[CodeScanMatch_type] =
 	 scanner[CodeScanMatch_name] =
 	  scanner[CodeScanner_param] =
