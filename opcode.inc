@@ -215,7 +215,7 @@ static stock const insn_table[][OpcodeInsnInfo] = {
 	{ "fill",        1, false },
 	{ "halt",        1, false },
 	{ "bounds",      1, false },
-	{ "sysreq.pri",  1, false },
+	{ "sysreq.pri",  0, false },
 	{ "sysreq.c",    1, false },
 	{ "file",       -1, false }, // obsolete
 	{ "line",       -1, false }, // obsolete
