@@ -774,6 +774,58 @@ static stock CodeScanCall(const cs[CodeScanMatcher], csState[CodeScanner]) {
 	return func;
 }
 
+static stock bool:CodeScanFindOneFastPattern3(const matcher[CodeScanMatcher], &addr, &cur) {
+	// Check if the current matcher has this exact function call in it as well.
+	cur = matcher[CodeScanMatcher_next];
+	for (new i = 0, j = matcher[CodeScanMatcher_len]; i != j; i += 2) {
+		if (matcher[CodeScanMatcher_code][i + 0] == OP_TYPE_OPCODE_ && Opcode:matcher[CodeScanMatcher_code][i + 1] == OP_CALL && matcher[CodeScanMatcher_code][i + 2] == OP_TYPE_FUNCTION_ && matcher[CodeScanMatcher_code][i + 3] == addr) {
+			return true;
+		}
+	}
+	return false;
+}
+
+static stock bool:CodeScanFindOneFastPattern2(const matcher[CodeScanMatcher], &addr) {
+	// Loop over all the function calls in the first matcher, and check that at least one exists in
+	// all the others.  We only need to loop over the first, because it must exist in them all, so
+	// even if it is in all but the first it isn't good enough.
+	for (new i = 0, j = matcher[CodeScanMatcher_len]; i != j; i += 2) {
+		if (matcher[CodeScanMatcher_code][i + 0] == OP_TYPE_OPCODE_ && Opcode:matcher[CodeScanMatcher_code][i + 1] == OP_CALL && matcher[CodeScanMatcher_code][i + 2] == OP_TYPE_FUNCTION_) {
+			// Found a candidate for the fast scan.
+			addr = matcher[CodeScanMatcher_code][i + 3];
+			new cur = matcher[CodeScanMatcher_next];
+			if (cur == -1) {
+				// There is only one matcher, so this function call will do.
+				return true;
+			}
+			do {
+				// Check that all other matchers have the same function call.
+				if (!CodeScanFindOneFastPattern3(CodeScanDeref(cur), addr, cur)) {
+					goto CodeScanFindOneFastPattern_fail;
+				}
+			}
+			while (cur != -1);
+			return true;
+		}
+CodeScanFindOneFastPattern_fail:
+	}
+	return false;
+}
+
+forward bool:CodeScanRun(csState[CodeScanner]);
+
+stock bool:CodeScanRunFast(csState[CodeScanner]) {
+	if (csState[CodeScanner_first] == -1) {
+		return true;
+	}
+	new addr;
+	if (CodeScanFindOneFastPattern2(CodeScanDeref(csState[CodeScanner_first]), addr))
+	{
+		printf("Found address: %08x", addr);
+	}
+	return CodeScanRun(csState);
+}
+
 stock bool:CodeScanRun(csState[CodeScanner]) {
 	if (csState[CodeScanner_first] == -1) {
 		return true;
