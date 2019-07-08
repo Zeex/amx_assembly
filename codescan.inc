@@ -203,7 +203,17 @@ static stock
 	gOP_CASETBL,
 	gHdr[AMX_HDR],
 	gBase,
+	gCodBase,
 	gDat;
+
+static stock const
+	gOpArgCount[Opcode:NUM_OPCODES] = {
+		4, 8, 8, 8, 8, 8, 8, 8, 8, 4, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 4, 8, 4, 8, 4, 8, 8, 8,
+		8, 8, 4, 4, 4, 4, 4, 8, 8, 8, 8, 4, 4, 8, 8, 4, 4, 4, 8, 4, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8,
+		8, 8, 8, 4, 4, 4, 8, 8, 8, 8, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 8, 8, 4, 4, 8, 8,
+		4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 8, 8, 4, 4, 8, 8, 4, 4, 4, 8, 8, 4, 8, 8, 8, 8, 8, 4, 8,
+		-1, -1, -1, -1, 4, 8, -1, 4, 4, 8, 4, 8, 8, 4
+	};
 
 static stock bool:CodeScanCheckJumpTarget(cip, deloc, &stk, &hea, jumpTargets[CodeScanner], num = CODE_SCAN_MAX_JUMP_TARGETS) {
 	// Use "minn" to restrict the number of jump targets that we check.  Returns
@@ -808,13 +818,53 @@ static stock bool:CodeScanFindOneFastPattern2(const matcher[CodeScanMatcher], &a
 
 forward bool:CodeScanRun(csState[CodeScanner]);
 
+static stock CodeScanRunFastInternal(&proc, &nextaddr, const searchFuncAddr) {
+	new Opcode:o;
+	new addr = nextaddr;
+	while (addr < 0) {
+		switch (o = UnrelocateOpcode(Opcode:ReadAmxMemory(addr))) {
+			case OP_PROC: {
+				proc = addr;
+				addr += 4;
+			}
+			case OP_CASETBL: {
+				addr += (2 * ReadAmxMemory(addr + 4) + 3) * 4;
+			}
+			case OP_CALL: {
+				if (ReadAmxMemory(addr + 4) - gCodBase == searchFuncAddr) {
+					nextaddr = addr;
+					return true;
+				}
+				addr += 8;
+			}
+			default: {
+				addr += gOpArgCount[o];
+			}
+		}
+	}
+	return false;
+}
+
 stock bool:CodeScanRunFast(csState[CodeScanner]) {
 	if (csState[CodeScanner_first] == -1) {
 		return true;
 	}
-	new addr;
-	if (CodeScanFindOneFastPattern2(CodeScanDeref(csState[CodeScanner_first]), addr)) {
-		printf("Found address: %08x", addr);
+	new searchFuncAddr;
+	if (CodeScanFindOneFastPattern2(CodeScanDeref(csState[CodeScanner_first]), searchFuncAddr)) {
+		new
+			proc,
+			addr = csState[CodeScanMatch_cip] - gDat + gDat;
+		while (CodeScanRunFastInternal(proc, addr, searchFuncAddr)) {
+			addr += 8;
+		}
+		
+		//count = gOpArgCount[cur];
+		//if (count == -1) {
+		//	count = /* read arg count */;
+		//}
+		//searchFuncAddr += count;
+		
+		
 	}
 	return CodeScanRun(csState);
 }
@@ -872,6 +922,7 @@ stock CodeScanInit(scanner[CodeScanner]) {
 	if (gDat == 0) {
 		GetAmxHeader(gHdr),
 		gBase = GetAmxBaseAddress() + gHdr[AMX_HDR_DAT],
+		gCodBase = GetAmxBaseAddress() + gHdr[AMX_HDR_COD],
 		gDat = gHdr[AMX_HDR_COD] - gHdr[AMX_HDR_DAT],
 		gOP_NOP = _:RelocateOpcode(OP_NOP);
 		gOP_CASETBL = _:RelocateOpcode(OP_CASETBL);
