@@ -39,8 +39,7 @@ enum DisasmContext {
 	DisasmContext_end_ip,
 	DisasmContext_nip,
 	DisasmContext_cip,
-	Opcode:DisasmContext_opcode,
-	DisasmContext_insn[OpcodeInsnInfo]
+	Opcode:DisasmContext_opcode
 }
 
 enum DisasmResult {
@@ -93,7 +92,6 @@ stock bool:DisasmDecodeInsn(ctx[DisasmContext]) {
 
 	ctx[DisasmContext_cip] = ip;
 	ctx[DisasmContext_opcode] = opcode;
-	ctx[DisasmContext_insn] = GetOpcodeInstructionInformation(opcode);
 
 	ip += 4;
 
@@ -101,9 +99,8 @@ stock bool:DisasmDecodeInsn(ctx[DisasmContext]) {
 		new n = ReadAmxMemory(ip);
 		ip += 4;
 		ip += (2 * n + 1) * 4;
-		ctx[DisasmContext_insn][OpcodeInsnInfo_num_opers] = n;
 	} else {
-		ip += 4 * ctx[DisasmContext_insn][OpcodeInsnInfo_num_opers];
+		ip += 4 * GetOpcodeInstructionParameters(opcode);
 	}
 
 	ctx[DisasmContext_nip] = ip;
@@ -145,11 +142,17 @@ stock DisasmGetOperand(const ctx[DisasmContext], index = 0) {
 }
 
 stock DisasmGetNumOperands(const ctx[DisasmContext]) {
-	return ctx[DisasmContext_insn][OpcodeInsnInfo_num_opers];
+	new Opcode:opcode = ctx[DisasmContext_opcode];
+
+	if (opcode == OP_CASETBL) {
+		return ReadAmxMemory(ctx[DisasmContext_cip] + 4);
+	} else {
+		return GetOpcodeInstructionParameters(opcode);
+	}
 }
 
 stock bool:DisasmNeedReloc(const ctx[DisasmContext]) {
-	return ctx[DisasmContext_insn][OpcodeInsnInfo_needs_reloc];
+	return GetOpcodeInstructionRelocatable(ctx[DisasmContext_opcode]);
 }
 
 stock DisasmReloc(addr) {
@@ -170,7 +173,7 @@ stock DisasmGetRemaining(const ctx[DisasmContext]) {
 
 stock DisasmGetInsnName(const ctx[DisasmContext], name[], size = sizeof(name)) {
 	name[0] = '\0';
-	strcat(name, ctx[DisasmContext_insn][OpcodeInsnInfo_name], size);
+	strcat(name, GetOpcodeInstructionName(ctx[DisasmContext_opcode]), size);
 }
 
 stock DisasmGetOperandReloc(const ctx[DisasmContext], index = 0) {
