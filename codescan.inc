@@ -865,7 +865,6 @@ stock bool:CodeScanRunFast(csState[CodeScanner]) {
 		// Enable scans to start at a non-zero position.
 		DisasmInit(dctx);
 		while (CodeScanRunFastPrescan(proc, addr, searchFuncAddr)) {
-			printf("found %08x %08x", proc, addr);
 			addr += 8,
 			second = false,
 			dctx[DisasmContext_nip] = proc;
@@ -912,6 +911,7 @@ stock bool:CodeScanRunFast(csState[CodeScanner]) {
 		}
 		return true;
 	} else {
+		printf("Could not find common `CALL <func>` for the common scanner.  Falling back to the slow scanner.");
 		return CodeScanRun(csState);
 	}
 }
