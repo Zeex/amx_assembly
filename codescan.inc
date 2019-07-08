@@ -818,7 +818,9 @@ static stock bool:CodeScanFindOneFastPattern2(const matcher[CodeScanMatcher], &a
 
 forward bool:CodeScanRun(csState[CodeScanner]);
 
-static stock CodeScanRunFastInternal(&proc, &nextaddr, const searchFuncAddr) {
+static stock CodeScanRunFastPrescan(&proc, &nextaddr, const searchFuncAddr) {
+	// Do a fast code scan for functions containing something vaguely similar to the pattern.  Once
+	// that's found we can reparse the function with the full analysis mode.
 	new Opcode:o;
 	new addr = nextaddr;
 	while (addr < 0) {
@@ -853,20 +855,65 @@ stock bool:CodeScanRunFast(csState[CodeScanner]) {
 	if (CodeScanFindOneFastPattern2(CodeScanDeref(csState[CodeScanner_first]), searchFuncAddr)) {
 		new
 			proc,
-			addr = csState[CodeScanMatch_cip] - gDat + gDat;
-		while (CodeScanRunFastInternal(proc, addr, searchFuncAddr)) {
-			addr += 8;
+			addr = csState[CodeScanMatch_cip],
+			dctx[DisasmContext],
+			cur,
+			bool:second,
+			Opcode:op,
+			parseState = 4,
+			parseParam;
+		// Enable scans to start at a non-zero position.
+		DisasmInit(dctx);
+		while (CodeScanRunFastPrescan(proc, addr, searchFuncAddr)) {
+			printf("found %08x %08x", proc, addr);
+			addr += 8,
+			second = false,
+			dctx[DisasmContext_nip] = proc;
+			for (cur = csState[CodeScanner_first]; cur != -1; CodeScanReset(CodeScanDeref(cur), cur)) { }
+			while (CodeScanStepInternal(dctx, csState, parseState, parseParam)) {
+				if (second && dctx[DisasmContext_opcode] == OP_PROC) {
+					// Finished the function we know has relevant code in.  Move on.
+					addr = (proc = dctx[DisasmContext_cip]) + 4;
+					break;
+				}
+				second = true;
+				// Check the address - if it is a jump target that changes the stack
+				// size BEFORE the instruction, while the instruction itself changes
+				// it after.
+				// Found a valid instruction that we don't want to ignore.  Finally
+				// do the actual comparisons to various defined scanners.
+				for (cur = csState[CodeScanner_first], op = DisasmGetOpcode(dctx); cur != -1; ) {
+					if (CodeScanCheck(op, dctx, CodeScanDeref(cur), csState, cur)) {
+						switch (CodeScanCall(CodeScanDeref(cur), csState)) {
+							case cellmin: {
+								// End right now.
+								return true;
+							}
+							case -1: {
+								// Want to skip this match.  However, it was a full
+								// match so does need resetting.
+								CodeScanReset(CodeScanDeref(cur), cur);
+								continue;
+							}
+							case 0: {
+								// Do nothing except ignore.
+							}
+							default: {
+								// If code was written, reparse this function.
+								dctx[DisasmContext_nip] = proc;
+							}
+						}
+						// Reset to the start of the function, to reparse.
+						for (cur = csState[CodeScanner_first]; cur != -1; CodeScanReset(CodeScanDeref(cur), cur)) { }
+						break;
+					}
+				}
+			}
 		}
-		
-		//count = gOpArgCount[cur];
-		//if (count == -1) {
-		//	count = /* read arg count */;
-		//}
-		//searchFuncAddr += count;
-		
-		
+		return true;
+	} else {
+		return CodeScanRun(csState);
 	}
-	return CodeScanRun(csState);
 }
 
 stock bool:CodeScanRun(csState[CodeScanner]) {
