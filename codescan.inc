@@ -774,7 +774,7 @@ static stock CodeScanCall(const cs[CodeScanMatcher], csState[CodeScanner]) {
 	return func;
 }
 
-static stock bool:CodeScanFindOneFastPattern3(const matcher[CodeScanMatcher], &addr, &cur) {
+static stock bool:CodeScanFindOneFastPattern3(const matcher[CodeScanMatcher], addr, &cur) {
 	// Check if the current matcher has this exact function call in it as well.
 	cur = matcher[CodeScanMatcher_next];
 	for (new i = 0, j = matcher[CodeScanMatcher_len]; i != j; i += 2) {
