@@ -794,20 +794,14 @@ static stock bool:CodeScanFindOneFastPattern2(const matcher[CodeScanMatcher], &a
 			// Found a candidate for the fast scan.
 			addr = matcher[CodeScanMatcher_code][i + 3];
 			new cur = matcher[CodeScanMatcher_next];
-			if (cur == -1) {
-				// There is only one matcher, so this function call will do.
-				return true;
-			}
 			do {
-				// Check that all other matchers have the same function call.
-				if (!CodeScanFindOneFastPattern3(CodeScanDeref(cur), addr, cur)) {
-					goto CodeScanFindOneFastPattern_fail;
+				if (cur == -1) {
+					// Ran out of matchers, so this function call will do.
+					return true;
 				}
-			}
-			while (cur != -1);
-			return true;
+				// Check that all other matchers have the same function call.
+			} while (CodeScanFindOneFastPattern3(CodeScanDeref(cur), addr, cur));
 		}
-CodeScanFindOneFastPattern_fail:
 	}
 	return false;
 }
@@ -819,8 +813,7 @@ stock bool:CodeScanRunFast(csState[CodeScanner]) {
 		return true;
 	}
 	new addr;
-	if (CodeScanFindOneFastPattern2(CodeScanDeref(csState[CodeScanner_first]), addr))
-	{
+	if (CodeScanFindOneFastPattern2(CodeScanDeref(csState[CodeScanner_first]), addr)) {
 		printf("Found address: %08x", addr);
 	}
 	return CodeScanRun(csState);
