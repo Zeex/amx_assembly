@@ -500,6 +500,8 @@
 #define AsmEmitSysreq.%0(%1) AsmEmitSysreq%0(%1)
 #define AsmEmitSysreqc AsmEmitSysreqC
 #define AsmEmitSysreqd AsmEmitSysreqD
+#define AsmEmitSysreqpri AsmEmitSysreqPri
+#define AsmEmitSysreqPRI AsmEmitSysreqPri
 #define AsmEmitUdiv.%0(%1) AsmEmitUdiv%0(%1)
 #define AsmEmitUdivalt AsmEmitUdivAlt
 #define AsmEmitUdivALT AsmEmitUdivAlt

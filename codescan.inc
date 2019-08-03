@@ -847,12 +847,11 @@ static stock CodeScanRunFastPrescan(&proc, &nextaddr, const searchFuncAddr) {
 	return false;
 }
 
-stock bool:CodeScanRunFast(csState[CodeScanner]) {
+stock bool:CodeScanRunFast(csState[CodeScanner], searchFuncAddr = 0) {
 	if (csState[CodeScanner_first] == -1) {
 		return true;
 	}
-	new searchFuncAddr;
-	if (CodeScanFindOneFastPattern2(CodeScanDeref(csState[CodeScanner_first]), searchFuncAddr)) {
+	if (searchFuncAddr || CodeScanFindOneFastPattern2(CodeScanDeref(csState[CodeScanner_first]), searchFuncAddr)) {
 		new
 			proc,
 			addr = csState[CodeScanMatch_cip],
@@ -915,6 +914,8 @@ stock bool:CodeScanRunFast(csState[CodeScanner]) {
 		return CodeScanRun(csState);
 	}
 }
+
+#define CodeScanRunFast(%0,&%1) CodeScanRunFast(%0,addressof(%1))
 
 stock bool:CodeScanRun(csState[CodeScanner]) {
 	if (csState[CodeScanner_first] == -1) {
