@@ -203,7 +203,17 @@ static stock
 	gOP_CASETBL,
 	gHdr[AMX_HDR],
 	gBase,
+	gCodBase,
 	gDat;
+
+static stock const
+	gOpArgCount[Opcode:NUM_OPCODES] = {
+		4, 8, 8, 8, 8, 8, 8, 8, 8, 4, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 4, 8, 4, 8, 4, 8, 8, 8,
+		8, 8, 4, 4, 4, 4, 4, 8, 8, 8, 8, 4, 4, 8, 8, 4, 4, 4, 8, 4, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8,
+		8, 8, 8, 4, 4, 4, 8, 8, 8, 8, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 8, 8, 4, 4, 8, 8,
+		4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 8, 8, 4, 4, 8, 8, 4, 4, 4, 8, 8, 4, 8, 8, 8, 8, 8, 4, 8,
+		-1, -1, -1, -1, 4, 8, -1, 4, 4, 8, 4, 8, 8, 4
+	};
 
 static stock bool:CodeScanCheckJumpTarget(cip, deloc, &stk, &hea, jumpTargets[CodeScanner], num = CODE_SCAN_MAX_JUMP_TARGETS) {
 	// Use "minn" to restrict the number of jump targets that we check.  Returns
@@ -774,6 +784,139 @@ static stock CodeScanCall(const cs[CodeScanMatcher], csState[CodeScanner]) {
 	return func;
 }
 
+static stock bool:CodeScanFindOneFastPattern3(const matcher[CodeScanMatcher], addr, &cur) {
+	// Check if the current matcher has this exact function call in it as well.
+	cur = matcher[CodeScanMatcher_next];
+	for (new i = 0, j = matcher[CodeScanMatcher_len]; i != j; i += 2) {
+		if (matcher[CodeScanMatcher_code][i + 0] == OP_TYPE_OPCODE_ && Opcode:matcher[CodeScanMatcher_code][i + 1] == OP_CALL && matcher[CodeScanMatcher_code][i + 2] == OP_TYPE_FUNCTION_ && matcher[CodeScanMatcher_code][i + 3] == addr) {
+			return true;
+		}
+	}
+	return false;
+}
+
+static stock bool:CodeScanFindOneFastPattern2(const matcher[CodeScanMatcher], &addr) {
+	// Loop over all the function calls in the first matcher, and check that at least one exists in
+	// all the others.  We only need to loop over the first, because it must exist in them all, so
+	// even if it is in all but the first it isn't good enough.
+	for (new i = 0, j = matcher[CodeScanMatcher_len]; i != j; i += 2) {
+		if (matcher[CodeScanMatcher_code][i + 0] == OP_TYPE_OPCODE_ && Opcode:matcher[CodeScanMatcher_code][i + 1] == OP_CALL && matcher[CodeScanMatcher_code][i + 2] == OP_TYPE_FUNCTION_) {
+			// Found a candidate for the fast scan.
+			addr = matcher[CodeScanMatcher_code][i + 3];
+			new cur = matcher[CodeScanMatcher_next];
+			do {
+				if (cur == -1) {
+					// Ran out of matchers, so this function call will do.
+					return true;
+				}
+				// Check that all other matchers have the same function call.
+			} while (CodeScanFindOneFastPattern3(CodeScanDeref(cur), addr, cur));
+		}
+	}
+	return false;
+}
+
+forward bool:CodeScanRun(csState[CodeScanner]);
+
+static stock CodeScanRunFastPrescan(&proc, &nextaddr, const searchFuncAddr) {
+	// Do a fast code scan for functions containing something vaguely similar to the pattern.  Once
+	// that's found we can reparse the function with the full analysis mode.
+	new Opcode:o;
+	new addr = nextaddr;
+	while (addr < 0) {
+		switch (o = UnrelocateOpcode(Opcode:ReadAmxMemory(addr))) {
+			case OP_PROC: {
+				proc = addr;
+				addr += 4;
+			}
+			case OP_CASETBL: {
+				addr += (2 * ReadAmxMemory(addr + 4) + 3) * 4;
+			}
+			case OP_CALL: {
+				if (ReadAmxMemory(addr + 4) - gCodBase == searchFuncAddr) {
+					nextaddr = addr;
+					return true;
+				}
+				addr += 8;
+			}
+			default: {
+				addr += gOpArgCount[o];
+			}
+		}
+	}
+	return false;
+}
+
+stock bool:CodeScanRunFast(csState[CodeScanner], searchFuncAddr = 0) {
+	if (csState[CodeScanner_first] == -1) {
+		return true;
+	}
+	if (searchFuncAddr || CodeScanFindOneFastPattern2(CodeScanDeref(csState[CodeScanner_first]), searchFuncAddr)) {
+		new
+			proc,
+			addr = csState[CodeScanMatch_cip],
+			dctx[DisasmContext],
+			cur,
+			bool:second,
+			Opcode:op,
+			parseState = 4,
+			parseParam;
+		// Enable scans to start at a non-zero position.
+		DisasmInit(dctx);
+		while (CodeScanRunFastPrescan(proc, addr, searchFuncAddr)) {
+			addr += 8,
+			second = false,
+			dctx[DisasmContext_nip] = proc;
+			for (cur = csState[CodeScanner_first]; cur != -1; CodeScanReset(CodeScanDeref(cur), cur)) { }
+			while (CodeScanStepInternal(dctx, csState, parseState, parseParam)) {
+				if (second && dctx[DisasmContext_opcode] == OP_PROC) {
+					// Finished the function we know has relevant code in.  Move on.
+					addr = (proc = dctx[DisasmContext_cip]) + 4;
+					break;
+				}
+				second = true;
+				// Check the address - if it is a jump target that changes the stack
+				// size BEFORE the instruction, while the instruction itself changes
+				// it after.
+				// Found a valid instruction that we don't want to ignore.  Finally
+				// do the actual comparisons to various defined scanners.
+				for (cur = csState[CodeScanner_first], op = DisasmGetOpcode(dctx); cur != -1; ) {
+					if (CodeScanCheck(op, dctx, CodeScanDeref(cur), csState, cur)) {
+						switch (CodeScanCall(CodeScanDeref(cur), csState)) {
+							case cellmin: {
+								// End right now.
+								return true;
+							}
+							case -1: {
+								// Want to skip this match.  However, it was a full
+								// match so does need resetting.
+								CodeScanReset(CodeScanDeref(cur), cur);
+								continue;
+							}
+							case 0: {
+								// Do nothing except ignore.
+							}
+							default: {
+								// If code was written, reparse this function.
+								dctx[DisasmContext_nip] = proc;
+							}
+						}
+						// Reset to the start of the function, to reparse.
+						for (cur = csState[CodeScanner_first]; cur != -1; CodeScanReset(CodeScanDeref(cur), cur)) { }
+						break;
+					}
+				}
+			}
+		}
+		return true;
+	} else {
+		printf("Could not find common `CALL <func>` for the common scanner.  Falling back to the slow scanner.");
+		return CodeScanRun(csState);
+	}
+}
+
+#define CodeScanRunFast(%0,&%1) CodeScanRunFast(%0,addressof(%1))
+
 stock bool:CodeScanRun(csState[CodeScanner]) {
 	if (csState[CodeScanner_first] == -1) {
 		return true;
@@ -827,6 +970,7 @@ stock CodeScanInit(scanner[CodeScanner]) {
 	if (gDat == 0) {
 		GetAmxHeader(gHdr),
 		gBase = GetAmxBaseAddress() + gHdr[AMX_HDR_DAT],
+		gCodBase = GetAmxBaseAddress() + gHdr[AMX_HDR_COD],
 		gDat = gHdr[AMX_HDR_COD] - gHdr[AMX_HDR_DAT],
 		gOP_NOP = _:RelocateOpcode(OP_NOP);
 		gOP_CASETBL = _:RelocateOpcode(OP_CASETBL);

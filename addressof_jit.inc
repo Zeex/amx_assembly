@@ -127,6 +127,6 @@ stock AddressofResolve() {
 	CodeScanAddMatcher(scanner, csm3);
 	
 	// Run the scanner.
-	CodeScanRun(scanner);
+	CodeScanRunFast(scanner, &AddressOfGetNextCall_);
 }
 
