@@ -196,7 +196,7 @@ enum CodeScanMatcher {
 #define addressof_ScannerCallback_(%1) (O@A_()?(((%1((gCodeScanCallback_match))),O@V_)?1:2):(O@V_))
 
 stock
-	gCodeScanCallback_match[CodeScanner];
+	gCodeScanCallback_match[CodeScanner] = {};
 
 static stock
 	gOP_NOP,

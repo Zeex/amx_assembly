@@ -62,8 +62,8 @@
 #define _ADDR@x:%8$%0(%1)<x%2>),O@V_)?(%9:1):(%9:2)):(%9:O@V_)) _ADDR@z$%0(%1)<>),O@V_)?(%9x:1):(%9x:2)):(%9x:O@V_))
 
 stock
-	__ARR[1],
-	__REF,
+	__ARR[1] = {},
+	__REF = 0,
 	gAddressOfReturnVar_ = 0;
 
 stock bool:AddressOfGetNextCall_() {
