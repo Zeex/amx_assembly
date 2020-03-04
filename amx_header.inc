@@ -27,7 +27,7 @@
 
 #include "amx_memory"
 
-#define AMX_HDR_BYTES (60)
+#define AMX_HDR_BYTES (56)
 #define AMX_HDR_CELLS (AMX_HDR_BYTES / 4)
 
 #define AMX_TAG_MASK (0x80000000)
