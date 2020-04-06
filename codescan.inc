@@ -133,7 +133,7 @@ stock MyFunc(a, b[], ...) {
 #define O@3_:%9$%1|||%2)      O@I_ ),(_:O@X_:O@Y_:O@Z_:$(%1)%2)
 
 #if !defined cellbytes
-	#define cellbytes (cellbits / 8)
+	#define cellbytes (cellbits / charbits)
 #endif
 
 #if !defined CODE_SCAN_MAX_PATTERN
