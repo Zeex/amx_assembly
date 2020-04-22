@@ -840,7 +840,7 @@ static stock CodeScanRunFastPrescan(&proc, &nextaddr, const searchFuncAddr) {
 				addr += 8;
 			}
 			default: {
-				addr += gOpArgCount[o];
+				addr += (0 <= _:o < sizeof (gOpArgCount)) ? gOpArgCount[o] : 4;
 			}
 		}
 	}
