@@ -156,7 +156,7 @@ stock SetAmxHeapTop(ptr)
 stock SetAmxStackBottom(ptr)
 {
 	static
-		cip;
+		cip = 0;
 	// We need to be tricky here, because the return value is on the stack.
 	#emit load.s.alt ptr
 	// Store the return address.

@@ -199,12 +199,12 @@ stock
 	gCodeScanCallback_match[CodeScanner] = {};
 
 static stock
-	gOP_NOP,
-	gOP_CASETBL,
+	gOP_NOP = 0,
+	gOP_CASETBL = 0,
 	gHdr[AMX_HDR],
-	gBase,
-	gCodBase,
-	gDat;
+	gBase = 0,
+	gCodBase = 0,
+	gDat = 0;
 
 static stock const
 	gOpArgCount[Opcode:NUM_OPCODES] = {

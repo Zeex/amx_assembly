@@ -48,7 +48,7 @@ enum DisasmResult {
 	DISASM_OK   = 2
 }
 
-static stock gCodBase;
+static stock gCodBase = 0;
 
 stock DisasmInit(ctx[DisasmContext], start = 0, end = 0) {
 	new hdr[AMX_HDR];

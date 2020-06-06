@@ -54,7 +54,7 @@ enum ProfEntryCode {
 }
 
 static stock g_pecs[PROF_MAX_PUBLICS][ProfEntryCode];
-static stock g_num_pecs;
+static stock g_num_pecs = 0;
 
 enum ProfCallInfo {
 	pci_index,
@@ -68,10 +68,10 @@ enum ProfPublicInfo {
 }
 
 static stock g_publics[PROF_MAX_PUBLICS][ProfPublicInfo];
-static stock g_num_publics;
+static stock g_num_publics = 0;
 
 static stock g_call_stack[PROF_MAX_CALL_STACK][ProfCallInfo];
-static stock g_call_depth;
+static stock g_call_depth = 0;
 
 static stock exit_public() {
 	if (--g_call_depth < sizeof(g_call_stack)) {
