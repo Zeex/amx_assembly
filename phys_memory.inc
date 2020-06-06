@@ -44,7 +44,7 @@ static stock RelToAbs(address) {
 // Returns the absolute address of a variable/array.
 stock refabs(...) {
 	assert(numargs() == 1);
-	new address;
+	new address = 0;
 	#emit load.s.pri 12
 	#emit stor.s.pri address
 	return RelToAbs(address);
@@ -54,7 +54,7 @@ stock ReadPhysMemory(address, dest[], num = sizeof(dest)) {
 	new rel_addr = AbsToRel(address);
 
 	// Current destination cell address.
-	new cur_dest;
+	new cur_dest = 0;
 	#emit load.s.pri dest
 	#emit stor.s.pri cur_dest
 
@@ -77,7 +77,7 @@ stock WritePhysMemory(address, src[], num = sizeof(src)) {
 	new rel_addr = AbsToRel(address);
 
 	// Current destination cell address..
-	new cur_src;
+	new cur_src = 0;
 	#emit load.s.pri src
 	#emit stor.s.pri cur_src
 

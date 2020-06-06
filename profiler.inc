@@ -158,7 +158,7 @@ static stock new_pec(index, address, code_start) {
 		pec[pec_push_c2] = RelocateOpcode(OP_PUSH_C);
 		pec[pec_push_8] = 8;
 
-		new enter_proc;
+		new enter_proc = 0;
 		#emit const.pri enter_public
 		#emit stor.s.pri enter_proc
 		pec[pec_call] = RelocateOpcode(OP_CALL);
@@ -183,7 +183,7 @@ stock ProfilerInit() {
 
 	// Redirect all public calls to ProfileHook().
 	for (new i = 0, cur = publics; i < num_publics; cur += defsize, i++) {
-		new address;
+		new address = 0;
 		#emit lref.s.pri cur
 		#emit stor.s.pri address
 
@@ -194,7 +194,7 @@ stock ProfilerInit() {
 		}
 
 		// Get start address of the g_pecs sub-array at pec_index.
-		new pec_start;
+		new pec_start = 0;
 		#emit const.alt g_pecs
 		#emit load.s.pri pec_index
 		#emit idxaddr

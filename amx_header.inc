@@ -123,7 +123,7 @@ forward GetAmxHeaderComponent(AMX_HDR:comp);
 forward PrintAmxHeader();
 
 stock GetRawAmxHeader(plain_amxhdr[AMX_HDR_CELLS]) {
-	new address;
+	new address = 0;
 	#emit lctrl 1  // DAT
 	#emit neg      // -DAT
 	#emit stor.s.pri address
@@ -231,9 +231,9 @@ stock PrintAmxHeader() {
 // Compares a string stored in the name table starting at "s1" (packed)
 // with another string "s2" (unpacked).
 static stock NtCompare(s1, const s2[]) {
-	new index;
-	new c1, c2;
-	new diff;
+	new index = 0;
+	new c1 = 0, c2 = 0;
+	new diff = 0;
 
 	do {
 		c1 = ReadAmxMemory(s1++) & 0xFF;
@@ -251,7 +251,7 @@ static stock NtCompare(s1, const s2[]) {
 // of characters copied.
 static stock NtCopy(src, dest[], size = sizeof(dest)) {
 	new i = 0;
-	new c;
+	new c = 0;
 
 	do {
 		c = ReadAmxMemory(src++) & 0xFF;
@@ -309,7 +309,7 @@ stock GetPublicIndexFromName(const name[]) {
 	// Binary search
 	new first = 0;
 	new last = num_publics - 1;
-	new mid;
+	new mid = 0;
 
 	while (first <= last) {
 		mid = (first + last) / 2;

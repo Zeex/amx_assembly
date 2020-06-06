@@ -221,7 +221,7 @@ static stock bool:CodeScanCheckJumpTarget(cip, deloc, &stk, &hea, jumpTargets[Co
 	// to.
 	new
 		minn = jumpTargets[CodeScanner_minn],
-		sip;
+		sip = 0;
 	while (num-- > minn) {
 		if (jumpTargets[CodeScanner_jump_target][num]) {
 			if ((sip = jumpTargets[CodeScanner_jump_switch][num])) {
@@ -356,7 +356,7 @@ stock CodeScanMatcherPattern_(searcher[CodeScanMatcher], {Opcode, Float, _}:...)
 		switch (optype) {
 			case OP_TYPE_OPCODE_: {
 				new opcount = GetOpcodeInstructionParameters(op);
-				for (new partype; i != len; )
+				for (new partype = 0; i != len; )
 				{
 					partype = getarg(i + 1);
 					switch (partype) {
@@ -853,14 +853,14 @@ stock bool:CodeScanRunFast(csState[CodeScanner], searchFuncAddr = 0) {
 	}
 	if (searchFuncAddr || CodeScanFindOneFastPattern2(CodeScanDeref(csState[CodeScanner_first]), searchFuncAddr)) {
 		new
-			proc,
+			proc = 0,
 			addr = csState[CodeScanMatch_cip],
 			dctx[DisasmContext],
-			cur,
-			bool:second,
-			Opcode:op,
+			cur = 0,
+			bool:second = false,
+			Opcode:op = OP_NONE,
 			parseState = 4,
-			parseParam;
+			parseParam = 0;
 		// Enable scans to start at a non-zero position.
 		DisasmInit(dctx);
 		while (CodeScanRunFastPrescan(proc, addr, searchFuncAddr)) {
@@ -923,10 +923,10 @@ stock bool:CodeScanRun(csState[CodeScanner]) {
 	}
 	new
 		dctx[DisasmContext],
-		cur,
+		cur = 0,
 		Opcode:op,
 		parseState = 4,
-		parseParam;
+		parseParam = 0;
 	// Enable scans to start at a non-zero position.
 	DisasmInit(dctx, csState[CodeScanMatch_cip] - gDat);
 	for (cur = csState[CodeScanner_first]; cur != -1; CodeScanReset(CodeScanDeref(cur), cur)) { }

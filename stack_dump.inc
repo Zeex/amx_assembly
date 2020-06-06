@@ -58,7 +58,7 @@
 
 stock DumpStack()
 {
-	new stp, stk;
+	new stp = 0, stk = 0;
 
 	#emit lctrl 3
 	#emit stor.s.pri stp

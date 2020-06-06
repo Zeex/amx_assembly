@@ -123,7 +123,7 @@ static stock AsmHashLabel(const label[]) {
 	// secure hash, but is sufficient for our uses.
 	new hash = -1;
 	new i = -1;
-	new ch;
+	new ch = 0;
 	while ((ch = label[++i])) {
 		hash = hash * 33 + ch;
 	}

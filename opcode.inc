@@ -236,7 +236,7 @@ static stock const insn_table[][OpcodeInsnInfo] = {
 const NUM_OPCODES = _:OP_LAST_;
 
 static stock Opcode:ReadOpcodeNearThis(offset = 0) {
-	new ret_addr;
+	new ret_addr = 0;
 
 	// Get return address + COD - DAT + offset.
 	#emit load.s.alt 4

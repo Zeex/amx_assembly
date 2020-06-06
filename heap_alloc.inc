@@ -27,7 +27,7 @@
 
 // Allocates a block of (uninitialized) memory on the heap.
 stock HeapAllocBytes(nbytes) {
-	new address;
+	new address = 0;
 	#emit lctrl 2
 	#emit stor.s.pri address
 	#emit load.s.alt nbytes

@@ -29,7 +29,7 @@ static stock GetAmxBaseAddress_helper() {
 
 // Returns the AMX base address i.e. amx->base.
 stock GetAmxBaseAddressNow() {
-	new cod, dat;
+	new cod = 0, dat = 0;
 	#emit lctrl 0
 	#emit stor.s.pri cod
 	#emit lctrl 1
@@ -39,12 +39,12 @@ stock GetAmxBaseAddressNow() {
 	new code_start = cod - dat;
 
 	// Get address of GetAmxBaseAddress_helper().
-	new fn_addr;
+	new fn_addr = 0;
 	#emit const.pri GetAmxBaseAddress_helper
 	#emit stor.s.pri fn_addr
 
 	// Get absolute address from the CALL instruction.
-	new fn_addr_reloc, call_addr;
+	new fn_addr_reloc = 0, call_addr = 0;
 	GetAmxBaseAddress_helper();
 	#emit lctrl 6
 	#emit stor.s.pri call_addr

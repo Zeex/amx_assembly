@@ -49,7 +49,7 @@ stock GetFunctionFromReturnAddress(ret_addr) {
 }
 
 stock GetStackTrace(trace[], skip = 0, max = sizeof(trace)) {
-	new frm_addr;
+	new frm_addr = 0;
 	#emit lctrl 5
 	#emit stor.s.pri frm_addr
 
