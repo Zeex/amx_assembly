@@ -821,7 +821,7 @@ forward bool:CodeScanRun(csState[CodeScanner]);
 static stock CodeScanRunFastPrescan(&proc, &nextaddr, const searchFuncAddr) {
 	// Do a fast code scan for functions containing something vaguely similar to the pattern.  Once
 	// that's found we can reparse the function with the full analysis mode.
-	new Opcode:o;
+	new Opcode:o = OP_NONE;
 	new addr = nextaddr;
 	while (addr < 0) {
 		switch (o = UnrelocateOpcode(Opcode:ReadAmxMemory(addr))) {
@@ -924,7 +924,7 @@ stock bool:CodeScanRun(csState[CodeScanner]) {
 	new
 		dctx[DisasmContext],
 		cur = 0,
-		Opcode:op,
+		Opcode:op = OP_NONE,
 		parseState = 4,
 		parseParam = 0;
 	// Enable scans to start at a non-zero position.
