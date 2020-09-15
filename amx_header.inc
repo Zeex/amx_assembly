@@ -236,7 +236,8 @@ static stock NtCompare(s1, const s2[]) {
 	new diff = 0;
 
 	do {
-		c1 = ReadAmxMemory(s1++) & 0xFF;
+		c1 = ReadAmxMemory(s1) & 0xFF;
+		++s1;
 		c2 = s2[index++];
 		diff = c1 - c2;
 		if (diff != 0) {
@@ -254,7 +255,8 @@ static stock NtCopy(src, dest[], size = sizeof(dest)) {
 	new c = 0;
 
 	do {
-		c = ReadAmxMemory(src++) & 0xFF;
+		c = ReadAmxMemory(src) & 0xFF;
+		++src;
 		dest[i++] = c;
 	} while (c != '\0' && i <= size);
 

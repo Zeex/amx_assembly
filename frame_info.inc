@@ -472,7 +472,8 @@ stock GetFrameFunction(frm_addr) {
 			opcode = UnrelocateOpcode(Opcode:ReadAmxMemory(ret_addr - 8));
 
 			if (opcode == OP_LOAD_PRI) {
-				return ReadAmxMemory(ReadAmxMemory(ret_addr - 4));
+				ret_addr = ReadAmxMemory(ret_addr - 4);
+				return ReadAmxMemory(ret_addr);
 			} else if (opcode == OP_LOAD_S_PRI) {
 				return GetFrameVariable(prev_frm, ReadAmxMemory(ret_addr - 4));
 			} else if (opcode == OP_CONST_PRI) {

@@ -65,23 +65,16 @@ stock argderef(n) {
 	return gFake; // make compiler happy
 }
 
-stock ReadAmxMemory(address) {
-	#emit lref.s.pri address
-	#emit retn
-	return 0; // make compiler happy
-}
+#if ((__Pawn & 0x0F) >= 0x0A) || ((__Pawn & 0xF0) >= 0xA0)
+	stock gAmxAssemblyAddress_;
+	#define ReadAmxMemory(%0) __emit(load.u.pri %0, stor.pri gAmxAssemblyAddress_, lref.pri gAmxAssemblyAddress_)
+	#define WriteAmxMemory(%0,%1) __emit(push.u %1, load.u.alt %0, stor.alt gAmxAssemblyAddress_, pop.pri, sref.pri gAmxAssemblyAddress_)
+#endif
 
 stock ReadAmxMemoryArray(address, values[], size = sizeof(values)) {
 	for (new i = 0; i < size; i++) {
 		values[i] = ReadAmxMemory(address + i * 4);
 	}
-}
-
-stock WriteAmxMemory(address, value) {
-	#emit load.s.pri value
-	#emit sref.s.pri address
-	#emit retn
-	return 0; // make compiler happy
 }
 
 stock WriteAmxMemoryArray(address, const values[], size = sizeof(values)) {
@@ -200,5 +193,23 @@ stock SetAmxNextInstructionPointer(ptr)
 	#emit stack 16
 	#emit sctrl 8
 	#emit sctrl 6
+}
+
+#if ((__Pawn & 0x0F) >= 0x0A) || ((__Pawn & 0xF0) >= 0xA0)
+	#endinput
+#endif
+
+// after `#endif` because `#if` doesn't elide `#emit`.
+stock WriteAmxMemory(address, value) {
+	#emit load.s.pri value
+	#emit sref.s.pri address
+	#emit retn
+	return 0; // make compiler happy
+}
+
+stock ReadAmxMemory(address) {
+	#emit lref.s.pri address
+	#emit retn
+	return 0; // make compiler happy
 }
 
