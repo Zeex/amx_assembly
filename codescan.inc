@@ -263,7 +263,7 @@ static stock CodeScanAddSwitchTarget(const dctx[DisasmContext], stk, hea, jumpTa
 	new
 		sip = DISASM_GET_OPERAND_INLINE(dctx, 0) - gBase,
 		codepos = sip + gHdr[AMX_HDR_DAT] - gHdr[AMX_HDR_COD];
-	if (codepos < 0 || codepos > gHdr[AMX_HDR_DAT] || ReadAmxMemory(sip) != gOP_CASETBL) {
+	if ((codepos < 0) || (codepos > gHdr[AMX_HDR_DAT]) || (_:ReadAmxMemory(sip) != _:gOP_CASETBL)) {
 		// Can happen when we parse "RelocateOpcodeNow" because it has an
 		// explicit "#emit switch 0" in.
 		return;
@@ -443,7 +443,7 @@ static stock bool:CodeScanCheck(Opcode:op, const dctx[DisasmContext], cs[CodeSca
 		}
 	}
 	new
-		cnt = (op == OP_CASETBL) ? ReadAmxMemory(dctx[DisasmContext_cip] + 4) : gAMXOpcodeParameterCounts[_:op],
+		cnt = (op == OP_CASETBL) ? (_:ReadAmxMemory(dctx[DisasmContext_cip] + 4)) : (gAMXOpcodeParameterCounts[_:op]),
 		len = cs[CodeScanMatcher_len];
 	for (new idx = 0; idx != CODE_SCAN_MAX_PARALLEL; ++idx) {
 		off = cs[CodeScanMatcher_offset][idx];
@@ -805,7 +805,7 @@ static stock CodeScanRunFastPrescanLocated(&proc, &nextaddr, const searchFuncAdd
 				addr += 8;
 			}
 			default: {
-				addr += (0 <= _:o < sizeof (gAMXOpcodeBaseSizes)) ? gAMXOpcodeBaseSizes[o] : 4;
+				addr += (0 <= _:o < sizeof (gAMXOpcodeBaseSizes)) ? (gAMXOpcodeBaseSizes[_:o]) : (4);
 			}
 		}
 	}
@@ -834,7 +834,7 @@ static stock CodeScanRunFastPrescanRelocate(&proc, &nextaddr, const searchFuncAd
 				addr += 8;
 			}
 			default: {
-				addr += (0 <= _:o < sizeof (gAMXOpcodeBaseSizes)) ? gAMXOpcodeBaseSizes[o] : 4;
+				addr += (0 <= _:o < sizeof (gAMXOpcodeBaseSizes)) ? (gAMXOpcodeBaseSizes[_:o]) : (4);
 			}
 		}
 	}
