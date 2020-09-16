@@ -407,12 +407,6 @@ static stock CodeScanDeref(v) {
 }
 
 static stock bool:CodeScanCheck(Opcode:op, const dctx[DisasmContext], cs[CodeScanMatcher], fctx[CodeScanner], &next) {
-	// Returns an address of a callback if it passes.
-	if (!cs[CodeScanMatcher_len]) {
-		return
-			next = cs[CodeScanMatcher_next],
-			false;
-	}
 	new
 		bool:zero = true,
 		off = cs[CodeScanMatcher_flags];
