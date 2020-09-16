@@ -90,21 +90,17 @@ stock bool:DisasmDecodeInsn(ctx[DisasmContext]) {
 		return false;
 	}
 
-	ctx[DisasmContext_cip] = ip;
+	ctx[DisasmContext_cip] = ip,
 	ctx[DisasmContext_opcode] = opcode;
 
-	ip += 4;
-
 	if (opcode == OP_CASETBL) {
-		new n = ReadAmxMemory(ip);
-		ip += 4;
-		ip += (2 * n + 1) * 4;
-	} else {
-		ip += 4 * gAMXOpcodeParameterCounts[_:opcode];
+		ip += 4,
+		ip += ReadAmxMemory(ip) * 8;
 	}
 
-	ctx[DisasmContext_nip] = ip;
-	return true;
+	return
+		ctx[DisasmContext_nip] = ip + gAMXOpcodeBaseSizes[_:opcode],
+		true;
 }
 
 stock DisasmResult:DisasmNext(ctx[DisasmContext]) {
