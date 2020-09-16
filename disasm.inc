@@ -106,7 +106,7 @@ stock bool:DisasmDecodeInsn(ctx[DisasmContext]) {
 static stock bool:gRelocateRequired;
 
 stock DisasmInitUnsafe() {
-	gRelocateRequired = RelocateOpcode(OP_LOAD_PRI) != OP_LOAD_PRI;
+	gRelocateRequired = IsOpcodeRelocationRequired();
 }
 
 stock bool:DisasmDecodeInsnUnsafe(ctx[DisasmContext]) {

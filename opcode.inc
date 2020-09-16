@@ -708,6 +708,10 @@ stock bool:IsOpcodeValid(Opcode:opcode) {
 	return (OP_NONE <= opcode < Opcode:NUM_OPCODES);
 }
 
+stock bool:IsOpcodeRelocationRequired() {
+	return RelocateOpcode(OP_LOAD_PRI) != OP_LOAD_PRI;
+}
+
 static stock InitOpcodeTable() {
 	for (new i = 0; i < NUM_OPCODES; i++) {
 		opcode_table[i] = RelocateOpcodeNow(Opcode:i);

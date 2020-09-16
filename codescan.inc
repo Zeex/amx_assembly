@@ -316,7 +316,7 @@ stock CodeScanMatcherInit_(searcher[CodeScanMatcher], address, flags = SCANNER_I
 	searcher[CodeScanMatcher_user_data] = 0,
 	CodeScanReset(searcher, flags),
 	DisasmInitUnsafe(), // Initialise the opcode system safely.
-	gRelocateRequired = RelocateOpcode(OP_LOAD_PRI) != OP_LOAD_PRI;
+	gRelocateRequired = IsOpcodeRelocationRequired();
 }
 
 stock CodeScanMatcherData(searcher[CodeScanMatcher], val) {
