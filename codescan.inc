@@ -205,15 +205,6 @@ static stock
 	gCodBase = 0,
 	gDat = 0;
 
-static stock const
-	gOpSizeCount[Opcode:NUM_OPCODES] = {
-		4, 8, 8, 8, 8, 8, 8, 8, 8, 4, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 4, 8, 4, 8, 4, 8, 8, 8,
-		8, 8, 4, 4, 4, 4, 4, 8, 8, 8, 8, 4, 4, 8, 8, 4, 4, 4, 8, 4, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8,
-		8, 8, 8, 4, 4, 4, 8, 8, 8, 8, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 8, 8, 4, 4, 8, 8,
-		4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 8, 8, 4, 4, 8, 8, 4, 4, 4, 8, 8, 4, 8, 8, 8, 8, 8, 4, 8,
-		-1, -1, -1, -1, 4, 8, -1, 4, 4, 8, 4, 8, 8, 4
-	};
-
 static stock bool:CodeScanCheckJumpTarget(cip, deloc, &stk, &hea, jumpTargets[CodeScanner], num = CODE_SCAN_MAX_JUMP_TARGETS) {
 	// Use "minn" to restrict the number of jump targets that we check.  Returns
 	// "true" if the current address is equal to an address that any jump goes
@@ -306,6 +297,8 @@ stock CodeScanAddMatcher(scanner[CodeScanner], searcher[CodeScanMatcher]) {
 	scanner[CodeScanner_first] = ref(searcher);
 }
 
+static stock bool:gRelocateRequired;
+
 stock CodeScanMatcherInit_(searcher[CodeScanMatcher], address, flags = SCANNER_IGNORE_NOP | SCANNER_IGNORE_BOUNDS | SCANNER_IGNORE_BREAK | SCANNER_IGNORE_HALT) {
 	// This used to look the function up by name from the public functions
 	// table, but that was very silly since we already had code in this exact
@@ -321,7 +314,9 @@ stock CodeScanMatcherInit_(searcher[CodeScanMatcher], address, flags = SCANNER_I
 	searcher[CodeScanMatcher_next] = -1,
 	searcher[CodeScanMatcher_len] = 0,
 	searcher[CodeScanMatcher_user_data] = 0,
-	CodeScanReset(searcher, flags);
+	CodeScanReset(searcher, flags),
+	DisasmInitUnsafe(), // Initialise the opcode system safely.
+	gRelocateRequired = RelocateOpcode(OP_LOAD_PRI) != OP_LOAD_PRI;
 }
 
 stock CodeScanMatcherData(searcher[CodeScanMatcher], val) {
@@ -539,7 +534,7 @@ static stock bool:CodeScanStepInternal(dctx[DisasmContext], csState[CodeScanner]
 	// empt that one.
 	if (dctx[DisasmContext_nip] >= dctx[DisasmContext_end_ip]) {
 		return false;
-	} else if (DisasmDecodeInsn(dctx)) {
+	} else if (DisasmDecodeInsnUnsafe(dctx)) {
 		new
 			stk = csState[CodeScanMatch_stack],
 			hea = csState[CodeScanMatch_heap],
@@ -788,7 +783,36 @@ static stock bool:CodeScanFindOneFastPattern2(const matcher[CodeScanMatcher], &a
 
 forward bool:CodeScanRun(csState[CodeScanner]);
 
-static stock CodeScanRunFastPrescan(&proc, &nextaddr, const searchFuncAddr) {
+static stock CodeScanRunFastPrescanLocated(&proc, &nextaddr, const searchFuncAddr) {
+	// Do a fast code scan for functions containing something vaguely similar to the pattern.  Once
+	// that's found we can reparse the function with the full analysis mode.
+	new Opcode:o = OP_NONE;
+	new addr = nextaddr;
+	while (addr < 0) {
+		switch (o = Opcode:ReadAmxMemory(addr)) {
+			case OP_PROC: {
+				proc = addr;
+				addr += 4;
+			}
+			case OP_CASETBL: {
+				addr += (2 * ReadAmxMemory(addr + 4) + 3) * 4;
+			}
+			case OP_CALL: {
+				if (ReadAmxMemory(addr + 4) - gCodBase == searchFuncAddr) {
+					nextaddr = addr;
+					return true;
+				}
+				addr += 8;
+			}
+			default: {
+				addr += (0 <= _:o < sizeof (gAMXOpcodeBaseSizes)) ? gAMXOpcodeBaseSizes[o] : 4;
+			}
+		}
+	}
+	return false;
+}
+
+static stock CodeScanRunFastPrescanRelocate(&proc, &nextaddr, const searchFuncAddr) {
 	// Do a fast code scan for functions containing something vaguely similar to the pattern.  Once
 	// that's found we can reparse the function with the full analysis mode.
 	new Opcode:o = OP_NONE;
@@ -810,7 +834,7 @@ static stock CodeScanRunFastPrescan(&proc, &nextaddr, const searchFuncAddr) {
 				addr += 8;
 			}
 			default: {
-				addr += (0 <= _:o < sizeof (gOpSizeCount)) ? gOpSizeCount[o] : 4;
+				addr += (0 <= _:o < sizeof (gAMXOpcodeBaseSizes)) ? gAMXOpcodeBaseSizes[o] : 4;
 			}
 		}
 	}
@@ -833,7 +857,8 @@ stock bool:CodeScanRunFast(csState[CodeScanner], searchFuncAddr = 0) {
 			parseParam = 0;
 		// Enable scans to start at a non-zero position.
 		DisasmInit(dctx);
-		while (CodeScanRunFastPrescan(proc, addr, searchFuncAddr)) {
+		// Call the correct function based on the status of relocation requirements.
+		while (gRelocateRequired ? CodeScanRunFastPrescanRelocate(proc, addr, searchFuncAddr) : CodeScanRunFastPrescanLocated(proc, addr, searchFuncAddr)) {
 			addr += 8,
 			second = false,
 			dctx[DisasmContext_nip] = proc;

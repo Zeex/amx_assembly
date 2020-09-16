@@ -103,6 +103,32 @@ stock bool:DisasmDecodeInsn(ctx[DisasmContext]) {
 		true;
 }
 
+static stock bool:gRelocateRequired;
+
+stock DisasmInitUnsafe() {
+	gRelocateRequired = RelocateOpcode(OP_LOAD_PRI) != OP_LOAD_PRI;
+}
+
+stock bool:DisasmDecodeInsnUnsafe(ctx[DisasmContext]) {
+	static ip, Opcode:opcode;
+
+	ctx[DisasmContext_cip] = ip = ctx[DisasmContext_nip],
+	ctx[DisasmContext_opcode] = opcode = gRelocateRequired ? (UnrelocateOpcode(Opcode:ReadAmxMemory(ip))) : (Opcode:ReadAmxMemory(ip));
+
+	if (OP_NONE < opcode < Opcode:NUM_OPCODES) {
+		if (opcode == OP_CASETBL) {
+			ip += 4,
+			ip += ReadAmxMemory(ip) * 8;
+		}
+
+		return
+			ctx[DisasmContext_nip] = ip + gAMXOpcodeBaseSizes[_:opcode],
+			true;
+	}
+
+	return false;
+}
+
 stock DisasmResult:DisasmNext(ctx[DisasmContext]) {
 	// This function is just a slightly more consistent wrapper around
 	// "DisasmDecodeInsn".  I wanted to change that function, but that would
