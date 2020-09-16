@@ -176,7 +176,7 @@ enum CodeScanMatcher {
 	CodeScanMatcher_user_data, // User data to pass to their callback.
 	CodeScanMatcher_type[CODE_SCAN_MAX_PATTERN_ARRAY], // The code slot types.
 	CodeScanMatcher_code[CODE_SCAN_MAX_PATTERN_ARRAY], // The code to look for.
-	CodeScanMatcher_back[CODE_SCAN_MAX_PATTERN_ARRAY], // The KMP backtracking info.
+	CodeScanMatcher_back[CODE_SCAN_MAX_PATTERN_ARRAY + 1], // The KMP backtracking info.
 	CodeScanMatcher_len,
 	CodeScanMatcher_offset, // Where the current scanner is in this code.
 	CodeScanMatcher_start,
