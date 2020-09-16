@@ -394,7 +394,7 @@ stock CodeScanMatcherPattern_(searcher[CodeScanMatcher], {Opcode, Float, _}:...)
 			}
 		}
 	}
-	searcher[CodeScanMatcher_len] = len;
+	searcher[CodeScanMatcher_len] = len / 2;
 	// No error.
 	return 0;
 }
