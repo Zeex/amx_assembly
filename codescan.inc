@@ -143,7 +143,7 @@ stock MyFunc(a, b[], ...) {
 #if !defined CODE_SCAN_MAX_PATTERN
 	#define CODE_SCAN_MAX_PATTERN (16)
 #endif
-#define CODE_SCAN_MAX_PATTERN_ARRAY (CODE_SCAN_MAX_PATTERN * 4)
+#define CODE_SCAN_MAX_PATTERN_ARRAY (CODE_SCAN_MAX_PATTERN * 2)
 #define CODE_SCAN_MAX_HOLES         (CODE_SCAN_MAX_PATTERN / 2)
 
 #if !defined CODE_SCAN_MAX_PARALLEL
@@ -180,6 +180,7 @@ enum CodeScanner {
 enum CodeScanMatcher {
 	CodeScanMatcher_func,      // A pointer to the callback.
 	CodeScanMatcher_user_data, // User data to pass to their callback.
+	CodeScanMatcher_type[CODE_SCAN_MAX_PATTERN_ARRAY], // The code slot types.
 	CodeScanMatcher_code[CODE_SCAN_MAX_PATTERN_ARRAY], // The code to look for.
 	CodeScanMatcher_len,
 	CodeScanMatcher_offset[CODE_SCAN_MAX_PARALLEL], // Where the current scanner is in this code.
@@ -350,8 +351,8 @@ stock CodeScanMatcherPattern_(searcher[CodeScanMatcher], {Opcode, Float, _}:...)
 		new
 			optype = getarg(i + 1),
 			Opcode:op = Opcode:getarg(i + 2);
-		searcher[CodeScanMatcher_code][i + 0] = optype;
-		searcher[CodeScanMatcher_code][i + 1] = _:op;
+		searcher[CodeScanMatcher_type][i / 2] = optype;
+		searcher[CodeScanMatcher_code][i / 2] = _:op;
 		i += 2;
 		switch (optype) {
 			case OP_TYPE_OPCODE_: {
@@ -369,8 +370,8 @@ stock CodeScanMatcherPattern_(searcher[CodeScanMatcher], {Opcode, Float, _}:...)
 							// The variable OPs like `CASETBL` have negative
 							// parameter counts, so will never not match.
 							--opcount;
-							searcher[CodeScanMatcher_code][i + 0] = partype;
-							searcher[CodeScanMatcher_code][i + 1] = getarg(i + 2);
+							searcher[CodeScanMatcher_type][i / 2] = partype;
+							searcher[CodeScanMatcher_code][i / 2] = getarg(i + 2);
 							i += 2;
 						}
 						default: {
@@ -455,7 +456,6 @@ static stock bool:CodeScanCheck(Opcode:op, const dctx[DisasmContext], cs[CodeSca
 		}
 	}
 	new
-		cnt = DisasmGetNumOperands(dctx),
 		len = cs[CodeScanMatcher_len];
 	for (new idx = 0; idx != CODE_SCAN_MAX_PARALLEL; ++idx) {
 		off = cs[CodeScanMatcher_offset][idx];
@@ -469,8 +469,8 @@ static stock bool:CodeScanCheck(Opcode:op, const dctx[DisasmContext], cs[CodeSca
 		} else {
 			continue;
 		}
-		if (cs[CodeScanMatcher_code][off] == OP_TYPE_SKIP_) {
-			off += 2;
+		if (cs[CodeScanMatcher_type][off] == OP_TYPE_SKIP_) {
+			++off;
 			if (off == len) {
 				return
 					memcpy(fctx[CodeScanMatch_holes], cs[CodeScanMatcher_holes], idx * CODE_SCAN_MAX_HOLES, cs[CodeScanMatcher_holeidx][idx] * cellbytes, CODE_SCAN_MAX_HOLES),
@@ -478,7 +478,7 @@ static stock bool:CodeScanCheck(Opcode:op, const dctx[DisasmContext], cs[CodeSca
 					fctx[CodeScanMatch_cip] = cs[CodeScanMatcher_start][idx],
 					fctx[CodeScanMatch_size] = DisasmGetNextIp(dctx) - cs[CodeScanMatcher_start][idx],
 					true;
-			} else if (cs[CodeScanMatcher_code][off] == OP_TYPE_OPCODE_ && Opcode:cs[CodeScanMatcher_code][off + 1] == op) {
+			} else if (cs[CodeScanMatcher_type][off] == OP_TYPE_OPCODE_ && Opcode:cs[CodeScanMatcher_code][off] == op) {
 				// Found the match after the current "missing" instruction.
 				goto CodeScanCheck_pass;
 			} else {
@@ -487,30 +487,30 @@ static stock bool:CodeScanCheck(Opcode:op, const dctx[DisasmContext], cs[CodeSca
 				continue;
 			}
 		}
-		if (cs[CodeScanMatcher_code][off] == OP_TYPE_OPCODE_ && Opcode:cs[CodeScanMatcher_code][off + 1] == op) {
+		if (cs[CodeScanMatcher_type][off] == OP_TYPE_OPCODE_ && Opcode:cs[CodeScanMatcher_code][off] == op) {
 CodeScanCheck_pass:
 			// Check if there are enough parameters for this opcode.
-			off += 2;
-			for (new i = 0; i != cnt; ++i) {
-				switch (cs[CodeScanMatcher_code][off++]) {
+			++off;
+			for (new i = 0, cnt = DisasmGetNumOperands(dctx); i != cnt; ++i) {
+				switch (cs[CodeScanMatcher_type][off]) {
 					// Because we now abstract relocations to the disasm system,
 					// we don't need to differentiate between fixed parameters
 					// and function parameters any more - they are always fully
 					// resolved.
 					case OP_TYPE_INTEGER_, OP_TYPE_FUNCTION_: {
-						if (cs[CodeScanMatcher_code][off++] != DisasmGetOperandReloc(dctx, i)) {
+					if (cs[CodeScanMatcher_code][off] != DisasmGetOperandReloc(dctx, i)) {
 							goto CodeScanCheck_fail;
 						}
 					}
 					case OP_TYPE_UNKNOWN_: {
 						// Save the parameter.
-						++off,
 						cs[CodeScanMatcher_holes][idx * CODE_SCAN_MAX_HOLES + cs[CodeScanMatcher_holeidx][idx]++] = DisasmGetOperandReloc(dctx, i);
 					}
 					case OP_TYPE_OPCODE_, OP_TYPE_SKIP_: {
 						goto CodeScanCheck_fail;
 					}
 				}
+				++off;
 			}
 			if (off == len) {
 				// Get the address of the START of the match.
@@ -520,7 +520,7 @@ CodeScanCheck_pass:
 					fctx[CodeScanMatch_cip] = cs[CodeScanMatcher_start][idx],
 					fctx[CodeScanMatch_size] = DisasmGetNextIp(dctx) - cs[CodeScanMatcher_start][idx],
 					true;
-			} else switch (cs[CodeScanMatcher_code][off]) {
+			} else switch (cs[CodeScanMatcher_type][off]) {
 				case OP_TYPE_INTEGER_, OP_TYPE_FUNCTION_, OP_TYPE_UNKNOWN_: {
 					// Parameters remaining, none expected.
 					goto CodeScanCheck_fail;
@@ -787,8 +787,8 @@ static stock CodeScanCall(const cs[CodeScanMatcher], csState[CodeScanner]) {
 static stock bool:CodeScanFindOneFastPattern3(const matcher[CodeScanMatcher], addr, &cur) {
 	// Check if the current matcher has this exact function call in it as well.
 	cur = matcher[CodeScanMatcher_next];
-	for (new i = 0, j = matcher[CodeScanMatcher_len]; i != j; i += 2) {
-		if (matcher[CodeScanMatcher_code][i + 0] == OP_TYPE_OPCODE_ && Opcode:matcher[CodeScanMatcher_code][i + 1] == OP_CALL && matcher[CodeScanMatcher_code][i + 2] == OP_TYPE_FUNCTION_ && matcher[CodeScanMatcher_code][i + 3] == addr) {
+	for (new i = 0, j = matcher[CodeScanMatcher_len]; i != j; ++i) {
+		if (matcher[CodeScanMatcher_type][i] == OP_TYPE_OPCODE_ && Opcode:matcher[CodeScanMatcher_code][i] == OP_CALL && matcher[CodeScanMatcher_type][i + 1] == OP_TYPE_FUNCTION_ && matcher[CodeScanMatcher_code][i + 1] == addr) {
 			return true;
 		}
 	}
@@ -799,10 +799,10 @@ static stock bool:CodeScanFindOneFastPattern2(const matcher[CodeScanMatcher], &a
 	// Loop over all the function calls in the first matcher, and check that at least one exists in
 	// all the others.  We only need to loop over the first, because it must exist in them all, so
 	// even if it is in all but the first it isn't good enough.
-	for (new i = 0, j = matcher[CodeScanMatcher_len]; i != j; i += 2) {
-		if (matcher[CodeScanMatcher_code][i + 0] == OP_TYPE_OPCODE_ && Opcode:matcher[CodeScanMatcher_code][i + 1] == OP_CALL && matcher[CodeScanMatcher_code][i + 2] == OP_TYPE_FUNCTION_) {
+	for (new i = 0, j = matcher[CodeScanMatcher_len]; i != j; ++i) {
+		if (matcher[CodeScanMatcher_type][i] == OP_TYPE_OPCODE_ && Opcode:matcher[CodeScanMatcher_code][i] == OP_CALL && matcher[CodeScanMatcher_type][i + 1] == OP_TYPE_FUNCTION_) {
 			// Found a candidate for the fast scan.
-			addr = matcher[CodeScanMatcher_code][i + 3];
+			addr = matcher[CodeScanMatcher_code][i + 1];
 			new cur = matcher[CodeScanMatcher_next];
 			do {
 				if (cur == -1) {
