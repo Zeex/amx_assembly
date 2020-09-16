@@ -176,6 +176,7 @@ enum CodeScanMatcher {
 	CodeScanMatcher_user_data, // User data to pass to their callback.
 	CodeScanMatcher_type[CODE_SCAN_MAX_PATTERN_ARRAY], // The code slot types.
 	CodeScanMatcher_code[CODE_SCAN_MAX_PATTERN_ARRAY], // The code to look for.
+	CodeScanMatcher_back[CODE_SCAN_MAX_PATTERN_ARRAY], // The KMP backtracking info.
 	CodeScanMatcher_len,
 	CodeScanMatcher_offset, // Where the current scanner is in this code.
 	CodeScanMatcher_start,
@@ -363,10 +364,10 @@ stock CodeScanMatcherPattern_(searcher[CodeScanMatcher], {Opcode, Float, _}:...)
 							// Decrement the remaining number of parameters.
 							// The variable OPs like `CASETBL` have negative
 							// parameter counts, so will never not match.
-							--opcount;
-							searcher[CodeScanMatcher_type][j] = partype;
-							searcher[CodeScanMatcher_code][j] = getarg(i + 2);
-							i += 2;
+							--opcount,
+							searcher[CodeScanMatcher_type][j] = partype,
+							searcher[CodeScanMatcher_code][j] = getarg(i + 2),
+							i += 2,
 							++j;
 						}
 						default: {
@@ -490,6 +491,7 @@ static stock bool:CodeScanCheck(Opcode:op, const dctx[DisasmContext], cs[CodeSca
 		}
 	}
 CodeScanCheck_fail:
+	// Backtrack a little bit, using the backtracking offset.
 	// The parameter is wrong.
 	return
 		cs[CodeScanMatcher_holeidx] = cs[CodeScanMatcher_offset] = 0,
@@ -567,13 +569,13 @@ static stock bool:CodeScanStepInternal(dctx[DisasmContext], csState[CodeScanner]
 			case OP_STACK: {
 				// The stack grows down, but our count is positive.
 				if (stk != cellmin) {
-				stk -= DISASM_GET_OPERAND_INLINE(dctx, 0);
+					stk -= DISASM_GET_OPERAND_INLINE(dctx, 0);
 				}
 				parseState = 0;
 			}
 			case OP_HEAP: {
 				if (hea != cellmin) {
-				hea += DISASM_GET_OPERAND_INLINE(dctx, 0);
+					hea += DISASM_GET_OPERAND_INLINE(dctx, 0);
 				}
 				parseState = 0;
 			}
@@ -594,7 +596,7 @@ static stock bool:CodeScanStepInternal(dctx[DisasmContext], csState[CodeScanner]
 				// The "+ cellbytes" is because when calling a function, the
 				// parameter is the number of bytes pushed, not including
 				// this one, with that one implicitly popped on return.
-			parseParam = DISASM_GET_OPERAND_INLINE(dctx, 0) + cellbytes;
+				parseParam = DISASM_GET_OPERAND_INLINE(dctx, 0) + cellbytes;
 				if (stk != cellmin) {
 					stk += cellbytes,
 					parseState = 3;
@@ -610,7 +612,7 @@ static stock bool:CodeScanStepInternal(dctx[DisasmContext], csState[CodeScanner]
 			// have to deal with that explcitly.  Note that the "ADD.C" may
 			// be missing if there are no variables currently in scope.
 			case OP_LCTRL: {
-			if (DISASM_GET_OPERAND_INLINE(dctx, 0) == 5) {
+				if (DISASM_GET_OPERAND_INLINE(dctx, 0) == 5) {
 					parseParam = 0;
 					parseState = 1;
 				} else {
@@ -619,7 +621,7 @@ static stock bool:CodeScanStepInternal(dctx[DisasmContext], csState[CodeScanner]
 			}
 			case OP_ADD_C: {
 				if (parseState == 1) {
-				parseParam = -DISASM_GET_OPERAND_INLINE(dctx, 0),
+					parseParam = -DISASM_GET_OPERAND_INLINE(dctx, 0),
 					parseState = 2;
 				} else {
 					parseState = 0;
@@ -629,7 +631,7 @@ static stock bool:CodeScanStepInternal(dctx[DisasmContext], csState[CodeScanner]
 				// This is the tricky one, since it can mess up the stack in
 				// strange ways.  Deal with the case where it comes from
 				// "goto", even though that is generally considered bad.
-			switch (DISASM_GET_OPERAND_INLINE(dctx, 0)) {
+				switch (DISASM_GET_OPERAND_INLINE(dctx, 0)) {
 					case 2: {
 						hea = cellmin;
 					}
@@ -668,7 +670,7 @@ static stock bool:CodeScanStepInternal(dctx[DisasmContext], csState[CodeScanner]
 				//   val = val - base;
 				//   
 				// Only jumps that go forwards.
-			parseParam = DISASM_GET_OPERAND_INLINE(dctx, 0) - gBase,
+				parseParam = DISASM_GET_OPERAND_INLINE(dctx, 0) - gBase,
 				parseState = 0;
 				if (parseParam > cip) {
 					CodeScanAddJumpTarget(parseParam, stk, hea, csState);
@@ -676,7 +678,7 @@ static stock bool:CodeScanStepInternal(dctx[DisasmContext], csState[CodeScanner]
 			}
 			case OP_JREL: {
 				// Add a jump target.  Only jumps that go forwards.
-			parseParam = DISASM_GET_OPERAND_INLINE(dctx, 0) + cip,
+				parseParam = DISASM_GET_OPERAND_INLINE(dctx, 0) + cip,
 				parseState = 0;
 				if (parseParam > cip) {
 					CodeScanAddJumpTarget(parseParam, stk, hea, csState);
