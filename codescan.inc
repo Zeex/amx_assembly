@@ -197,7 +197,10 @@ enum CodeScanMatcher {
 stock
 	gCodeScanCallback_match[CodeScanner] = {};
 
+#define CodeScanDeref(%0) gFakeMatcher,(%0)
+
 static stock
+	gFakeMatcher[CodeScanMatcher],
 	gOP_NOP = 0,
 	gOP_CASETBL = 0,
 	gHdr[AMX_HDR],
@@ -281,7 +284,9 @@ static stock CodeScanAddSwitchTarget(const dctx[DisasmContext], stk, hea, jumpTa
 	}
 }
 
-static stock CodeScanReset(cs[CodeScanMatcher], &next) {
+static stock CodeScanReset(cs[CodeScanMatcher], matcher__, &next) {
+	#emit LOAD.S.pri matcher__
+	#emit STOR.S.pri cs
 	static
 		lReset[CODE_SCAN_MAX_PARALLEL];
 	next = cs[CodeScanMatcher_next],
@@ -300,6 +305,8 @@ stock CodeScanAddMatcher(scanner[CodeScanner], searcher[CodeScanMatcher]) {
 static stock bool:gRelocateRequired;
 
 stock CodeScanMatcherInit_(searcher[CodeScanMatcher], address, flags = SCANNER_IGNORE_NOP | SCANNER_IGNORE_BOUNDS | SCANNER_IGNORE_BREAK | SCANNER_IGNORE_HALT) {
+	static
+		lReset[CODE_SCAN_MAX_PARALLEL];
 	// This used to look the function up by name from the public functions
 	// table, but that was very silly since we already had code in this exact
 	// file to get the address of ANY function at run-time (`addressof`).  The
@@ -314,7 +321,8 @@ stock CodeScanMatcherInit_(searcher[CodeScanMatcher], address, flags = SCANNER_I
 	searcher[CodeScanMatcher_next] = -1,
 	searcher[CodeScanMatcher_len] = 0,
 	searcher[CodeScanMatcher_user_data] = 0,
-	CodeScanReset(searcher, flags),
+	searcher[CodeScanMatcher_offset] = lReset,
+	searcher[CodeScanMatcher_holeidx] = lReset,
 	DisasmInitUnsafe(), // Initialise the opcode system safely.
 	gRelocateRequired = IsOpcodeRelocationRequired();
 }
@@ -393,17 +401,9 @@ stock CodeScanMatcherPattern_(searcher[CodeScanMatcher], {Opcode, Float, _}:...)
 // Note the lack of trailing comma.  This is to make the code patterns work.
 #define CodeScanMatcherPattern(%0, CodeScanMatcherPattern_(%0
 
-static stock CodeScanDeref(v) {
-	static
-		lFakeMatcher[CodeScanMatcher];
-	#pragma unused v
-	#emit load.s.pri 12 // First argument.
-	#emit stor.s.pri 16 // Secret argument.
-	#emit retn
-	return lFakeMatcher; // Make compiler happy, and teach it the array return.
-}
-
-static stock bool:CodeScanCheck(Opcode:op, const dctx[DisasmContext], cs[CodeScanMatcher], fctx[CodeScanner], &next) {
+static stock bool:CodeScanCheck(Opcode:op, const dctx[DisasmContext], cs[CodeScanMatcher], matcher__, fctx[CodeScanner], &next) {
+	#emit LOAD.S.pri matcher__
+	#emit STOR.S.pri cs
 	new
 		bool:zero = true,
 		off = cs[CodeScanMatcher_flags];
@@ -716,7 +716,9 @@ stock bool:CodeScanStep(dctx[DisasmContext], csState[CodeScanner]) {
 	return CodeScanStepInternal(dctx, csState, csState[CodeScanner_state], csState[CodeScanner_param]);
 }
 
-static stock CodeScanCall(const cs[CodeScanMatcher], csState[CodeScanner]) {
+static stock CodeScanCall(const cs[CodeScanMatcher], matcher__, csState[CodeScanner]) {
+	#emit LOAD.S.pri matcher__
+	#emit STOR.S.pri cs
 	// If I wrote way more assembly I could get away with not calling
 	// `CodeScanDeref(cur)` below, and not need to assign `param` to a variable
 	// before pushing it.  But I'm not going to - it isn't worth the effort.
@@ -749,7 +751,9 @@ static stock CodeScanCall(const cs[CodeScanMatcher], csState[CodeScanner]) {
 	return func;
 }
 
-static stock bool:CodeScanFindOneFastPattern3(const matcher[CodeScanMatcher], addr, &cur) {
+static stock bool:CodeScanFindOneFastPattern3(const matcher[CodeScanMatcher], matcher__, addr, &cur) {
+	#emit LOAD.S.pri matcher__
+	#emit STOR.S.pri matcher
 	// Check if the current matcher has this exact function call in it as well.
 	cur = matcher[CodeScanMatcher_next];
 	for (new i = 0, j = matcher[CodeScanMatcher_len]; i != j; ++i) {
@@ -760,7 +764,9 @@ static stock bool:CodeScanFindOneFastPattern3(const matcher[CodeScanMatcher], ad
 	return false;
 }
 
-static stock bool:CodeScanFindOneFastPattern2(const matcher[CodeScanMatcher], &addr) {
+static stock bool:CodeScanFindOneFastPattern2(const matcher[CodeScanMatcher], matcher__, &addr) {
+	#emit LOAD.S.pri matcher__
+	#emit STOR.S.pri matcher
 	// Loop over all the function calls in the first matcher, and check that at least one exists in
 	// all the others.  We only need to loop over the first, because it must exist in them all, so
 	// even if it is in all but the first it isn't good enough.
