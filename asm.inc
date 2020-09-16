@@ -344,7 +344,7 @@ stock AsmError:AsmSetErrorHandlerName(ctx[AsmContext], const error_handler[]) {
 
 stock AsmEmitPadding(ctx[AsmContext], Opcode:op = OP_NOP) {
 	// Must not have parameters, to make the padding valid.
-	if (!IsOpcodeValid(op) || GetOpcodeInstructionParameters(op)) {
+	if (!IsOpcodeValid(op) || gAMXOpcodeParameterCounts[_:op]) {
 		op = OP_NOP;
 	}
 	// Resolve it for speed.

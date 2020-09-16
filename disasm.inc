@@ -100,7 +100,7 @@ stock bool:DisasmDecodeInsn(ctx[DisasmContext]) {
 		ip += 4;
 		ip += (2 * n + 1) * 4;
 	} else {
-		ip += 4 * GetOpcodeInstructionParameters(opcode);
+		ip += 4 * gAMXOpcodeParameterCounts[_:opcode];
 	}
 
 	ctx[DisasmContext_nip] = ip;
@@ -147,7 +147,7 @@ stock DisasmGetNumOperands(const ctx[DisasmContext]) {
 	if (opcode == OP_CASETBL) {
 		return ReadAmxMemory(ctx[DisasmContext_cip] + 4);
 	} else {
-		return GetOpcodeInstructionParameters(opcode);
+		return gAMXOpcodeParameterCounts[_:opcode];
 	}
 }
 
@@ -177,7 +177,8 @@ stock DisasmGetInsnName(const ctx[DisasmContext], name[], size = sizeof(name)) {
 }
 
 stock DisasmGetOperandReloc(const ctx[DisasmContext], index = 0) {
-	new param = DisasmGetOperand(ctx, index);
+	new param = ReadAmxMemory(ctx[DisasmContext_cip] + (index + 1) * 4);
+	new Opcode:op = ctx[DisasmContext_opcode];
 	// Needs special code for dealing with "CASETBL", which has multiple
 	// parameters - not all of them to be relocated.  If the opcode is NOT that,
 	// then check if it is any other opcode requiring relocation.  This does
@@ -203,8 +204,8 @@ stock DisasmGetOperandReloc(const ctx[DisasmContext], index = 0) {
 	//   }
 	//   
 	// I think the conditional ends up nicer in this rare case.
-	if ((ctx[DisasmContext_opcode] == OP_CASETBL) ? (index & 1) : _:DisasmNeedReloc(ctx)) {
-		return DisasmReloc(param);
+	if ((op == OP_CASETBL) ? (index & 1) : _:gAMXOpcodeNeedsReloc[_:op]) {
+		return param - gCodBase;
 	} else {
 		return param;
 	}

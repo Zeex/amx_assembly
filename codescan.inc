@@ -150,6 +150,8 @@ stock MyFunc(a, b[], ...) {
 	#define CODE_SCAN_MAX_JUMP_TARGETS (32)
 #endif
 
+#define DISASM_GET_OPERAND_INLINE(%0,%1) ReadAmxMemory(%0[DisasmContext_cip] + (%1 + 1) * 4)
+
 // All the information for scanning through an AMX and extracting lots of nice
 // information about it.
 enum CodeScanner {
@@ -204,7 +206,7 @@ static stock
 	gDat = 0;
 
 static stock const
-	gOpArgCount[Opcode:NUM_OPCODES] = {
+	gOpSizeCount[Opcode:NUM_OPCODES] = {
 		4, 8, 8, 8, 8, 8, 8, 8, 8, 4, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 4, 8, 4, 8, 4, 8, 8, 8,
 		8, 8, 4, 4, 4, 4, 4, 8, 8, 8, 8, 4, 4, 8, 8, 4, 4, 4, 8, 4, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8,
 		8, 8, 8, 4, 4, 4, 8, 8, 8, 8, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 8, 8, 4, 4, 8, 8,
@@ -268,7 +270,7 @@ static stock CodeScanAddJumpTarget(cip, stk, hea, jumpTargets[CodeScanner], num 
 
 static stock CodeScanAddSwitchTarget(const dctx[DisasmContext], stk, hea, jumpTargets[CodeScanner], num = CODE_SCAN_MAX_JUMP_TARGETS) {
 	new
-		sip = DisasmGetOperand(dctx) - gBase,
+		sip = DISASM_GET_OPERAND_INLINE(dctx, 0) - gBase,
 		codepos = sip + gHdr[AMX_HDR_DAT] - gHdr[AMX_HDR_COD];
 	if (codepos < 0 || codepos > gHdr[AMX_HDR_DAT] || ReadAmxMemory(sip) != gOP_CASETBL) {
 		// Can happen when we parse "RelocateOpcodeNow" because it has an
@@ -353,7 +355,7 @@ stock CodeScanMatcherPattern_(searcher[CodeScanMatcher], {Opcode, Float, _}:...)
 		++j;
 		switch (optype) {
 			case OP_TYPE_OPCODE_: {
-				new opcount = GetOpcodeInstructionParameters(op);
+				new opcount = gAMXOpcodeParameterCounts[_:op];
 				for (new partype = 0; i != len; )
 				{
 					partype = getarg(i + 1);
@@ -446,6 +448,7 @@ static stock bool:CodeScanCheck(Opcode:op, const dctx[DisasmContext], cs[CodeSca
 		}
 	}
 	new
+		cnt = DisasmGetNumOperands(dctx),
 		len = cs[CodeScanMatcher_len];
 	for (new idx = 0; idx != CODE_SCAN_MAX_PARALLEL; ++idx) {
 		off = cs[CodeScanMatcher_offset][idx];
@@ -454,7 +457,7 @@ static stock bool:CodeScanCheck(Opcode:op, const dctx[DisasmContext], cs[CodeSca
 		if (off) {
 		} else if (zero) {
 			// Get the start point of this match.
-			cs[CodeScanMatcher_start][idx] = DisasmGetCurIp(dctx),
+			cs[CodeScanMatcher_start][idx] = dctx[DisasmContext_cip],
 			zero = false;
 		} else {
 			continue;
@@ -462,7 +465,7 @@ static stock bool:CodeScanCheck(Opcode:op, const dctx[DisasmContext], cs[CodeSca
 		if (cs[CodeScanMatcher_type][off] == OP_TYPE_OPCODE_ && Opcode:cs[CodeScanMatcher_code][off] == op) {
 			// Check if there are enough parameters for this opcode.
 			++off;
-			for (new i = 0, cnt = DisasmGetNumOperands(dctx); i != cnt; ++i) {
+			for (new i = 0; i != cnt; ++i) {
 				switch (cs[CodeScanMatcher_type][off]) {
 					// Because we now abstract relocations to the disasm system,
 					// we don't need to differentiate between fixed parameters
@@ -489,7 +492,7 @@ static stock bool:CodeScanCheck(Opcode:op, const dctx[DisasmContext], cs[CodeSca
 					memcpy(fctx[CodeScanMatch_holes], cs[CodeScanMatcher_holes][idx * CODE_SCAN_MAX_HOLES], 0, cs[CodeScanMatcher_holeidx][idx] * cellbytes, CODE_SCAN_MAX_HOLES),
 					fctx[CodeScanMatch_hole_count] = cs[CodeScanMatcher_holeidx][idx],
 					fctx[CodeScanMatch_cip] = cs[CodeScanMatcher_start][idx],
-					fctx[CodeScanMatch_size] = DisasmGetNextIp(dctx) - cs[CodeScanMatcher_start][idx],
+					fctx[CodeScanMatch_size] = dctx[DisasmContext_nip] - cs[CodeScanMatcher_start][idx],
 					true;
 			} else switch (cs[CodeScanMatcher_type][off]) {
 				case OP_TYPE_INTEGER_, OP_TYPE_FUNCTION_, OP_TYPE_UNKNOWN_: {
@@ -539,8 +542,8 @@ static stock bool:CodeScanStepInternal(dctx[DisasmContext], csState[CodeScanner]
 			new
 				stk = csState[CodeScanMatch_stack],
 				hea = csState[CodeScanMatch_heap],
-				cip = DisasmGetCurIp(dctx),
-				Opcode:op = DisasmGetOpcode(dctx);
+				cip = dctx[DisasmContext_cip],
+				Opcode:op = dctx[DisasmContext_opcode];
 			// The compiler sometimes inserts extra instructions like "NOP" and
 			// "BREAK" for debugging and padding (as do we) - maybe ignore them.
 			CodeScanCheckJumpTarget(cip, cip + gBase, stk, hea, csState);
@@ -581,13 +584,13 @@ static stock bool:CodeScanStepInternal(dctx[DisasmContext], csState[CodeScanner]
 				case OP_STACK: {
 					// The stack grows down, but our count is positive.
 					if (stk != cellmin) {
-						stk -= DisasmGetOperand(dctx);
+						stk -= DISASM_GET_OPERAND_INLINE(dctx, 0);
 					}
 					parseState = 0;
 				}
 				case OP_HEAP: {
 					if (hea != cellmin) {
-						hea += DisasmGetOperand(dctx);
+						hea += DISASM_GET_OPERAND_INLINE(dctx, 0);
 					}
 					parseState = 0;
 				}
@@ -608,7 +611,7 @@ static stock bool:CodeScanStepInternal(dctx[DisasmContext], csState[CodeScanner]
 					// The "+ cellbytes" is because when calling a function, the
 					// parameter is the number of bytes pushed, not including
 					// this one, with that one implicitly popped on return.
-					parseParam = DisasmGetOperand(dctx) + cellbytes;
+					parseParam = DISASM_GET_OPERAND_INLINE(dctx, 0) + cellbytes;
 					if (stk != cellmin) {
 						stk += cellbytes,
 						parseState = 3;
@@ -624,7 +627,7 @@ static stock bool:CodeScanStepInternal(dctx[DisasmContext], csState[CodeScanner]
 				// have to deal with that explcitly.  Note that the "ADD.C" may
 				// be missing if there are no variables currently in scope.
 				case OP_LCTRL: {
-					if (DisasmGetOperand(dctx) == 5) {
+					if (DISASM_GET_OPERAND_INLINE(dctx, 0) == 5) {
 						parseParam = 0;
 						parseState = 1;
 					} else {
@@ -633,7 +636,7 @@ static stock bool:CodeScanStepInternal(dctx[DisasmContext], csState[CodeScanner]
 				}
 				case OP_ADD_C: {
 					if (parseState == 1) {
-						parseParam = -DisasmGetOperand(dctx),
+						parseParam = -DISASM_GET_OPERAND_INLINE(dctx, 0),
 						parseState = 2;
 					} else {
 						parseState = 0;
@@ -643,7 +646,7 @@ static stock bool:CodeScanStepInternal(dctx[DisasmContext], csState[CodeScanner]
 					// This is the tricky one, since it can mess up the stack in
 					// strange ways.  Deal with the case where it comes from
 					// "goto", even though that is generally considered bad.
-					switch (DisasmGetOperand(dctx)) {
+					switch (DISASM_GET_OPERAND_INLINE(dctx, 0)) {
 						case 2: {
 							hea = cellmin;
 						}
@@ -682,7 +685,7 @@ static stock bool:CodeScanStepInternal(dctx[DisasmContext], csState[CodeScanner]
 					//   val = val - base;
 					//   
 					// Only jumps that go forwards.
-					parseParam = DisasmGetOperand(dctx) - gBase,
+					parseParam = DISASM_GET_OPERAND_INLINE(dctx, 0) - gBase,
 					parseState = 0;
 					if (parseParam > cip) {
 						CodeScanAddJumpTarget(parseParam, stk, hea, csState);
@@ -690,7 +693,7 @@ static stock bool:CodeScanStepInternal(dctx[DisasmContext], csState[CodeScanner]
 				}
 				case OP_JREL: {
 					// Add a jump target.  Only jumps that go forwards.
-					parseParam = DisasmGetOperand(dctx) + cip,
+					parseParam = DISASM_GET_OPERAND_INLINE(dctx, 0) + cip,
 					parseState = 0;
 					if (parseParam > cip) {
 						CodeScanAddJumpTarget(parseParam, stk, hea, csState);
@@ -811,7 +814,7 @@ static stock CodeScanRunFastPrescan(&proc, &nextaddr, const searchFuncAddr) {
 				addr += 8;
 			}
 			default: {
-				addr += (0 <= _:o < sizeof (gOpArgCount)) ? gOpArgCount[o] : 4;
+				addr += (0 <= _:o < sizeof (gOpSizeCount)) ? gOpSizeCount[o] : 4;
 			}
 		}
 	}
@@ -907,7 +910,7 @@ stock bool:CodeScanRun(csState[CodeScanner]) {
 		// it after.
 		// Found a valid instruction that we don't want to ignore.  Finally
 		// do the actual comparisons to various defined scanners.
-		for (cur = csState[CodeScanner_first], op = DisasmGetOpcode(dctx); cur != -1; ) {
+		for (cur = csState[CodeScanner_first], op = dctx[DisasmContext_opcode]; cur != -1; ) {
 			if (CodeScanCheck(op, dctx, CodeScanDeref(cur), csState, cur)) {
 				switch (CodeScanCall(CodeScanDeref(cur), csState)) {
 					case cellmin: {
@@ -1105,4 +1108,6 @@ stock CodeScanGetMatchName(const csm[CodeScanner], name[]) {
 	name[0] = '\0',
 	strcat(name, csm[CodeScanMatch_name], 32);
 }
+
+#undef DISASM_GET_OPERAND_INLINE
 

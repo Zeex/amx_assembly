@@ -72,7 +72,7 @@ stock bool:AddressOfGetNextCall_() {
 	new ctx[DisasmContext];
 	DisasmInit(ctx, GetCurrentFrameReturn());
 	while (DisasmNext(ctx)) {
-		if (DisasmGetOpcode(ctx) == OP_CALL) {
+		if (ctx[DisasmContext_opcode] == OP_CALL) {
 			// Return the data in a global, to be repassed from the conditional.
 			gAddressOfReturnVar_ = DisasmGetOperandReloc(ctx);
 			return false;
