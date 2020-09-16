@@ -347,13 +347,14 @@ stock CodeScanMatcherPattern_(searcher[CodeScanMatcher], {Opcode, Float, _}:...)
 		// Not a multiple of 2 in the scanner.
 		return -2;
 	}
-	for (new i = 0; i != len; ) {
+	for (new i = 0, j = 0; i != len; ) {
 		new
 			optype = getarg(i + 1),
 			Opcode:op = Opcode:getarg(i + 2);
-		searcher[CodeScanMatcher_type][i / 2] = optype;
-		searcher[CodeScanMatcher_code][i / 2] = _:op;
+		searcher[CodeScanMatcher_type][j] = optype;
+		searcher[CodeScanMatcher_code][j] = _:op;
 		i += 2;
+		++j;
 		switch (optype) {
 			case OP_TYPE_OPCODE_: {
 				new opcount = GetOpcodeInstructionParameters(op);
@@ -364,15 +365,16 @@ stock CodeScanMatcherPattern_(searcher[CodeScanMatcher], {Opcode, Float, _}:...)
 						case OP_TYPE_INTEGER_, OP_TYPE_UNKNOWN_, OP_TYPE_FUNCTION_: {
 							// Got an unexpected parameter.
 							if (opcount == 0) {
-								return i / 2 + 1;
+								return j + 1;
 							}
 							// Decrement the remaining number of parameters.
 							// The variable OPs like `CASETBL` have negative
 							// parameter counts, so will never not match.
 							--opcount;
-							searcher[CodeScanMatcher_type][i / 2] = partype;
-							searcher[CodeScanMatcher_code][i / 2] = getarg(i + 2);
+							searcher[CodeScanMatcher_type][j] = partype;
+							searcher[CodeScanMatcher_code][j] = getarg(i + 2);
 							i += 2;
+							++j;
 						}
 						default: {
 							break;
@@ -381,14 +383,14 @@ stock CodeScanMatcherPattern_(searcher[CodeScanMatcher], {Opcode, Float, _}:...)
 				}
 				// Missing a required (non-optional) parameter.
 				if (opcount > 0) {
-					return i / 2 + 1;
+					return j + 1;
 				}
 			}
 			case OP_TYPE_SKIP_: {
 			}
 			default: {
 				// Incorrect parameter type.  Return the op where it happened.
-				return i / 2 + 1;
+				return j + 1;
 			}
 		}
 	}
