@@ -82,13 +82,11 @@ stock MyFunc(a, b[], ...) {
 #define O@U_ (1) // Type unknown (???).
 #define O@F_ (2) // Type function (&func).
 #define O@O_ (4) // Type opcode.
-#define O@S_ (5) // Type skipped.
 
 #define OP_TYPE_INTEGER_  (O@I_) // Type integer.
 #define OP_TYPE_UNKNOWN_  (O@U_) // Type unknown (???).
 #define OP_TYPE_FUNCTION_ (O@F_) // Type function (&func).
 #define OP_TYPE_OPCODE_   (O@O_) // Type opcode.
-#define OP_TYPE_SKIP_     (O@S_) // Type skipped.
 
 // If we can determine a function's name, we can determine if it is a public or
 // not.  If we can't name it, it is a normal one.  However, if naming is skipped
@@ -122,15 +120,13 @@ stock MyFunc(a, b[], ...) {
 // You can use this style explcitly within an "OP" scanner, or there is a new
 // dedicated keyword for it - "addressof(func)" (note the lack of "&" there).
 // 
-#define OP(%0) ,(_:O@T_:O@O_),(Opcode:O@X_:O@Y_:O@W_:$OP_%0)
+#define OP(%0) ,(_:O@O_),(Opcode:O@X_:O@Y_:O@W_:$OP_%0)
 #define OP_%0\32;%1) OP_%0%1)
 
 #define O@X_:%9$%0,%1,%2) %0),(_:O@1_:O@2_:O@3_:$%1|||,%2)
 #define O@Y_:%9$%0,%1)    %0),(_:O@1_:O@2_:O@3_:$%1|||)
 #define O@Z_:%9$%0)       %0)
 #define O@W_:%9$%0)       %0)
-
-#define O@T_:O@O_),(Opcode:O@X_:O@Y_:O@W_:$OP_???%0) O@S_),(0)
 
 #define O@1_:%9$%0???%1|||%2) O@U_ ),(_:O@X_:O@Y_:O@Z_:$0%2)
 #define O@2_:%9$%0&%1|||%2)   O@F_),(O@A_()?(((CALL@%1),O@V_)?1:2):_:O@X_:O@Y_:O@Z_:$(O@V_)%2)
@@ -386,8 +382,6 @@ stock CodeScanMatcherPattern_(searcher[CodeScanMatcher], {Opcode, Float, _}:...)
 					return j + 1;
 				}
 			}
-			case OP_TYPE_SKIP_: {
-			}
 			default: {
 				// Incorrect parameter type.  Return the op where it happened.
 				return j + 1;
@@ -471,26 +465,7 @@ static stock bool:CodeScanCheck(Opcode:op, const dctx[DisasmContext], cs[CodeSca
 		} else {
 			continue;
 		}
-		if (cs[CodeScanMatcher_type][off] == OP_TYPE_SKIP_) {
-			++off;
-			if (off == len) {
-				return
-					memcpy(fctx[CodeScanMatch_holes], cs[CodeScanMatcher_holes], idx * CODE_SCAN_MAX_HOLES, cs[CodeScanMatcher_holeidx][idx] * cellbytes, CODE_SCAN_MAX_HOLES),
-					fctx[CodeScanMatch_hole_count] = cs[CodeScanMatcher_holeidx][idx],
-					fctx[CodeScanMatch_cip] = cs[CodeScanMatcher_start][idx],
-					fctx[CodeScanMatch_size] = DisasmGetNextIp(dctx) - cs[CodeScanMatcher_start][idx],
-					true;
-			} else if (cs[CodeScanMatcher_type][off] == OP_TYPE_OPCODE_ && Opcode:cs[CodeScanMatcher_code][off] == op) {
-				// Found the match after the current "missing" instruction.
-				goto CodeScanCheck_pass;
-			} else {
-				// The "== op" check is done twice because in this case we don't
-				// want to fail the scanner if it doesn't match.
-				continue;
-			}
-		}
 		if (cs[CodeScanMatcher_type][off] == OP_TYPE_OPCODE_ && Opcode:cs[CodeScanMatcher_code][off] == op) {
-CodeScanCheck_pass:
 			// Check if there are enough parameters for this opcode.
 			++off;
 			for (new i = 0, cnt = DisasmGetNumOperands(dctx); i != cnt; ++i) {
@@ -508,7 +483,7 @@ CodeScanCheck_pass:
 						// Save the parameter.
 						cs[CodeScanMatcher_holes][idx * CODE_SCAN_MAX_HOLES + cs[CodeScanMatcher_holeidx][idx]++] = DisasmGetOperandReloc(dctx, i);
 					}
-					case OP_TYPE_OPCODE_, OP_TYPE_SKIP_: {
+					case OP_TYPE_OPCODE_: {
 						goto CodeScanCheck_fail;
 					}
 				}
