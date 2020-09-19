@@ -653,9 +653,17 @@ stock Opcode:RelocateOpcodeNow(Opcode:opcode) {
 			#else
 				if (T) return ReadOpcodeNearThis(8);
 			#endif
+			#if ((__Pawn & 0x0F) >= 0x0A) || ((__Pawn & 0xF0) >= 0xA0)
+				// Disable `switch control expression is constant`.
+				#pragma warning push
+				#pragma warning disable 243
+			#endif
 			switch (0) {
 				case 0: {}
 			}
+			#if ((__Pawn & 0x0F) >= 0x0A) || ((__Pawn & 0xF0) >= 0xA0)
+				#pragma warning pop
+			#endif
 		}
 		case OP_CASETBL: {
 			new x = 0;
