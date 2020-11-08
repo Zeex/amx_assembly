@@ -749,13 +749,6 @@ stock Opcode:UnrelocateOpcode(Opcode:opcode) {
 	return opcode;
 }
 
-stock GetOpcodeInstructionInformation(Opcode:opcode) {
-	if (OP_NONE < opcode < Opcode:NUM_OPCODES) {
-		return insn_table[_:opcode];
-	}
-	return insn_table[0];
-}
-
 stock GetOpcodeInstructionName(Opcode:opcode) {
 	static const ret[OPCODE_MAX_INSN_NAME] = "none";
 	if (OP_NONE < opcode < Opcode:NUM_OPCODES) {
