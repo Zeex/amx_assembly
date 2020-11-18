@@ -66,9 +66,11 @@ stock argderef(n) {
 }
 
 #if ((__Pawn & 0x0F) >= 0x0A) || ((__Pawn & 0xF0) >= 0xA0)
-	stock gAmxAssemblyAddress_;
-	#define ReadAmxMemory(%0) __emit(load.u.pri %0, stor.pri gAmxAssemblyAddress_, lref.pri gAmxAssemblyAddress_)
-	#define WriteAmxMemory(%0,%1) __emit(push.u %1, load.u.alt %0, stor.alt gAmxAssemblyAddress_, pop.pri, sref.pri gAmxAssemblyAddress_)
+	#if __PawnBuild >= 10
+		stock gAmxAssemblyAddress_;
+		#define ReadAmxMemory(%0) __emit(load.u.pri %0, stor.pri gAmxAssemblyAddress_, lref.pri gAmxAssemblyAddress_)
+		#define WriteAmxMemory(%0,%1) __emit(push.u %1, load.u.alt %0, stor.alt gAmxAssemblyAddress_, pop.pri, sref.pri gAmxAssemblyAddress_)
+	#endif
 #endif
 
 stock ReadAmxMemoryArray(address, values[], size = sizeof(values)) {
@@ -196,7 +198,9 @@ stock SetAmxNextInstructionPointer(ptr)
 }
 
 #if ((__Pawn & 0x0F) >= 0x0A) || ((__Pawn & 0xF0) >= 0xA0)
-	#endinput
+	#if __PawnBuild >= 10
+		#endinput
+	#endif
 #endif
 
 // after `#endif` because `#if` doesn't elide `#emit`.
