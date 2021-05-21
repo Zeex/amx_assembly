@@ -13,7 +13,7 @@
 * [`opcode.inc`](opcode.inc) - List of AMX opcodes and utility functions for (un-)relocating opcodes on Linux.
 * [`os.inc`](os.inc) - Detect operating system (Windows vs Linux).
 * [`phys_memory.inc`](phys_memory.inc) - Read/write memory of the host process (outside of AMX data).
-* [`profile.inc`](profile.inc) - Simple profiler written purely in Pawn. It can measure execution time of public functions.
+* [`profiler.inc`](profile.inc) - Simple profiler written purely in Pawn. It can measure execution time of public functions.
 * [`shellcode.inc`](shellcode.inc) - Execute arbitrary native code (doesn't work on Linux).
 * [`stack_dump.inc`](stack_dump.inc) - Print stack contents to the console.
 * [`stack_trace.inc`](stack_trace.inc) - Print stack trace.
