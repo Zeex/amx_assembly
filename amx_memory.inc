@@ -66,6 +66,9 @@ stock argderef(n) {
 }
 
 #if ((__Pawn & 0x0F) >= 0x0A) || ((__Pawn & 0xF0) >= 0xA0)
+	#if !defined __PawnBuild
+		#define __PawnBuild 0
+	#endif
 	#if __PawnBuild >= 10
 		stock gAmxAssemblyAddress_;
 		#define ReadAmxMemory(%0) __emit(load.u.pri %0, stor.pri gAmxAssemblyAddress_, lref.pri gAmxAssemblyAddress_)
