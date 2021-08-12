@@ -26,7 +26,9 @@
 #include <file>
 #include <time>
 #include <string>
-#tryinclude <console>
+#if !defined _samp_included
+	#tryinclude <console>
+#endif
 
 #include "amx_base"
 #include "amx_header"

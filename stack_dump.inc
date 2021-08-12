@@ -23,7 +23,9 @@
 #endif
 #define STACK_DUMP_INC
 
-#tryinclude <console>
+#if !defined _samp_included
+	#tryinclude <console>
+#endif
 
 /////////////////////////////////////////////////
 //                  Stack layout

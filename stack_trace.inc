@@ -23,7 +23,9 @@
 #endif
 #define STACK_TRACE_INC
 
-#tryinclude <console>
+#if !defined _samp_included
+	#tryinclude <console>
+#endif
 
 #include "amx_base"
 #include "amx_header"

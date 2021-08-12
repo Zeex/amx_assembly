@@ -23,7 +23,9 @@
 #endif
 #define AMX_HEADER_INC
 
-#tryinclude <console>
+#if !defined _samp_included
+	#tryinclude <console>
+#endif
 
 #include "amx_memory"
 
