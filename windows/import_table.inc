@@ -24,7 +24,7 @@
 #define IMPORT_TABLE_INC
 
 #include <core>
-#include "../phys_memory"
+#include "..\phys_memory"
 
 // Helpful resources:
 //

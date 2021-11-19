@@ -24,11 +24,11 @@
 #define SHELL_EXECUTE_INC
 
 #include "import_table"
-#include "../amx_header"
-#include "../amx_memory"
-#include "../dynamic_call"
-#include "../phys_memory"
-#include "../shellcode"
+#include "..\amx_header"
+#include "..\amx_memory"
+#include "..\dynamic_call"
+#include "..\phys_memory"
+#include "..\shellcode"
 
 // http://msdn.microsoft.com/en-us/library/windows/desktop/bb762153%28v=vs.85%29.aspx
 
