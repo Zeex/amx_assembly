@@ -913,7 +913,7 @@ stock bool:CodeScanRunFast(csState[CodeScanner], searchFuncAddr = 0) {
 		}
 		return true;
 	} else {
-		printf("Could not find common `CALL <func>` for the common scanner.  Falling back to the slow scanner.");
+		print("Could not find common `CALL <func>` for the common scanner.  Falling back to the slow scanner.");
 		return CodeScanRun(csState);
 	}
 }

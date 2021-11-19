@@ -207,9 +207,9 @@ stock GetAmxHeaderComponent(AMX_HDR:comp) {
 
 stock PrintAmxHeader() {
 	InitStaticAmxHeader();
-	printf("------------------------");
-	printf("AMX Header:");
-	printf("------------------------");
+	print("------------------------");
+	print("AMX Header:");
+	print("------------------------");
 	printf("size         %d", gHdr[AMX_HDR_SIZE]);
 	printf("magic        %x", gHdr[AMX_HDR_MAGIC]);
 	printf("file_version %d", gHdr[AMX_HDR_FILE_VERSION]);
@@ -227,7 +227,7 @@ stock PrintAmxHeader() {
 	printf("pubvars      0x%08x", gHdr[AMX_HDR_PUBVARS]);
 	printf("tags         0x%08x", gHdr[AMX_HDR_TAGS]);
 	printf("nametable    0x%08x", gHdr[AMX_HDR_NAMETABLE]);
-	printf("------------------------");
+	print("------------------------");
 }
 
 // Compares a string stored in the name table starting at "s1" (packed)
