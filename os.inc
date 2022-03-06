@@ -23,6 +23,19 @@
 #endif
 #define OS_INC
 
+/**
+ * <library name="amx_assembly os" summary="AMX Assembly Library: Determine the host OS type.">
+ *   <summary pawndoc="true">
+ *     This library uses the enhanced <em>pawndoc.xsl</em> from
+ *     <a href="https://github.com/pawn-lang/pawndoc">pawn-lang/pawndoc</a>.
+ *     This XSL has features such as library and markdown support, and will not
+ *     render this message when used.
+ *   </summary>
+ * </library>
+ */
+
+///
+
 #include "opcode"
 
 enum OS {

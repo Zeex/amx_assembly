@@ -23,6 +23,19 @@
 #endif
 #define STACK_TRACE_INC
 
+/**
+ * <library name="amx_assembly stack_trace" summary="AMX Assembly Library: Stack traces.">
+ *   <summary pawndoc="true">
+ *     This library uses the enhanced <em>pawndoc.xsl</em> from
+ *     <a href="https://github.com/pawn-lang/pawndoc">pawn-lang/pawndoc</a>.
+ *     This XSL has features such as library and markdown support, and will not
+ *     render this message when used.
+ *   </summary>
+ * </library>
+ */
+
+///
+
 #if !defined _samp_included
 	#tryinclude <console>
 #endif
