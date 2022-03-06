@@ -31,6 +31,7 @@
  *     This XSL has features such as library and markdown support, and will not
  *     render this message when used.
  *   </summary>
+ *   <remarks>http://msdn.microsoft.com/en-us/library/windows/desktop/bb762153%28v=vs.85%29.aspx</remarks>
  * </library>
  */
 
@@ -42,8 +43,6 @@
 #include "..\dynamic_call"
 #include "..\phys_memory"
 #include "..\shellcode"
-
-// http://msdn.microsoft.com/en-us/library/windows/desktop/bb762153%28v=vs.85%29.aspx
 
 #define SW_HIDE (0)
 #define SW_NORMAL (1)
@@ -75,7 +74,8 @@
 #define SE_ERR_PNF (3)              // The specified path was not found.
 #define SE_ERR_SHARE (26)           // A sharing violation occurred.
 
-// NOTE: string arguments must be prepared with ToCharString() or similar function.
+/// <library>amx_assembly Windows ShellExecute</library>
+/// <remarks>NOTE: string arguments must be prepared with ToCharString() or similar function.</remarks>
 stock ShellExecute(const Operation[], const File[], const Parameters[], ShowCmd) {
 	/*
 	.text:10001000 55                                push    ebp
@@ -140,3 +140,4 @@ stock ShellExecute(const Operation[], const File[], const Parameters[], ShowCmd)
 
 	return RunShellcode(refabs(asm));
 }
+

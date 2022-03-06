@@ -31,6 +31,14 @@
  *     This XSL has features such as library and markdown support, and will not
  *     render this message when used.
  *   </summary>
+ * <remarks>
+ *   Helpful resources:
+ *     <ul>
+ *       <li><a href="http://msdn.microsoft.com/en-us/library/ms809762.aspx">Peering Inside the PE: A Tour of the Win32 Portable Executable File Format</a></li>
+ *       <li><a href="http://sandsprite.com/CodeStuff/Understanding_imports.html>Understanding the Import Address Table</a></li>
+ *       <li><a href="http://msdn.microsoft.com/en-us/windows/hardware/gg463119.aspx>Microsoft PE and COFF Specification</a></li>
+ *     </ul>
+ *   </remarks>
  * </library>
  */
 
@@ -39,26 +47,19 @@
 #include <core>
 #include "..\phys_memory"
 
-// Helpful resources:
-//
-//  o  Peering Inside the PE: A Tour of the Win32 Portable Executable File Format
-//
-//       http://msdn.microsoft.com/en-us/library/ms809762.aspx
-//
-//  o  Understanding the Import Address Table
-//
-//       http://sandsprite.com/CodeStuff/Understanding_imports.html
-//
-//  o  Microsoft PE and COFF Specification
-//
-//       http://msdn.microsoft.com/en-us/windows/hardware/gg463119.aspx
+/// <library>amx_assembly Windows import_table</library>
+const DefaultImageBase = 0x00400000;
 
-static stock const DefaultImageBase = 0x00400000;
+/// <library>amx_assembly Windows import_table</library>
+const SizeOfFileHeader = 0x14;
 
-static stock const SizeOfFileHeader = 0x14;
-static stock const SizeOfOptionalHeader = 0xE0;
-static stock const SizeOfImportDirectory = 0x14;
+/// <library>amx_assembly Windows import_table</library>
+const SizeOfOptionalHeader = 0xE0;
 
+/// <library>amx_assembly Windows import_table</library>
+const SizeOfImportDirectory = 0x14;
+
+/// <library>amx_assembly Windows import_table</library>
 stock GetImportPointer(const name[]) {
 	new DosHeader = DefaultImageBase;
 	new NtHeaders = DosHeader + ReadDword(DosHeader, 0x3C);
@@ -104,7 +105,8 @@ stock GetImportPointer(const name[]) {
 	return 0;
 }
 
-// Finds a function in the Import Table and returns its address or 0 if found nothing.
+/// <library>amx_assembly Windows import_table</library>
+/// <summary>Finds a function in the Import Table and returns its address or 0 if found nothing.</summary>
 stock GetImportAddress(const name[]) {
 	new ImportPointer = GetImportPointer(name);
 
@@ -115,18 +117,22 @@ stock GetImportAddress(const name[]) {
 	return 0;
 }
 
+/// <library>amx_assembly Windows import_table</library>
 static stock ToCharString(s[], size = sizeof(s)) {
 	for (new i = 0; i < size; i++) {
 		s[i] = swapchars(s[i]);
 	}
 }
 
+/// <library>amx_assembly Windows import_table</library>
 static stock ReadDword(base, offset = 0) {
 	return ReadPhysMemoryCell(base + offset);
 }
 
+/// <library>amx_assembly Windows import_table</library>
 static stock ReadString(base, offset = 0, dest[], size = sizeof(dest)) {
 	ReadPhysMemory(base + offset, dest, size);
 	ToCharString(dest, size);
 	strunpack(dest, dest, size);
 }
+
