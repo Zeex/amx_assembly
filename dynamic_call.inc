@@ -58,9 +58,13 @@ forward CallFunction(address, {Float,_}:...);
 forward CallNative(index, {Float,_}:...);
 forward CallNativeByAddress(address, {Float,_}:...);
 
+/// <library>amx_assembly dynamic_call</library>
 static stock g_nargs = 0;
+
+/// <library>amx_assembly dynamic_call</library>
 static stock g_args[DYNAMIC_CALL_MAX_ARGS];
 
+/// <library>amx_assembly dynamic_call</library>
 stock bool:Push(arg) {
 	if (g_nargs < sizeof(g_args)) {
 		g_args[g_nargs++] = arg;
@@ -69,6 +73,7 @@ stock bool:Push(arg) {
 	return false;
 }
 
+/// <library>amx_assembly dynamic_call</library>
 stock bool:PushString(const string[]) {
 	new address = 0;
 	#emit load.s.pri string
@@ -76,6 +81,7 @@ stock bool:PushString(const string[]) {
 	return Push(address);
 }
 
+/// <library>amx_assembly dynamic_call</library>
 stock bool:Pop(&arg = 0) {
 	if (g_nargs > 0) {
 		arg = g_args[--g_nargs];
@@ -84,6 +90,7 @@ stock bool:Pop(&arg = 0) {
 	return false;
 }
 
+/// <library>amx_assembly dynamic_call</library>
 stock Call(address, bool:auto_pop = true) {
 	new arg = 0;
 	new index = g_nargs;
@@ -114,6 +121,7 @@ stock Call(address, bool:auto_pop = true) {
 	return retval;
 }
 
+/// <library>amx_assembly dynamic_call</library>
 stock CallN(address, args_to_push, bool:auto_pop = true) {
 	// Like "Call", but doesn't pass all parameters.
 	new arg = 0;
@@ -150,6 +158,7 @@ stock CallN(address, args_to_push, bool:auto_pop = true) {
 	return retval;
 }
 
+/// <library>amx_assembly dynamic_call</library>
 stock CallFunction(address, {Float,_}:...) {
 	new arg_bytes = 0, arg_begin = 0, arg_end = 0;
 
@@ -196,6 +205,7 @@ stock CallFunction(address, {Float,_}:...) {
 	return 0; // make compiler happy
 }
 
+/// <library>amx_assembly dynamic_call</library>
 stock SysreqC(index, bool:auto_pop = true) {
 	new arg = 0;
 	new i = g_nargs;
@@ -260,6 +270,7 @@ stock SysreqC(index, bool:auto_pop = true) {
 	return retval;
 }
 
+/// <library>amx_assembly dynamic_call</library>
 stock SysreqD(address, bool:auto_pop = true) {
 	new arg = 0;
 	new i = g_nargs;
@@ -323,6 +334,7 @@ stock SysreqD(address, bool:auto_pop = true) {
 	return retval;
 }
 
+/// <library>amx_assembly dynamic_call</library>
 stock SysreqCN(index, args_to_push, bool:auto_pop = true) {
 	new arg = 0;
 	new i = g_nargs;
@@ -390,6 +402,7 @@ stock SysreqCN(index, args_to_push, bool:auto_pop = true) {
 	return retval;
 }
 
+/// <library>amx_assembly dynamic_call</library>
 stock SysreqDN(address, args_to_push, bool:auto_pop = true) {
 	new arg = 0;
 	new i = g_nargs;
@@ -458,6 +471,7 @@ stock SysreqDN(address, args_to_push, bool:auto_pop = true) {
 	return retval;
 }
 
+/// <library>amx_assembly dynamic_call</library>
 stock CallNative(index, {Float,_}:...) {
 	new arg_bytes = 0, arg_begin = 0, arg_end = 0;
 	new Opcode:sysreq_c = RelocateOpcode(OP_SYSREQ_C);
@@ -537,7 +551,10 @@ stock CallNative(index, {Float,_}:...) {
 	return retval;
 }
 
-// Unlike CallNative(), this function calls natives directly via SYSREQ.D.
+/// <library>amx_assembly dynamic_call</library>
+/// <remarks>
+///   Unlike CallNative(), this function calls natives directly via SYSREQ.D.
+/// </remarks>
 stock CallNativeByAddress(address, {Float,_}:...) {
 	new arg_bytes = 0, arg_begin = 0, arg_end = 0;
 	new Opcode:sysreq_d = RelocateOpcode(OP_SYSREQ_D);

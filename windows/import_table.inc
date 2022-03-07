@@ -31,8 +31,8 @@
  *     This XSL has features such as library and markdown support, and will not
  *     render this message when used.
  *   </summary>
- * <remarks>
- *   Helpful resources:
+ *   <remarks>
+ *     Helpful resources:
  *     <ul>
  *       <li><a href="http://msdn.microsoft.com/en-us/library/ms809762.aspx">Peering Inside the PE: A Tour of the Win32 Portable Executable File Format</a></li>
  *       <li><a href="http://sandsprite.com/CodeStuff/Understanding_imports.html>Understanding the Import Address Table</a></li>

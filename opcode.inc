@@ -49,6 +49,9 @@
 
 #define OPCODE_MAX_INSN_NAME 15
 
+///
+//
+/// <library>amx_assembly opcode</library>
 enum Opcode {
   OP_NONE,         OP_LOAD_PRI,     OP_LOAD_ALT,
   OP_LOAD_S_PRI,   OP_LOAD_S_ALT,   OP_LREF_PRI,
@@ -99,6 +102,10 @@ enum Opcode {
   OP_LAST_
 };
 
+/// <library>amx_assembly opcode</library>
+const Opcode:Opcode__ = Opcode;
+
+/// <library>amx_assembly opcode</library>
 stock const gAMXOpcodeParameterCounts[] = {
 	0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 0, 1, 1, 1, 1,
 	1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 1, 1, 0, 0, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
@@ -107,6 +114,7 @@ stock const gAMXOpcodeParameterCounts[] = {
 	0, 1, 1, 0, 0, 1, 0, 1, 1, 0
 };
 
+/// <library>amx_assembly opcode</library>
 stock const gAMXOpcodeNeedsReloc[] = {
 	false, false, false, false, false, false, false, false, false, false, false, false, false,
 	false, false, false, false, false, false, false, false, false, false, false, false, false,
@@ -121,6 +129,7 @@ stock const gAMXOpcodeNeedsReloc[] = {
 	true , false, false, false, false, false, false, false
 };
 
+/// <library>amx_assembly opcode</library>
 stock const gAMXOpcodeNames[][OPCODE_MAX_INSN_NAME] = {
 	"none", "load.pri", "load.alt", "load.s.pri", "load.s.alt", "lref.pri", "lref.alt",
 	"lref.s.pri", "lref.s.alt", "load.i", "lodb.i", "const.pri", "const.alt", "addr.pri",
@@ -140,6 +149,7 @@ stock const gAMXOpcodeNames[][OPCODE_MAX_INSN_NAME] = {
 	"symtag", "break"
 };
 
+/// <library>amx_assembly opcode</library>
 stock const gAMXOpcodeBaseSizes[] = {
 	4, 8, 8, 8, 8, 8, 8, 8, 8, 4, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 4, 8, 4, 8, 4, 8, 8, 8, 8,
 	8, 4, 4, 4, 4, 4, 8, 8, 8, 8, 4, 4, 8, 8, 4, 4, 4, 8, 4, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8,
@@ -148,8 +158,10 @@ stock const gAMXOpcodeBaseSizes[] = {
 	4, 8, 8, 4, 4, 8, 4, 8, 8, 4
 };
 
+/// <library>amx_assembly opcode</library>
 const NUM_OPCODES = _:OP_LAST_;
 
+/// <library>amx_assembly opcode</library>
 static stock Opcode:ReadOpcodeNearThis(offset = 0) {
 	new ret_addr = 0;
 
@@ -173,11 +185,15 @@ static stock Opcode:ReadOpcodeNearThis(offset = 0) {
 	return OP_NONE; // make compiler happy
 }
 
+/// <library>amx_assembly opcode</library>
 static stock bool:HaveToRelocateOpcodes() {
 	return ReadOpcodeNearThis(-8) != OP_CALL;
 }
 
-// Based on this idea: http://forum.sa-mp.com/showthread.php?t=358084
+/// <library>amx_assembly opcode</library>
+/// <remarks>
+///   Based on this idea: http://forum.sa-mp.com/showthread.php?t=358084
+/// </remarks>
 stock Opcode:RelocateOpcodeNow(Opcode:opcode) {
 	if (!HaveToRelocateOpcodes()) {
 		return opcode;
@@ -722,13 +738,18 @@ stock Opcode:RelocateOpcodeNow(Opcode:opcode) {
 	return opcode;
 }
 
+/// <library>amx_assembly opcode</library>
 static stock Opcode:opcode_table[NUM_OPCODES];
+
+/// <library>amx_assembly opcode</library>
 static stock bool:opcode_table_is_ready = false;
 
+/// <library>amx_assembly opcode</library>
 stock bool:IsOpcodeValid(Opcode:opcode) {
 	return (OP_NONE <= opcode < Opcode:NUM_OPCODES);
 }
 
+/// <library>amx_assembly opcode</library>
 static stock InitOpcodeTable() {
 	for (new i = 0; i < NUM_OPCODES; i++) {
 		opcode_table[i] = RelocateOpcodeNow(Opcode:i);
@@ -736,6 +757,7 @@ static stock InitOpcodeTable() {
 	opcode_table_is_ready = true;
 }
 
+/// <library>amx_assembly opcode</library>
 stock Opcode:RelocateOpcode(Opcode:opcode) {
 	if (!opcode_table_is_ready) {
 		InitOpcodeTable();
@@ -743,10 +765,12 @@ stock Opcode:RelocateOpcode(Opcode:opcode) {
 	return opcode_table[_:opcode];
 }
 
+/// <library>amx_assembly opcode</library>
 stock bool:IsOpcodeRelocationRequired() {
 	return RelocateOpcode(OP_LOAD_PRI) != OP_LOAD_PRI;
 }
 
+/// <library>amx_assembly opcode</library>
 stock Opcode:UnrelocateOpcode(Opcode:opcode) {
 	if (!opcode_table_is_ready) {
 		InitOpcodeTable();
@@ -762,6 +786,7 @@ stock Opcode:UnrelocateOpcode(Opcode:opcode) {
 	return opcode;
 }
 
+/// <library>amx_assembly opcode</library>
 stock GetOpcodeInstructionName(Opcode:opcode) {
 	static const ret[OPCODE_MAX_INSN_NAME] = "none";
 	if (OP_NONE < opcode < Opcode:NUM_OPCODES) {
@@ -770,6 +795,7 @@ stock GetOpcodeInstructionName(Opcode:opcode) {
 	return ret;
 }
 
+/// <library>amx_assembly opcode</library>
 stock GetOpcodeInstructionParameters(Opcode:opcode) {
 	if (OP_NONE < opcode < Opcode:NUM_OPCODES) {
 		return gAMXOpcodeParameterCounts[_:opcode];
@@ -777,6 +803,7 @@ stock GetOpcodeInstructionParameters(Opcode:opcode) {
 	return 0;
 }
 
+/// <library>amx_assembly opcode</library>
 stock bool:GetOpcodeInstructionRelocatable(Opcode:opcode) {
 	if (OP_NONE < opcode < Opcode:NUM_OPCODES) {
 		return gAMXOpcodeNeedsReloc[_:opcode];

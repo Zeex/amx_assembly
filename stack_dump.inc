@@ -71,6 +71,7 @@
 
 #include "amx_memory"
 
+/// <library>amx_assembly stack_dump</library>
 stock DumpStack()
 {
 	new stp = 0, stk = 0;

@@ -44,6 +44,7 @@
 #include "amx_header"
 #include "frame_info"
 
+/// <library>amx_assembly stack_trace</library>
 stock GetFunctionFromReturnAddress(ret_addr) {
 	new addr = ret_addr - 4;
 
@@ -63,6 +64,7 @@ stock GetFunctionFromReturnAddress(ret_addr) {
 	return addr - GetAmxBaseAddress();
 }
 
+/// <library>amx_assembly stack_trace</library>
 stock GetStackTrace(trace[], skip = 0, max = sizeof(trace)) {
 	new frm_addr = 0;
 	#emit lctrl 5
@@ -87,6 +89,7 @@ stock GetStackTrace(trace[], skip = 0, max = sizeof(trace)) {
 	return length;
 }
 
+/// <library>amx_assembly stack_trace</library>
 stock PrintStackTrace(trace[], max = sizeof(trace)) {
 	print("Stack trace:");
 
@@ -104,3 +107,4 @@ stock PrintStackTrace(trace[], max = sizeof(trace)) {
 
 	printf(" ??[%08x]", trace[i]);
 }
+

@@ -40,9 +40,11 @@
 #include "dynamic_call"
 #include "phys_memory"
 
+/// <library>amx_assembly shellcode</library>
 stock RunShellcode(code_ptr, bool:align = true) {
 	if (align) {
 		code_ptr = ((code_ptr + 15) >>> 4) << 4;
 	}
 	return SysreqD(code_ptr);
 }
+

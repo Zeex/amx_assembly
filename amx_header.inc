@@ -48,6 +48,9 @@
 #define AMX_TAG_MASK (0x80000000)
 #define AMX_TAG_STRONG (0x40000000)
 
+///
+//
+/// <library>amx_assembly amx_header</library>
 enum AMX_HDR {
 	AMX_HDR_SIZE,
 	AMX_HDR_MAGIC,
@@ -68,29 +71,71 @@ enum AMX_HDR {
 	AMX_HDR_NAMETABLE
 }
 
+/// <library>amx_assembly amx_header</library>
+const AMX_HDR:AMX_HDR__ = AMX_HDR;
+
+/// <library>amx_assembly amx_header</library>
 const AMX_HDR_OFFSET_SIZE = 0;
+
+/// <library>amx_assembly amx_header</library>
 const AMX_HDR_OFFSET_MAGIC = 4;
+
+/// <library>amx_assembly amx_header</library>
 const AMX_HDR_OFFSET_FILE_VERSION = 6;
+
+/// <library>amx_assembly amx_header</library>
 const AMX_HDR_OFFSET_AMX_VERSION = 7;
+
+/// <library>amx_assembly amx_header</library>
 const AMX_HDR_OFFSET_FLAGS = 8;
+
+/// <library>amx_assembly amx_header</library>
 const AMX_HDR_OFFSET_DEFSIZE = 10;
+
+/// <library>amx_assembly amx_header</library>
 const AMX_HDR_OFFSET_COD = 12;
+
+/// <library>amx_assembly amx_header</library>
 const AMX_HDR_OFFSET_DAT = 16;
+
+/// <library>amx_assembly amx_header</library>
 const AMX_HDR_OFFSET_HEA = 20;
+
+/// <library>amx_assembly amx_header</library>
 const AMX_HDR_OFFSET_STP = 24;
+
+/// <library>amx_assembly amx_header</library>
 const AMX_HDR_OFFSET_CIP = 28;
+
+/// <library>amx_assembly amx_header</library>
 const AMX_HDR_OFFSET_PUBLICS = 32;
+
+/// <library>amx_assembly amx_header</library>
 const AMX_HDR_OFFSET_NATIVES = 36;
+
+/// <library>amx_assembly amx_header</library>
 const AMX_HDR_OFFSET_LIBRARIES = 40;
+
+/// <library>amx_assembly amx_header</library>
 const AMX_HDR_OFFSET_PUBVARS = 44;
+
+/// <library>amx_assembly amx_header</library>
 const AMX_HDR_OFFSET_TAGS = 48;
+
+/// <library>amx_assembly amx_header</library>
 const AMX_HDR_OFFSET_NAMETABLE = 52;
 
+///
+//
+/// <library>amx_assembly amx_header</library>
 enum AMX_FUNCSTUBNT {
 	AMX_FUNCSTUBNT_ADDRESS,
 	AMX_FUNCSTUBNT_NAMEOFS
 }
 #define AMX_FUNCSTUBNT_ID AMX_FUNCSTUBNT_ADDRESS
+
+/// <library>amx_assembly amx_header</library>
+const AMX_FUNCSTUBNT:AMX_FUNCSTUBNT__ = AMX_FUNCSTUBNT;
 
 // Publics
 forward bool:GetPublicInfo(index, info[AMX_FUNCSTUBNT]);
@@ -137,6 +182,7 @@ forward GetAmxHeader(amxhdr[AMX_HDR]);
 forward GetAmxHeaderComponent(AMX_HDR:comp);
 forward PrintAmxHeader();
 
+/// <library>amx_assembly amx_header</library>
 stock GetRawAmxHeader(plain_amxhdr[AMX_HDR_CELLS]) {
 	new address = 0;
 	#emit lctrl 1  // DAT
@@ -149,6 +195,7 @@ stock GetRawAmxHeader(plain_amxhdr[AMX_HDR_CELLS]) {
 	}
 }
 
+/// <library>amx_assembly amx_header</library>
 static stock copy_1(&dest, const source[], start) {
 	#emit load.s.pri source
 	#emit load.s.alt start
@@ -157,6 +204,7 @@ static stock copy_1(&dest, const source[], start) {
 	#emit movs 1
 }
 
+/// <library>amx_assembly amx_header</library>
 static stock copy_2(&dest, const source[], start) {
 	#emit load.s.pri source
 	#emit load.s.alt start
@@ -165,6 +213,7 @@ static stock copy_2(&dest, const source[], start) {
 	#emit movs 2
 }
 
+/// <library>amx_assembly amx_header</library>
 static stock copy_4(&dest, const source[], start) {
 	#emit load.s.pri source
 	#emit load.s.alt start
@@ -173,6 +222,7 @@ static stock copy_4(&dest, const source[], start) {
 	#emit movs 4
 }
 
+/// <library>amx_assembly amx_header</library>
 stock GetAmxHeaderNow(amxhdr[AMX_HDR]) {
 	new plain_amxhdr[AMX_HDR_CELLS];
 	GetRawAmxHeader(plain_amxhdr);
@@ -196,9 +246,13 @@ stock GetAmxHeaderNow(amxhdr[AMX_HDR]) {
 	copy_4(amxhdr[AMX_HDR_NAMETABLE], plain_amxhdr, AMX_HDR_OFFSET_NAMETABLE);
 }
 
+/// <library>amx_assembly amx_header</library>
 static gHdr[AMX_HDR];
+
+/// <library>amx_assembly amx_header</library>
 static bool:gInitialized = false;
 
+/// <library>amx_assembly amx_header</library>
 stock ResetStaticAmxHeader() {
 	GetAmxHeaderNow(gHdr);
 	gInitialized = true;
@@ -208,16 +262,19 @@ stock ResetStaticAmxHeader() {
 	if (!gInitialized) \
 		ResetStaticAmxHeader()
 
+/// <library>amx_assembly amx_header</library>
 stock GetAmxHeader(amxhdr[AMX_HDR]) {
 	InitStaticAmxHeader();
 	amxhdr = gHdr;
 }
 
+/// <library>amx_assembly amx_header</library>
 stock GetAmxHeaderComponent(AMX_HDR:comp) {
 	InitStaticAmxHeader();
 	return gHdr[comp];
 }
 
+/// <library>amx_assembly amx_header</library>
 stock PrintAmxHeader() {
 	InitStaticAmxHeader();
 	print("------------------------");
@@ -243,8 +300,11 @@ stock PrintAmxHeader() {
 	print("------------------------");
 }
 
-// Compares a string stored in the name table starting at "s1" (packed)
-// with another string "s2" (unpacked).
+/// <library>amx_assembly amx_header</library>
+/// <summary>
+///   Compares a string stored in the name table starting at "s1" (packed) with
+///   another string "s2" (unpacked).
+/// </summary>
 static stock NtCompare(s1, const s2[]) {
 	new index = 0;
 	new c1 = 0, c2 = 0;
@@ -263,8 +323,11 @@ static stock NtCompare(s1, const s2[]) {
 	return diff;
 }
 
-// Copies a name from the name table to a string. Returns the number
-// of characters copied.
+/// <library>amx_assembly amx_header</library>
+/// <summary>
+///   Copies a name from the name table to a string.  Returns the number of
+///   characters copied.
+/// </summary>
 static stock NtCopy(src, dest[], size = sizeof(dest)) {
 	new i = 0;
 	new c = 0;
@@ -280,11 +343,13 @@ static stock NtCopy(src, dest[], size = sizeof(dest)) {
 	return i;
 }
 
+/// <library>amx_assembly amx_header</library>
 stock GetNumPublics(const amxhdr[AMX_HDR]) {
 	new num_publics = (amxhdr[AMX_HDR_NATIVES] - amxhdr[AMX_HDR_PUBLICS]) / amxhdr[AMX_HDR_DEFSIZE];
 	return num_publics;
 }
 
+/// <library>amx_assembly amx_header</library>
 stock GetPublicIndexFromAddress(address) {
 	InitStaticAmxHeader();
 
@@ -302,6 +367,7 @@ stock GetPublicIndexFromAddress(address) {
 	return -1;
 }
 
+/// <library>amx_assembly amx_header</library>
 stock bool:GetPublicInfo(index, info[AMX_FUNCSTUBNT]) {
 	InitStaticAmxHeader();
 
@@ -318,6 +384,7 @@ stock bool:GetPublicInfo(index, info[AMX_FUNCSTUBNT]) {
 	return true;
 }
 
+/// <library>amx_assembly amx_header</library>
 stock GetPublicIndexFromName(const name[]) {
 	InitStaticAmxHeader();
 
@@ -347,16 +414,19 @@ stock GetPublicIndexFromName(const name[]) {
 	return -1;
 }
 
+/// <library>amx_assembly amx_header</library>
 stock GetPublicAddressFromIndex(index) {
 	new info[AMX_FUNCSTUBNT];
 	GetPublicInfo(index, info);
 	return info[AMX_FUNCSTUBNT_ADDRESS];
 }
 
+/// <library>amx_assembly amx_header</library>
 stock GetPublicAddressFromName(const name[]) {
 	return GetPublicAddressFromIndex(GetPublicIndexFromName(name));
 }
 
+/// <library>amx_assembly amx_header</library>
 stock bool:GetPublicNameFromIndex(index, name[], size = sizeof(name)) {
 	new info[AMX_FUNCSTUBNT];
 	if (!GetPublicInfo(index, info)) {
@@ -366,10 +436,12 @@ stock bool:GetPublicNameFromIndex(index, name[], size = sizeof(name)) {
 	        - GetAmxHeaderComponent(AMX_HDR_DAT), name, size) > 0);
 }
 
+/// <library>amx_assembly amx_header</library>
 stock bool:GetPublicNameFromAddress(address, name[], size = sizeof(name)) {
 	return GetPublicNameFromIndex(GetPublicIndexFromAddress(address), name, size);
 }
 
+/// <library>amx_assembly amx_header</library>
 stock HookPublic(index, address) {
 	InitStaticAmxHeader();
 
@@ -386,10 +458,12 @@ stock HookPublic(index, address) {
 	return old_address;
 }
 
+/// <library>amx_assembly amx_header</library>
 stock GetNumNatives(const amxhdr[AMX_HDR]) {
 	return (amxhdr[AMX_HDR_LIBRARIES] - amxhdr[AMX_HDR_NATIVES]) / amxhdr[AMX_HDR_DEFSIZE];
 }
 
+/// <library>amx_assembly amx_header</library>
 stock GetNativeIndexFromAddress(address) {
 	InitStaticAmxHeader();
 
@@ -407,6 +481,7 @@ stock GetNativeIndexFromAddress(address) {
 	return -1;
 }
 
+/// <library>amx_assembly amx_header</library>
 stock bool:GetNativeInfo(index, info[AMX_FUNCSTUBNT]) {
 	InitStaticAmxHeader();
 
@@ -426,6 +501,7 @@ stock bool:GetNativeInfo(index, info[AMX_FUNCSTUBNT]) {
 	return true;
 }
 
+/// <library>amx_assembly amx_header</library>
 stock GetNativeIndexFromName(const name[]) {
 	InitStaticAmxHeader();
 
@@ -447,16 +523,19 @@ stock GetNativeIndexFromName(const name[]) {
 	return -1;
 }
 
+/// <library>amx_assembly amx_header</library>
 stock GetNativeAddressFromIndex(index) {
 	new info[AMX_FUNCSTUBNT];
 	GetNativeInfo(index, info);
 	return info[AMX_FUNCSTUBNT_ADDRESS];
 }
 
+/// <library>amx_assembly amx_header</library>
 stock GetNativeAddressFromName(const name[]) {
 	return GetNativeAddressFromIndex(GetNativeIndexFromName(name));
 }
 
+/// <library>amx_assembly amx_header</library>
 stock bool:GetNativeNameFromIndex(index, name[], size = sizeof(name)) {
 	new info[AMX_FUNCSTUBNT];
 	if (!GetNativeInfo(index, info)) {
@@ -466,10 +545,12 @@ stock bool:GetNativeNameFromIndex(index, name[], size = sizeof(name)) {
 	        - GetAmxHeaderComponent(AMX_HDR_DAT), name, size) > 0);
 }
 
+/// <library>amx_assembly amx_header</library>
 stock bool:GetNativeNameFromAddress(address, name[], size = sizeof(name)) {
 	return GetNativeNameFromIndex(GetNativeIndexFromAddress(address), name, size);
 }
 
+/// <library>amx_assembly amx_header</library>
 stock HookNative(index, address) {
 	InitStaticAmxHeader();
 
@@ -486,10 +567,12 @@ stock HookNative(index, address) {
 	return old_address;
 }
 
+/// <library>amx_assembly amx_header</library>
 stock GetNumPubVars(const amxhdr[AMX_HDR]) {
 	return (amxhdr[AMX_HDR_TAGS] - amxhdr[AMX_HDR_PUBVARS]) / amxhdr[AMX_HDR_DEFSIZE];
 }
 
+/// <library>amx_assembly amx_header</library>
 stock bool:GetPubVarInfo(index, info[AMX_FUNCSTUBNT]) {
 	InitStaticAmxHeader();
 
@@ -506,6 +589,7 @@ stock bool:GetPubVarInfo(index, info[AMX_FUNCSTUBNT]) {
 	return true;
 }
 
+/// <library>amx_assembly amx_header</library>
 stock GetPubVarIndexFromName(const name[]) {
 	InitStaticAmxHeader();
 
@@ -527,6 +611,7 @@ stock GetPubVarIndexFromName(const name[]) {
 	return -1;
 }
 
+/// <library>amx_assembly amx_header</library>
 stock GetPubVarIndexFromAddress(address) {
 	InitStaticAmxHeader();
 
@@ -544,16 +629,19 @@ stock GetPubVarIndexFromAddress(address) {
 	return -1;
 }
 
+/// <library>amx_assembly amx_header</library>
 stock GetPubVarAddressFromIndex(index) {
 	new info[AMX_FUNCSTUBNT];
 	GetPubVarInfo(index, info);
 	return info[AMX_FUNCSTUBNT_ADDRESS];
 }
 
+/// <library>amx_assembly amx_header</library>
 stock GetPubVarAddressFromName(const name[]) {
 	return GetPubVarAddressFromIndex(GetPubVarIndexFromName(name));
 }
 
+/// <library>amx_assembly amx_header</library>
 stock bool:GetPubVarNameFromIndex(index, name[], size = sizeof(name)) {
 	new info[AMX_FUNCSTUBNT];
 	if (!GetPubVarInfo(index, info)) {
@@ -563,14 +651,17 @@ stock bool:GetPubVarNameFromIndex(index, name[], size = sizeof(name)) {
 	        - GetAmxHeaderComponent(AMX_HDR_DAT), name, size) > 0);
 }
 
+/// <library>amx_assembly amx_header</library>
 stock bool:GetPubVarNameFromAddress(address, name[], size = sizeof(name)) {
 	return GetPubVarNameFromIndex(GetPubVarIndexFromAddress(address), name, size);
 }
 
+/// <library>amx_assembly amx_header</library>
 stock GetNumTags(const amxhdr[AMX_HDR]) {
 	return (amxhdr[AMX_HDR_NAMETABLE] - amxhdr[AMX_HDR_TAGS]) / amxhdr[AMX_HDR_DEFSIZE];
 }
 
+/// <library>amx_assembly amx_header</library>
 stock bool:GetTagInfo(index, info[AMX_FUNCSTUBNT]) {
 	if (index == 0) {
 		info[AMX_FUNCSTUBNT_ID] = AMX_TAG_MASK;
@@ -592,6 +683,7 @@ stock bool:GetTagInfo(index, info[AMX_FUNCSTUBNT]) {
 	return true;
 }
 
+/// <library>amx_assembly amx_header</library>
 stock GetTagIndexFromName(const name[]) {
 	InitStaticAmxHeader();
 
@@ -613,6 +705,7 @@ stock GetTagIndexFromName(const name[]) {
 	return -1;
 }
 
+/// <library>amx_assembly amx_header</library>
 stock GetTagIndexFromID(id) {
 	id &= ~AMX_TAG_MASK;
 	if (id == 0)
@@ -633,6 +726,7 @@ stock GetTagIndexFromID(id) {
 	return -1;
 }
 
+/// <library>amx_assembly amx_header</library>
 stock GetTagIDFromIndex(index) {
 	if (index == 0)
 		return AMX_TAG_MASK;
@@ -641,12 +735,14 @@ stock GetTagIDFromIndex(index) {
 	return info[AMX_FUNCSTUBNT_ID];
 }
 
+/// <library>amx_assembly amx_header</library>
 stock GetTagIDFromName(const name[]) {
 	if (name[0] == '_' && name[1] == '\0')
 		return AMX_TAG_MASK;
 	return GetTagIDFromIndex(GetTagIndexFromName(name));
 }
 
+/// <library>amx_assembly amx_header</library>
 stock bool:GetTagNameFromIndex(index, name[], size = sizeof(name)) {
 	if (index == 0)
 	{
@@ -662,6 +758,7 @@ stock bool:GetTagNameFromIndex(index, name[], size = sizeof(name)) {
 	        - GetAmxHeaderComponent(AMX_HDR_DAT), name, size) > 0);
 }
 
+/// <library>amx_assembly amx_header</library>
 stock bool:GetTagNameFromID(id, name[], size = sizeof(name)) {
 	if (id == 0)
 	{
@@ -674,40 +771,49 @@ stock bool:GetTagNameFromID(id, name[], size = sizeof(name)) {
 
 #define AMX_ASSEMBLY_NO_BUGGED_TAGS 2
 
+/// <library>amx_assembly amx_header</library>
 stock bool:IsTagIDStrong(tag) {
 	return !!(tag & AMX_TAG_STRONG);
 }
 
+/// <library>amx_assembly amx_header</library>
 stock bool:IsTagIDWeak(tag) {
 	return !(tag & AMX_TAG_STRONG);
 }
 
+/// <library>amx_assembly amx_header</library>
 stock bool:IsTagIDEmpty(tag) {
 	return !(tag & ~AMX_TAG_MASK);
 }
 
+/// <library>amx_assembly amx_header</library>
 stock bool:IsTagNameStrong(const tag[]) {
 	return ('A' <= tag[0] <= 'Z');
 }
 
+/// <library>amx_assembly amx_header</library>
 stock bool:IsTagNameWeak(const tag[]) {
 	return !('A' <= tag[0] <= 'Z');
 }
 
+/// <library>amx_assembly amx_header</library>
 stock bool:IsTagNameEmpty(const tag[]) {
 	return (tag[0] == '_' && tag[1] == '\0');
 }
 
+/// <library>amx_assembly amx_header</library>
 stock bool:IsTagIndexStrong(tag) {
 	new info[AMX_FUNCSTUBNT];
 	return (GetTagInfo(tag, info) && IsTagIDStrong(info[AMX_FUNCSTUBNT_ID]));
 }
 
+/// <library>amx_assembly amx_header</library>
 stock bool:IsTagIndexWeak(tag) {
 	new info[AMX_FUNCSTUBNT];
 	return (GetTagInfo(tag, info) && IsTagIDWeak(info[AMX_FUNCSTUBNT_ID]));
 }
 
+/// <library>amx_assembly amx_header</library>
 stock bool:IsTagIndexEmpty(tag) {
 	return (tag == 0);
 }

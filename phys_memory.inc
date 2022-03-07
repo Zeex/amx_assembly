@@ -40,21 +40,27 @@
 
 #include "amx_base"
 
+/// <library>amx_assembly phys_memory</library>
 static stock GetDat() {
 	#emit lctrl 1
 	#emit retn
 	return 0; // make compiler happy
 }
 
+/// <library>amx_assembly phys_memory</library>
 static stock AbsToRel(address) {
 	return address - (GetAmxBaseAddress() + GetDat());
 }
 
+/// <library>amx_assembly phys_memory</library>
 static stock RelToAbs(address) {
 	return address + (GetAmxBaseAddress() + GetDat());
 }
 
-// Returns the absolute address of a variable/array.
+/// <library>amx_assembly phys_memory</library>
+/// <summary>
+///   Returns the absolute address of a variable/array.
+/// </summary>
 stock refabs(...) {
 	assert(numargs() == 1);
 	new address = 0;
@@ -63,6 +69,7 @@ stock refabs(...) {
 	return RelToAbs(address);
 }
 
+/// <library>amx_assembly phys_memory</library>
 stock ReadPhysMemory(address, dest[], num = sizeof(dest)) {
 	new rel_addr = AbsToRel(address);
 
@@ -86,6 +93,7 @@ stock ReadPhysMemory(address, dest[], num = sizeof(dest)) {
 	return 0; // make compiler happy
 }
 
+/// <library>amx_assembly phys_memory</library>
 stock WritePhysMemory(address, src[], num = sizeof(src)) {
 	new rel_addr = AbsToRel(address);
 
@@ -109,6 +117,7 @@ stock WritePhysMemory(address, src[], num = sizeof(src)) {
 	return 0; // make compiler happy
 }
 
+/// <library>amx_assembly phys_memory</library>
 stock ReadPhysMemoryCell(address) {
 	new rel_addr = AbsToRel(address);
 	#emit lref.s.pri rel_addr
@@ -117,6 +126,7 @@ stock ReadPhysMemoryCell(address) {
 	return 0; // make compiler happy
 }
 
+/// <library>amx_assembly phys_memory</library>
 stock WritePhysMemoryCell(address, what) {
 	new rel_addr = AbsToRel(address);
 	#emit load.s.pri what
@@ -125,3 +135,4 @@ stock WritePhysMemoryCell(address, what) {
 	#emit retn
 	return 0; // make compiler happy
 }
+

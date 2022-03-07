@@ -36,6 +36,7 @@
 
 ///
 
+/// <library>amx_assembly amx_jit</library>
 stock GetJITGeneratorVersion() {
 	#emit zero.pri
 	#emit lctrl 7
@@ -43,6 +44,7 @@ stock GetJITGeneratorVersion() {
 	return 0;
 }
 
+/// <library>amx_assembly amx_jit</library>
 stock GetAmxJITBaseAddress() {
 	// Only works when the jit is installed, otherwise returns 0.  The code is
 	// so short, checking if it had been done before would have been longer than
@@ -53,6 +55,7 @@ stock GetAmxJITBaseAddress() {
 	return 0;
 }
 
+/// <library>amx_assembly amx_jit</library>
 stock ResolveJITAddress(addr) {
 	// Converts an address to a JIT address, if there is a JIT.  Otherwise does
 	// nothing.  Could make it try detect if this is already JIT resolved, i.e.

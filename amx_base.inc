@@ -36,11 +36,15 @@
 
 ///
 
+/// <library>amx_assembly amx_base</library>
 static stock GetAmxBaseAddress_helper() {
 	return 0;
 }
 
-// Returns the AMX base address i.e. amx->base.
+/// <library>amx_assembly amx_base</library>
+/// <summary>
+///   Returns the AMX base address i.e. <c>amx-&gt;base</c>.
+/// </summary>
 stock GetAmxBaseAddressNow() {
 	new cod = 0, dat = 0;
 	#emit lctrl 0
@@ -68,6 +72,7 @@ stock GetAmxBaseAddressNow() {
 	return fn_addr_reloc - fn_addr - cod;
 }
 
+/// <library>amx_assembly amx_base</library>
 stock GetAmxBaseAddress() {
 	static amx_base = 0;
 	if (amx_base == 0) {
@@ -75,3 +80,4 @@ stock GetAmxBaseAddress() {
 	}
 	return amx_base;
 }
+

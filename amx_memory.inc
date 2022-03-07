@@ -38,7 +38,10 @@
 
 #include <core>
 
-// Returns the address of a variable/array.
+/// <library>amx_assembly amx_memory</library>
+/// <summary>
+///   Returns the address of a variable/array.
+/// </summary>
 stock ref(...) {
 	assert(numargs() == 1);
 	#emit load.s.pri 12 // first argument
@@ -46,7 +49,10 @@ stock ref(...) {
 	return 0; // make compiler happy
 }
 
-// Returns an array from an address.
+/// <library>amx_assembly amx_memory</library>
+/// <summary>
+///   Returns an array from an address.
+/// </summary>
 stock deref(v) {
 	static gFake[1];
 	#emit load.s.pri  v // first argument
@@ -55,7 +61,10 @@ stock deref(v) {
 	return gFake; // make compiler happy
 }
 
-// Returns the address of a variable parameter.
+/// <library>amx_assembly amx_memory</library>
+/// <summary>
+///   Returns the address of a variable parameter.
+/// </summary>
 stock argref(n) {
 	#emit load.s.alt 0
 	#emit load.s.pri n
@@ -65,7 +74,10 @@ stock argref(n) {
 	return 0; // make compiler happy
 }
 
-// Returns an array from a variable parameter.
+/// <library>amx_assembly amx_memory</library>
+/// <summary>
+///   Returns an array from a variable parameter.
+/// </summary>
 stock argderef(n) {
 	static gFake[1];
 	
@@ -89,18 +101,21 @@ stock argderef(n) {
 	#endif
 #endif
 
+/// <library>amx_assembly amx_memory</library>
 stock ReadAmxMemoryArray(address, values[], size = sizeof(values)) {
 	for (new i = 0; i < size; i++) {
 		values[i] = ReadAmxMemory(address + i * 4);
 	}
 }
 
+/// <library>amx_assembly amx_memory</library>
 stock WriteAmxMemoryArray(address, const values[], size = sizeof(values)) {
 	for (new i = 0; i < size; i++) {
 		WriteAmxMemory(address + i * 4, values[i]);
 	}
 }
 
+/// <library>amx_assembly amx_memory</library>
 stock GetAmxNextInstructionPointer()
 {
 	// Saying "get the current pointer" doesn't make a huge amount of sense -
@@ -112,6 +127,7 @@ stock GetAmxNextInstructionPointer()
 	return 0;
 }
 
+/// <library>amx_assembly amx_memory</library>
 stock GetAmxHeapBase()
 {
 	// Initial heap pointer.  Not stored in an accessible register so read it
@@ -126,6 +142,7 @@ stock GetAmxHeapBase()
 	return 0;
 }
 
+/// <library>amx_assembly amx_memory</library>
 stock GetAmxHeapTop()
 {
 	// Current heap pointer.
@@ -134,6 +151,7 @@ stock GetAmxHeapTop()
 	return 0;
 }
 
+/// <library>amx_assembly amx_memory</library>
 stock GetAmxStackBase()
 {
 	#emit lctrl 3
@@ -141,6 +159,7 @@ stock GetAmxStackBase()
 	return 0;
 }
 
+/// <library>amx_assembly amx_memory</library>
 stock GetAmxStackBottom()
 {
 	#emit lctrl 4
@@ -149,6 +168,7 @@ stock GetAmxStackBottom()
 	return 0;
 }
 
+/// <library>amx_assembly amx_memory</library>
 stock GetAmxFrame()
 {
 	// Doesn't use "lctrl 5" because we want it to look like this function was
@@ -158,12 +178,14 @@ stock GetAmxFrame()
 	return 0;
 }
 
+/// <library>amx_assembly amx_memory</library>
 stock SetAmxHeapTop(ptr)
 {
 	#emit load.s.pri ptr
 	#emit sctrl 2
 }
 
+/// <library>amx_assembly amx_memory</library>
 stock SetAmxStackBottom(ptr)
 {
 	static
@@ -185,6 +207,7 @@ stock SetAmxStackBottom(ptr)
 	#emit sctrl 6
 }
 
+/// <library>amx_assembly amx_memory</library>
 stock SetAmxFrame(ptr)
 {
 	// We need to be tricky here, because the return value is in our frame.
@@ -200,6 +223,7 @@ stock SetAmxFrame(ptr)
 	#emit sctrl 6
 }
 
+/// <library>amx_assembly amx_memory</library>
 stock SetAmxNextInstructionPointer(ptr)
 {
 	#emit load.s.alt ptr
@@ -219,7 +243,8 @@ stock SetAmxNextInstructionPointer(ptr)
 	#endif
 #endif
 
-// after `#endif` because `#if` doesn't elide `#emit`.
+// After `#endif` because `#if` doesn't elide `#emit`.
+/// <library>amx_assembly amx_memory</library>
 stock WriteAmxMemory(address, value) {
 	#emit load.s.pri value
 	#emit sref.s.pri address
@@ -227,6 +252,7 @@ stock WriteAmxMemory(address, value) {
 	return 0; // make compiler happy
 }
 
+/// <library>amx_assembly amx_memory</library>
 stock ReadAmxMemory(address) {
 	#emit lref.s.pri address
 	#emit retn

@@ -165,8 +165,13 @@ stock MyFunc(a, b[], ...) {
 
 #define DISASM_GET_OPERAND_INLINE(%0,%1) ReadAmxMemory(%0[DisasmContext_cip] + (%1 + 1) * 4)
 
-// All the information for scanning through an AMX and extracting lots of nice
-// information about it.
+///
+//
+/// <library>amx_assembly codescan</library>
+/// <summary>
+/// All the information for scanning through an AMX and extracting lots of nice
+/// information about it.
+/// </summary>
 enum CodeScanner {
 	CodeScanMatch_func,       // Start of the containing function.
 	CodeScanMatch_size,       // Size of the match.
@@ -188,6 +193,12 @@ enum CodeScanner {
 	CodeScanner_param
 }
 
+/// <library>amx_assembly codescan</library>
+const CodeScanner:CodeScanner__ = CodeScanner;
+
+///
+//
+/// <library>amx_assembly codescan</library>
 enum CodeScanMatcher {
 	CodeScanMatcher_func,      // A pointer to the callback.
 	CodeScanMatcher_user_data, // User data to pass to their callback.
@@ -202,25 +213,41 @@ enum CodeScanMatcher {
 	CodeScanMatcher_flags      // Customisation.
 }
 
+/// <library>amx_assembly codescan</library>
+const CodeScanMatcher:CodeScanMatcher__ = CodeScanMatcher;
+
 // This macro is to let anyone use `&callback` for a scanner callback without
 // having to define the `CALL@...` macro for the required parameters (since we
 // know to call scanner callbacks in this code).
 #define addressof_ScannerCallback_(%1) (O@A_()?(((%1((gCodeScanCallback_match))),O@V_)?1:2):(O@V_))
 
-stock
-	gCodeScanCallback_match[CodeScanner] = {};
+/// <library>amx_assembly codescan</library>
+stock gCodeScanCallback_match[CodeScanner] = {};
 
 #define CodeScanDeref(%0) gFakeMatcher,(%0)
 
-static stock
-	gFakeMatcher[CodeScanMatcher],
-	gOP_NOP = 0,
-	gOP_CASETBL = 0,
-	gHdr[AMX_HDR],
-	gBase = 0,
-	gCodBase = 0,
-	gDat = 0;
+/// <library>amx_assembly codescan</library>
+static stock gFakeMatcher[CodeScanMatcher];
 
+/// <library>amx_assembly codescan</library>
+static stock gOP_NOP = 0;
+
+/// <library>amx_assembly codescan</library>
+static stock gOP_CASETBL = 0;
+
+/// <library>amx_assembly codescan</library>
+static stock gHdr[AMX_HDR];
+
+/// <library>amx_assembly codescan</library>
+static stock gBase = 0;
+
+/// <library>amx_assembly codescan</library>
+static stock gCodBase = 0;
+
+/// <library>amx_assembly codescan</library>
+static stock gDat = 0;
+
+/// <library>amx_assembly codescan</library>
 static stock bool:CodeScanCheckJumpTarget(cip, deloc, &stk, &hea, jumpTargets[CodeScanner], num = CODE_SCAN_MAX_JUMP_TARGETS) {
 	// Use "minn" to restrict the number of jump targets that we check.  Returns
 	// "true" if the current address is equal to an address that any jump goes
@@ -252,6 +279,7 @@ static stock bool:CodeScanCheckJumpTarget(cip, deloc, &stk, &hea, jumpTargets[Co
 	return false;
 }
 
+/// <library>amx_assembly codescan</library>
 static stock CodeScanResetJumpTargets(jumpTargets[CodeScanner], num = CODE_SCAN_MAX_JUMP_TARGETS) {
 	jumpTargets[CodeScanner_minn] = num;
 	while (num--) {
@@ -259,6 +287,7 @@ static stock CodeScanResetJumpTargets(jumpTargets[CodeScanner], num = CODE_SCAN_
 	}
 }
 
+/// <library>amx_assembly codescan</library>
 static stock CodeScanAddJumpTarget(cip, stk, hea, jumpTargets[CodeScanner], num = CODE_SCAN_MAX_JUMP_TARGETS) {
 	while (num--) {
 		// Multiple jumps to the same place?
@@ -275,6 +304,7 @@ static stock CodeScanAddJumpTarget(cip, stk, hea, jumpTargets[CodeScanner], num 
 	}
 }
 
+/// <library>amx_assembly codescan</library>
 static stock CodeScanAddSwitchTarget(const dctx[DisasmContext], stk, hea, jumpTargets[CodeScanner], num = CODE_SCAN_MAX_JUMP_TARGETS) {
 	new
 		sip = DISASM_GET_OPERAND_INLINE(dctx, 0) - gBase,
@@ -297,6 +327,7 @@ static stock CodeScanAddSwitchTarget(const dctx[DisasmContext], stk, hea, jumpTa
 	}
 }
 
+/// <library>amx_assembly codescan</library>
 static stock CodeScanReset(cs[CodeScanMatcher], matcher__, &next) {
 	#emit LOAD.S.pri matcher__
 	#emit STOR.S.pri cs
@@ -310,13 +341,16 @@ static stock CodeScanReset(cs[CodeScanMatcher], matcher__, &next) {
 	}
 }
 
+/// <library>amx_assembly codescan</library>
 stock CodeScanAddMatcher(scanner[CodeScanner], searcher[CodeScanMatcher]) {
 	searcher[CodeScanMatcher_next] = scanner[CodeScanner_first],
 	scanner[CodeScanner_first] = ref(searcher);
 }
 
+/// <library>amx_assembly codescan</library>
 static stock bool:gRelocateRequired;
 
+/// <library>amx_assembly codescan</library>
 stock CodeScanMatcherInit_(searcher[CodeScanMatcher], address, flags = SCANNER_IGNORE_NOP | SCANNER_IGNORE_BOUNDS | SCANNER_IGNORE_BREAK | SCANNER_IGNORE_HALT) {
 	static
 		lReset[CODE_SCAN_MAX_PARALLEL];
@@ -340,6 +374,7 @@ stock CodeScanMatcherInit_(searcher[CodeScanMatcher], address, flags = SCANNER_I
 	gRelocateRequired = IsOpcodeRelocationRequired();
 }
 
+/// <library>amx_assembly codescan</library>
 stock CodeScanMatcherData(searcher[CodeScanMatcher], val) {
 	// Use `ref()` to pass an array.
 	searcher[CodeScanMatcher_flags] |= SCANNER_HAS_USER_DATA,
@@ -351,6 +386,7 @@ stock CodeScanMatcherData(searcher[CodeScanMatcher], val) {
 #define CodeScanMatcherInit(%0,&%1) CodeScanMatcherInit_((%0),addressof_ScannerCallback_(%1))
 #define CodeScanMatcherInit_(%0,addressof_ScannerCallback_(%1,%2)) CodeScanMatcherInit_(%0,addressof_ScannerCallback_(%1),%2)
 
+/// <library>amx_assembly codescan</library>
 stock CodeScanMatcherPattern_(searcher[CodeScanMatcher], {Opcode, Float, _}:...) {
 	new
 		len = numargs() - 1;
@@ -414,6 +450,7 @@ stock CodeScanMatcherPattern_(searcher[CodeScanMatcher], {Opcode, Float, _}:...)
 // Note the lack of trailing comma.  This is to make the code patterns work.
 #define CodeScanMatcherPattern(%0, CodeScanMatcherPattern_(%0
 
+/// <library>amx_assembly codescan</library>
 static stock bool:CodeScanCheck(Opcode:op, const dctx[DisasmContext], cs[CodeScanMatcher], matcher__, fctx[CodeScanner], &next) {
 	#emit LOAD.S.pri matcher__
 	#emit STOR.S.pri cs
@@ -523,6 +560,7 @@ CodeScanCheck_fail:
 		false;
 }
 
+/// <library>amx_assembly codescan</library>
 static stock bool:CodeScanGetFuncName(addr, name[]) {
 	// The "name" parameter is longer than 32 (which is the maximum function
 	// name length normally) beacause we append states to some.
@@ -540,6 +578,7 @@ static stock bool:CodeScanGetFuncName(addr, name[]) {
 		true;
 }
 
+/// <library>amx_assembly codescan</library>
 static stock bool:CodeScanStepInternal(dctx[DisasmContext], csState[CodeScanner], &parseState, &parseParam) {
 	// Loop over the data.  Since our end condition is "out of data", we know
 	// that any "false" returns are because of invalid data since the "< 0"
@@ -725,10 +764,12 @@ static stock bool:CodeScanStepInternal(dctx[DisasmContext], csState[CodeScanner]
 	return true;
 }
 
+/// <library>amx_assembly codescan</library>
 stock bool:CodeScanStep(dctx[DisasmContext], csState[CodeScanner]) {
 	return CodeScanStepInternal(dctx, csState, csState[CodeScanner_state], csState[CodeScanner_param]);
 }
 
+/// <library>amx_assembly codescan</library>
 static stock CodeScanCall(const cs[CodeScanMatcher], matcher__, csState[CodeScanner]) {
 	#emit LOAD.S.pri matcher__
 	#emit STOR.S.pri cs
@@ -764,6 +805,7 @@ static stock CodeScanCall(const cs[CodeScanMatcher], matcher__, csState[CodeScan
 	return func;
 }
 
+/// <library>amx_assembly codescan</library>
 static stock bool:CodeScanFindOneFastPattern3(const matcher[CodeScanMatcher], matcher__, addr, &cur) {
 	#emit LOAD.S.pri matcher__
 	#emit STOR.S.pri matcher
@@ -777,6 +819,7 @@ static stock bool:CodeScanFindOneFastPattern3(const matcher[CodeScanMatcher], ma
 	return false;
 }
 
+/// <library>amx_assembly codescan</library>
 static stock bool:CodeScanFindOneFastPattern2(const matcher[CodeScanMatcher], matcher__, &addr) {
 	#emit LOAD.S.pri matcher__
 	#emit STOR.S.pri matcher
@@ -802,6 +845,7 @@ static stock bool:CodeScanFindOneFastPattern2(const matcher[CodeScanMatcher], ma
 
 forward bool:CodeScanRun(csState[CodeScanner]);
 
+/// <library>amx_assembly codescan</library>
 static stock CodeScanRunFastPrescanLocated(&proc, &nextaddr, const searchFuncAddr) {
 	// Do a fast code scan for functions containing something vaguely similar to the pattern.  Once
 	// that's found we can reparse the function with the full analysis mode.
@@ -831,6 +875,7 @@ static stock CodeScanRunFastPrescanLocated(&proc, &nextaddr, const searchFuncAdd
 	return false;
 }
 
+/// <library>amx_assembly codescan</library>
 static stock CodeScanRunFastPrescanRelocate(&proc, &nextaddr, const searchFuncAddr) {
 	// Do a fast code scan for functions containing something vaguely similar to the pattern.  Once
 	// that's found we can reparse the function with the full analysis mode.
@@ -860,6 +905,7 @@ static stock CodeScanRunFastPrescanRelocate(&proc, &nextaddr, const searchFuncAd
 	return false;
 }
 
+/// <library>amx_assembly codescan</library>
 stock bool:CodeScanRunFast(csState[CodeScanner], searchFuncAddr = 0) {
 	if (csState[CodeScanner_first] == -1) {
 		return true;
@@ -933,6 +979,7 @@ stock bool:CodeScanRunFast(csState[CodeScanner], searchFuncAddr = 0) {
 
 #define CodeScanRunFast(%0,&%1) CodeScanRunFast(%0,addressof(%1))
 
+/// <library>amx_assembly codescan</library>
 stock bool:CodeScanRun(csState[CodeScanner]) {
 	if (csState[CodeScanner_first] == -1) {
 		return true;
@@ -984,6 +1031,7 @@ stock bool:CodeScanRun(csState[CodeScanner]) {
 	return true;
 }
 
+/// <library>amx_assembly codescan</library>
 stock CodeScanInit(scanner[CodeScanner]) {
 	if (gDat == 0) {
 		GetAmxHeader(gHdr),
@@ -1005,11 +1053,13 @@ stock CodeScanInit(scanner[CodeScanner]) {
 	scanner[CodeScanner_first] = -1;
 }
 
+/// <library>amx_assembly codescan</library>
 stock CodeScanClone(dest[CodeScanner], const src[CodeScanner]) {
 	dest = src,
 	dest[CodeScanner_first] = -1;
 }
 
+/// <library>amx_assembly codescan</library>
 stock CodeScanGetFunctionScanner(const csm[CodeScanner], ret[CodeScanner], ctx[DisasmContext]) {
 	// Doesn't do any decompilation, just gets the information for decompiling
 	// the whole of the current function.
@@ -1026,6 +1076,7 @@ stock CodeScanGetFunctionScanner(const csm[CodeScanner], ret[CodeScanner], ctx[D
 	}
 }
 
+/// <library>amx_assembly codescan</library>
 stock CodeScanGetMatchScanner(const csm[CodeScanner], ret[CodeScanner], ctx[DisasmContext], bool:accurate = false) {
 	// Doesn't do any decompilation, just gets the information for decompiling
 	// the currently found match.
@@ -1042,6 +1093,7 @@ stock CodeScanGetMatchScanner(const csm[CodeScanner], ret[CodeScanner], ctx[Disa
 	}
 }
 
+/// <library>amx_assembly codescan</library>
 stock CodeScanGetFunctionDisasm(const csm[CodeScanner], ctx[DisasmContext], offset = 0) {
 	// Doesn't do any decompilation, just gets the information for decompiling
 	// the whole of the current function.
@@ -1049,6 +1101,7 @@ stock CodeScanGetFunctionDisasm(const csm[CodeScanner], ctx[DisasmContext], offs
 	ctx[DisasmContext_start_ip] = ctx[DisasmContext_nip] = ctx[DisasmContext_cip] = csm[CodeScanMatch_func] + offset;
 }
 
+/// <library>amx_assembly codescan</library>
 stock CodeScanGetMatchDisasm(const csm[CodeScanner], ctx[DisasmContext], offset = 0) {
 	// Doesn't do any decompilation, just gets the information for decompiling
 	// the currently found match.
@@ -1056,42 +1109,50 @@ stock CodeScanGetMatchDisasm(const csm[CodeScanner], ctx[DisasmContext], offset 
 	ctx[DisasmContext_start_ip] = ctx[DisasmContext_nip] = ctx[DisasmContext_cip] = csm[CodeScanMatch_cip] + offset;
 }
 
+/// <library>amx_assembly codescan</library>
 stock CodeScanGetFunctionAsm(const csm[CodeScanner], ctx[AsmContext], offset = 0) {
 	// Doesn't do any decompilation, just gets the information for writing to
 	// the whole of the current function.
 	AsmInitPtr(ctx, csm[CodeScanMatch_func] + offset, cellmax);
 }
 
+/// <library>amx_assembly codescan</library>
 stock CodeScanGetMatchAsm(const csm[CodeScanner], ctx[AsmContext], offset = 0) {
 	// Doesn't do any decompilation, just gets the information for writing to
 	// the currently found match.
 	AsmInitPtr(ctx, csm[CodeScanMatch_cip] + offset, cellmax);
 }
 
+/// <library>amx_assembly codescan</library>
 stock CodeScanGetMatchFunc(const csm[CodeScanner]) {
 	// The stored value is relative to "DAT", return relative to "COD".
 	return csm[CodeScanMatch_func] - gDat;
 }
 
+/// <library>amx_assembly codescan</library>
 stock CodeScanGetMatchAddress(const csm[CodeScanner]) {
 	// The stored value is relative to "DAT", return relative to "COD".
 	return csm[CodeScanMatch_cip] - gDat;
 }
 
+/// <library>amx_assembly codescan</library>
 stock CodeScanGetMatchFuncData(const csm[CodeScanner]) {
 	// Return relative to "DAT".
 	return csm[CodeScanMatch_func];
 }
 
+/// <library>amx_assembly codescan</library>
 stock CodeScanGetMatchAddressData(const csm[CodeScanner]) {
 	// Return relative to "DAT".
 	return csm[CodeScanMatch_cip];
 }
 
+/// <library>amx_assembly codescan</library>
 stock CodeScanGetMatchLength(const csm[CodeScanner]) {
 	return csm[CodeScanMatch_size];
 }
 
+/// <library>amx_assembly codescan</library>
 stock CodeScanNOPMatch(const csm[CodeScanner]) {
 	for (new dest = csm[CodeScanMatch_cip], end = dest + csm[CodeScanMatch_size]; dest != end; dest += cellbytes) {
 		#emit LOAD.pri     gOP_NOP
@@ -1100,6 +1161,7 @@ stock CodeScanNOPMatch(const csm[CodeScanner]) {
 	{}
 }
 
+/// <library>amx_assembly codescan</library>
 stock CodeScanGetMatchType(csm[CodeScanner]) {
 	// Lazilly get the names and types of functions when requested.
 	if (csm[CodeScanMatch_type] >= SCANNER_FUNC_UNKNOWN) {
@@ -1128,22 +1190,27 @@ stock CodeScanGetMatchType(csm[CodeScanner]) {
 	return csm[CodeScanMatch_type];
 }
 
+/// <library>amx_assembly codescan</library>
 stock CodeScanGetMatchHeap(const csm[CodeScanner]) {
 	return csm[CodeScanMatch_heap];
 }
 
+/// <library>amx_assembly codescan</library>
 stock CodeScanGetMatchStack(const csm[CodeScanner]) {
 	return csm[CodeScanMatch_stack];
 }
 
+/// <library>amx_assembly codescan</library>
 stock CodeScanGetMatchHole(const csm[CodeScanner], idx) {
 	return csm[CodeScanMatch_holes][idx];
 }
 
+/// <library>amx_assembly codescan</library>
 stock CodeScanGetHoleCount(const csm[CodeScanner]) {
 	return csm[CodeScanMatch_hole_count];
 }
 
+/// <library>amx_assembly codescan</library>
 stock CodeScanGetMatchName(const csm[CodeScanner], name[]) {
 	if (csm[CodeScanMatch_type] >= SCANNER_FUNC_UNKNOWN) {
 		// We get the type, because the type is based on the name.

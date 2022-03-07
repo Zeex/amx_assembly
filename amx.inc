@@ -39,29 +39,71 @@
 #include "phys_memory"
 #include "shellcode"
 
+/// <library>amx_assembly amx</library>
 const AMX_OFFSET_BASE = 0;
+
+/// <library>amx_assembly amx</library>
 const AMX_OFFSET_DATA = 4;
+
+/// <library>amx_assembly amx</library>
 const AMX_OFFSET_CALLBACK = 8;
+
+/// <library>amx_assembly amx</library>
 const AMX_OFFSET_DEBUG = 12;
+
+/// <library>amx_assembly amx</library>
 const AMX_OFFSET_CIP = 16;
+
+/// <library>amx_assembly amx</library>
 const AMX_OFFSET_FRM = 20;
+
+/// <library>amx_assembly amx</library>
 const AMX_OFFSET_HEA = 24;
+
+/// <library>amx_assembly amx</library>
 const AMX_OFFSET_HLW = 28;
+
+/// <library>amx_assembly amx</library>
 const AMX_OFFSET_STK = 32;
+
+/// <library>amx_assembly amx</library>
 const AMX_OFFSET_STP = 36;
+
+/// <library>amx_assembly amx</library>
 const AMX_OFFSET_FLAGS = 40;
+
+/// <library>amx_assembly amx</library>
 const AMX_OFFSET_USERTAGS = 44;
+
+/// <library>amx_assembly amx</library>
 const AMX_OFFSET_USERDATA = 60;
+
+/// <library>amx_assembly amx</library>
 const AMX_OFFSET_ERROR = 76;
+
+/// <library>amx_assembly amx</library>
 const AMX_OFFSET_PARAMCOUNT = 80;
+
+/// <library>amx_assembly amx</library>
 const AMX_OFFSET_PRI = 84;
+
+/// <library>amx_assembly amx</library>
 const AMX_OFFSET_ALT = 88;
+
+/// <library>amx_assembly amx</library>
 const AMX_OFFSET_RESET_STK = 92;
+
+/// <library>amx_assembly amx</library>
 const AMX_OFFSET_RESET_HEA = 96;
+
+/// <library>amx_assembly amx</library>
 const AMX_OFFSET_SYSREQ_D = 100;
 
-// Returns the address of the AMX struct instance in memory that corresponds
-// to this script. This function works only on Windows!
+/// <library>amx_assembly amx</library>
+/// <summary>
+///   Returns the address of the AMX struct instance in memory that corresponds
+///   to this script.  This function works only on Windows!
+/// </summary>
 stock GetAmxAddress() {
 	static address = 0;
 	if (address == 0) {
@@ -76,14 +118,21 @@ stock GetAmxAddress() {
 	return address;
 }
 
-// Reads a cell from the AMX struct.
+/// <library>amx_assembly amx</library>
+/// <summary>
+///   Reads a cell from the AMX struct.
+/// </summary>
 stock ReadAmxCell(offset) {
 	new amx = GetAmxAddress();
 	return ReadPhysMemoryCell(amx + offset);
 }
 
-// Writes a cell to the AMX struct.
+/// <library>amx_assembly amx</library>
+/// <summary>
+///   Writes a cell to the AMX struct.
+/// </summary>
 stock WriteAmxCell(offset, value) {
 	new amx = GetAmxAddress();
 	WritePhysMemoryCell(amx + offset, value);
 }
+

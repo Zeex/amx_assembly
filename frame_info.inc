@@ -40,6 +40,7 @@
 #include "amx_base"
 #include "opcode"
 
+/// <library>amx_assembly frame_info</library>
 stock GetCurrentFrame() {
 	#emit load.s.pri 0
 	#emit retn
@@ -47,6 +48,7 @@ stock GetCurrentFrame() {
 	return 0; // make compiler happy
 }
 
+/// <library>amx_assembly frame_info</library>
 stock GetFramePreviousFrame(frm_addr) {
 	#emit lref.s.pri frm_addr
 	#emit retn
@@ -54,6 +56,7 @@ stock GetFramePreviousFrame(frm_addr) {
 	return 0; // make compiler happy
 }
 
+/// <library>amx_assembly frame_info</library>
 stock GetFrameReturn(frm_addr) {
 	#emit load.s.pri frm_addr
 	#emit add.c 4
@@ -63,12 +66,14 @@ stock GetFrameReturn(frm_addr) {
 	return 0; // make compiler happy
 }
 
+/// <library>amx_assembly frame_info</library>
 stock SetFramePreviousFrame(frm_addr, addr) {
 	#emit load.s.pri addr
 	#emit sref.s.pri frm_addr
 	#emit retn
 }
 
+/// <library>amx_assembly frame_info</library>
 stock SetFrameReturn(frm_addr, addr) {
 	#emit load.s.alt addr
 	#emit load.s.pri frm_addr
@@ -78,6 +83,7 @@ stock SetFrameReturn(frm_addr, addr) {
 	#emit retn
 }
 
+/// <library>amx_assembly frame_info</library>
 stock SetFrameParameterSize(frm_addr, size) {
 	#emit load.s.alt size
 	#emit load.s.pri frm_addr
@@ -87,18 +93,22 @@ stock SetFrameParameterSize(frm_addr, size) {
 	#emit retn
 }
 
+/// <library>amx_assembly frame_info</library>
 stock SetFrameParameterCount(frm_addr, count) {
 	SetFrameParameterSize(frm_addr, count << 2);
 }
 
+/// <library>amx_assembly frame_info</library>
 stock GetFrameTotalSize(frm_addr) {
 	return GetFrameLocalSize(frm_addr) + GetFrameHeaderSize(frm_addr) + GetFrameParameterSize(frm_addr);
 }
 
+/// <library>amx_assembly frame_info</library>
 stock GetFrameTotalCount(frm_addr) {
 	return GetFrameTotalSize(frm_addr) / 4;
 }
 
+/// <library>amx_assembly frame_info</library>
 stock GetFrameNextFrame(frm_addr) {
 	// this function always works because it is at the top of the stack
 	// run back through the stack
@@ -115,6 +125,7 @@ stock GetFrameNextFrame(frm_addr) {
 	return cur_frm;
 }
 
+/// <library>amx_assembly frame_info</library>
 stock GetFrameLocalSize(frm_addr) {
 	// run back through the stack
 	new next_frm = GetFrameNextFrame(frm_addr);
@@ -125,19 +136,23 @@ stock GetFrameLocalSize(frm_addr) {
 	return frm_addr - frm_bottom;
 }
 
+/// <library>amx_assembly frame_info</library>
 stock GetFrameLocalCount(frm_addr) {
 	return GetFrameLocalSize(frm_addr) / 4;
 }
 
+/// <library>amx_assembly frame_info</library>
 stock GetFrameHeaderSize(frm_addr) {
 	#pragma unused frm_addr
 	return 12;
 }
 
+/// <library>amx_assembly frame_info</library>
 stock GetFrameHeaderCount(frm_addr) {
 	return GetFrameHeaderSize(frm_addr) / 4;
 }
 
+/// <library>amx_assembly frame_info</library>
 stock GetFrameParameterSize(frm_addr) {
 	#emit load.s.pri frm_addr
 	#emit add.c 8
@@ -147,10 +162,12 @@ stock GetFrameParameterSize(frm_addr) {
 	return 0; // make compiler happy
 }
 
+/// <library>amx_assembly frame_info</library>
 stock GetFrameParameterCount(frm_addr) {
 	return GetFrameParameterSize(frm_addr) / 4;
 }
 
+/// <library>amx_assembly frame_info</library>
 stock GetFrameParameter(frm_addr, param, idx = -1) {
 	if (idx == -1) {
 		#emit load.s.pri param
@@ -188,6 +205,7 @@ stock GetFrameParameter(frm_addr, param, idx = -1) {
 	return 0; // make compiler happy
 }
 
+/// <library>amx_assembly frame_info</library>
 stock GetFrameVariable(frm_addr, param, idx = -1) {
 	if (idx == -1) {
 		#emit load.s.pri param
@@ -217,6 +235,7 @@ stock GetFrameVariable(frm_addr, param, idx = -1) {
 	return 0; // make compiler happy
 }
 
+/// <library>amx_assembly frame_info</library>
 stock GetFrameLocal(frm_addr, param) {
 	if (param < 0) {
 		// probably in correct format for negative offsets
@@ -249,6 +268,7 @@ stock GetFrameLocal(frm_addr, param) {
 	return 0; // make compiler happy
 }
 
+/// <library>amx_assembly frame_info</library>
 stock SetFrameParameter(frm_addr, param, value, idx = -1) {
 	if (idx == -1) {
 		#emit load.s.pri param
@@ -291,6 +311,7 @@ stock SetFrameParameter(frm_addr, param, value, idx = -1) {
 	return 0; // make compiler happy
 }
 
+/// <library>amx_assembly frame_info</library>
 stock SetFrameVariable(frm_addr, param, value, idx = -1) {
 	if (idx == -1) {
 		#emit load.s.pri param
@@ -325,6 +346,7 @@ stock SetFrameVariable(frm_addr, param, value, idx = -1) {
 	return 0; // make compiler happy
 }
 
+/// <library>amx_assembly frame_info</library>
 stock SetFrameLocal(frm_addr, param, value) {
 	if (param < 0) {
 		// probably in correct format for negative offsets
@@ -359,6 +381,7 @@ stock SetFrameLocal(frm_addr, param, value) {
 	return 0; // make compiler happy
 }
 
+/// <library>amx_assembly frame_info</library>
 static stock GetCallerFrame() {
 	#emit lctrl 5
 
@@ -374,70 +397,87 @@ static stock GetCallerFrame() {
 	return 0; // make compiler happy
 }
 
+/// <library>amx_assembly frame_info</library>
 stock GetCurrentFramePreviousFrame() {
 	return GetFramePreviousFrame(GetCallerFrame());
 }
 
+/// <library>amx_assembly frame_info</library>
 stock GetCurrentFrameReturn() {
 	return GetFrameReturn(GetCallerFrame());
 }
 
+/// <library>amx_assembly frame_info</library>
 stock GetCurrentFrameTotalSize() {
 	return GetFrameTotalSize(GetCallerFrame());
 }
 
+/// <library>amx_assembly frame_info</library>
 stock GetCurrentFrameTotalCount() {
 	return GetFrameTotalCount(GetCallerFrame());
 }
 
+/// <library>amx_assembly frame_info</library>
 stock GetCurrentFrameLocalSize() {
 	return GetFrameLocalSize(GetCallerFrame());
 }
 
+/// <library>amx_assembly frame_info</library>
 stock GetCurrentFrameLocalCount() {
 	return GetFrameLocalCount(GetCallerFrame());
 }
 
+/// <library>amx_assembly frame_info</library>
 stock GetCurrentFrameHeaderSize() {
 	return GetFrameHeaderSize(GetCallerFrame());
 }
 
+/// <library>amx_assembly frame_info</library>
 stock GetCurrentFrameHeaderCount() {
 	return GetFrameHeaderCount(GetCallerFrame());
 }
 
+/// <library>amx_assembly frame_info</library>
 stock GetCurrentFrameParameterSize() {
 	return GetFrameParameterSize(GetCallerFrame());
 }
 
+/// <library>amx_assembly frame_info</library>
 stock GetCurrentFrameParameter(param, idx = -1) {
 	return GetFrameParameter(GetCallerFrame(), param, idx);
 }
 
+/// <library>amx_assembly frame_info</library>
 stock GetCurrentFrameLocal(param) {
 	return GetFrameLocal(GetCallerFrame(), param);
 }
 
+/// <library>amx_assembly frame_info</library>
 stock GetCurrentFrameParameterCount() {
 	return GetFrameParameterCount(GetCallerFrame());
 }
 
+/// <library>amx_assembly frame_info</library>
 stock SetCurrentFrameReturn(addr) {
 	SetFrameReturn(GetCallerFrame(), addr);
 }
 
+/// <library>amx_assembly frame_info</library>
 stock SetCurrentFramePreviousFrame(addr) {
 	SetFramePreviousFrame(GetCallerFrame(), addr);
 }
 
+/// <library>amx_assembly frame_info</library>
 stock SetCurrentParameterSize(size) {
 	SetFrameParameterSize(GetCallerFrame(), size);
 }
 
+/// <library>amx_assembly frame_info</library>
 stock SetCurrentParameterCount(count) {
 	SetFrameParameterCount(GetCallerFrame(), count);
 }
 
+/// <library>amx_assembly frame_info</library>
 stock GetFrameFunction(frm_addr) {
 	// try to determine the start address of the function this frame is for
 	new prev_frm = GetFramePreviousFrame(frm_addr);
@@ -516,6 +556,7 @@ stock GetFrameFunction(frm_addr) {
 	return 0;
 }
 
+/// <library>amx_assembly frame_info</library>
 stock GetCurrentFrameFunction() {
 	// this function gets its own caller - pointless but here for completeness
 	return GetFrameFunction(GetCallerFrame());

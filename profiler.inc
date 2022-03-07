@@ -57,6 +57,9 @@
 	#define PROF_MAX_PUBLICS 1000
 #endif
 
+///
+//
+/// <library>amx_assembly profiler</library>
 enum ProfEntryCode {
 	Opcode:pec_push_c0,
 	pec_push_address,
@@ -68,26 +71,51 @@ enum ProfEntryCode {
 	pec_call_enter
 }
 
+/// <library>amx_assembly profiler</library>
+const ProfEntryCode:ProfEntryCode__ = ProfEntryCode;
+
+/// <library>amx_assembly profiler</library>
 static stock g_pecs[PROF_MAX_PUBLICS][ProfEntryCode];
+
+/// <library>amx_assembly profiler</library>
 static stock g_num_pecs = 0;
 
+///
+//
+/// <library>amx_assembly profiler</library>
 enum ProfCallInfo {
 	pci_index,
 	pci_start_time
 }
 
+/// <library>amx_assembly profiler</library>
+const ProfCallInfo:ProfCallInfo__ = ProfCallInfo;
+
+///
+//
+/// <library>amx_assembly profiler</library>
 enum ProfPublicInfo {
 	ppi_child_time,
 	ppi_total_time,
 	ppi_num_calls
 }
 
+/// <library>amx_assembly profiler</library>
+const ProfPublicInfo:ProfPublicInfo__ = ProfPublicInfo;
+
+/// <library>amx_assembly profiler</library>
 static stock g_publics[PROF_MAX_PUBLICS][ProfPublicInfo];
+
+/// <library>amx_assembly profiler</library>
 static stock g_num_publics = 0;
 
+/// <library>amx_assembly profiler</library>
 static stock g_call_stack[PROF_MAX_CALL_STACK][ProfCallInfo];
+
+/// <library>amx_assembly profiler</library>
 static stock g_call_depth = 0;
 
+/// <library>amx_assembly profiler</library>
 static stock exit_public() {
 	if (--g_call_depth < sizeof(g_call_stack)) {
 		new index = g_call_stack[g_call_depth][pci_index];
@@ -126,6 +154,7 @@ static stock exit_public() {
 	return 0; // make compiler happy
 }
 
+/// <library>amx_assembly profiler</library>
 static stock enter_public(index, address) {
 	//{
 	//	new public_name[32];
@@ -160,6 +189,7 @@ static stock enter_public(index, address) {
 	return 0; // make compiler happy
 }
 
+/// <library>amx_assembly profiler</library>
 static stock new_pec(index, address, code_start) {
 	if (g_num_pecs < sizeof(g_pecs)) {
 		new pec[ProfEntryCode];
@@ -186,6 +216,7 @@ static stock new_pec(index, address, code_start) {
 	return -1;
 }
 
+/// <library>amx_assembly profiler</library>
 stock ProfilerInit() {
 	new hdr[AMX_HDR];
 	GetAmxHeader(hdr);
@@ -228,6 +259,7 @@ stock ProfilerInit() {
 	}
 }
 
+/// <library>amx_assembly profiler</library>
 stock bool:ProfilerWriteData(const filename[]) {
 	new File:file = fopen(filename, io_write);
 	new buffer[100];
@@ -270,3 +302,4 @@ stock bool:ProfilerWriteData(const filename[]) {
 	fclose(file);
 	return true;
 }
+

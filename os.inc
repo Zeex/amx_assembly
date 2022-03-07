@@ -38,12 +38,19 @@
 
 #include "opcode"
 
+///
+//
+/// <library>amx_assembly os</library>
 enum OS {
 	OS_UNKNOWN,
 	OS_LINUX,
 	OS_WINDOWS
 };
 
+/// <library>amx_assembly os</library>
+const OS:OS__ = OS;
+
+/// <library>amx_assembly os</library>
 stock OS:GetOS() {
 	static OS:os = OS_UNKNOWN;
 	if (os == OS_UNKNOWN) {
@@ -54,10 +61,13 @@ stock OS:GetOS() {
 	return os;
 }
 
+/// <library>amx_assembly os</library>
 stock bool:IsWindows() {
 	return GetOS() == OS_WINDOWS;
 }
 
+/// <library>amx_assembly os</library>
 stock bool:IsLinux() {
 	return GetOS() == OS_LINUX;
 }
+

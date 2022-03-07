@@ -47,6 +47,9 @@
 #define DISASM_MAX_PUBLIC_NAME 32
 #define DISASM_MAX_NATIVE_NAME 100
 
+///
+//
+/// <library>amx_assembly disasm</library>
 enum DisasmContext {
 	DisasmContext_start_ip,
 	DisasmContext_end_ip,
@@ -55,14 +58,25 @@ enum DisasmContext {
 	Opcode:DisasmContext_opcode
 }
 
+/// <library>amx_assembly disasm</library>
+const DisasmContext:DisasmContext__ = DisasmContext;
+
+///
+//
+/// <library>amx_assembly disasm</library>
 enum DisasmResult {
 	DISASM_DONE = 0,
 	DISASM_NOP  = 1,
 	DISASM_OK   = 2
 }
 
+/// <library>amx_assembly disasm</library>
+const DisasmResult:DisasmResult__ = DisasmResult;
+
+/// <library>amx_assembly disasm</library>
 static stock gCodBase = 0;
 
+/// <library>amx_assembly disasm</library>
 stock DisasmInit(ctx[DisasmContext], start = 0, end = 0) {
 	new hdr[AMX_HDR];
 	GetAmxHeader(hdr);
@@ -92,6 +106,7 @@ stock DisasmInit(ctx[DisasmContext], start = 0, end = 0) {
 	}
 }
 
+/// <library>amx_assembly disasm</library>
 stock bool:DisasmDecodeInsn(ctx[DisasmContext]) {
 	new ip = ctx[DisasmContext_nip];
 	if (ip >= 0) {
@@ -116,12 +131,15 @@ stock bool:DisasmDecodeInsn(ctx[DisasmContext]) {
 		true;
 }
 
+/// <library>amx_assembly disasm</library>
 static stock bool:gRelocateRequired;
 
+/// <library>amx_assembly disasm</library>
 stock DisasmInitUnsafe() {
 	gRelocateRequired = IsOpcodeRelocationRequired();
 }
 
+/// <library>amx_assembly disasm</library>
 stock bool:DisasmDecodeInsnUnsafe(ctx[DisasmContext]) {
 	static ip, Opcode:opcode;
 
@@ -142,6 +160,7 @@ stock bool:DisasmDecodeInsnUnsafe(ctx[DisasmContext]) {
 	return false;
 }
 
+/// <library>amx_assembly disasm</library>
 stock DisasmResult:DisasmNext(ctx[DisasmContext]) {
 	// This function is just a slightly more consistent wrapper around
 	// "DisasmDecodeInsn".  I wanted to change that function, but that would
@@ -161,6 +180,7 @@ stock DisasmResult:DisasmNext(ctx[DisasmContext]) {
 	}
 }
 
+/// <library>amx_assembly disasm</library>
 stock Opcode:DisasmNextInsn(ctx[DisasmContext]) {
 	if (DisasmDecodeInsn(ctx)) {
 		return ctx[DisasmContext_opcode];
@@ -168,14 +188,17 @@ stock Opcode:DisasmNextInsn(ctx[DisasmContext]) {
 	return OP_NONE;
 }
 
+/// <library>amx_assembly disasm</library>
 stock Opcode:DisasmGetOpcode(const ctx[DisasmContext]) {
 	return ctx[DisasmContext_opcode];
 }
 
+/// <library>amx_assembly disasm</library>
 stock DisasmGetOperand(const ctx[DisasmContext], index = 0) {
 	return ReadAmxMemory(ctx[DisasmContext_cip] + (index + 1) * 4);
 }
 
+/// <library>amx_assembly disasm</library>
 stock DisasmGetNumOperands(const ctx[DisasmContext]) {
 	new Opcode:opcode = ctx[DisasmContext_opcode];
 
@@ -186,31 +209,38 @@ stock DisasmGetNumOperands(const ctx[DisasmContext]) {
 	}
 }
 
+/// <library>amx_assembly disasm</library>
 stock bool:DisasmNeedReloc(const ctx[DisasmContext]) {
 	return GetOpcodeInstructionRelocatable(ctx[DisasmContext_opcode]);
 }
 
+/// <library>amx_assembly disasm</library>
 stock DisasmReloc(addr) {
 	return addr - gCodBase;
 }
 
+/// <library>amx_assembly disasm</library>
 stock DisasmGetNextIp(const ctx[DisasmContext]) {
 	return ctx[DisasmContext_nip];
 }
 
+/// <library>amx_assembly disasm</library>
 stock DisasmGetCurIp(const ctx[DisasmContext]) {
 	return ctx[DisasmContext_cip];
 }
 
+/// <library>amx_assembly disasm</library>
 stock DisasmGetRemaining(const ctx[DisasmContext]) {
 	return ctx[DisasmContext_end_ip] - ctx[DisasmContext_nip];
 }
 
+/// <library>amx_assembly disasm</library>
 stock DisasmGetInsnName(const ctx[DisasmContext], name[], size = sizeof(name)) {
 	name[0] = '\0';
 	strcat(name, GetOpcodeInstructionName(ctx[DisasmContext_opcode]), size);
 }
 
+/// <library>amx_assembly disasm</library>
 stock DisasmGetOperandReloc(const ctx[DisasmContext], index = 0) {
 	new param = ReadAmxMemory(ctx[DisasmContext_cip] + (index + 1) * 4);
 	new Opcode:op = ctx[DisasmContext_opcode];
@@ -246,6 +276,7 @@ stock DisasmGetOperandReloc(const ctx[DisasmContext], index = 0) {
 	}
 }
 
+/// <library>amx_assembly disasm</library>
 static stock ToHexStr(x) {
 	new s[11];
 	new i = 0;
@@ -266,14 +297,17 @@ static stock ToHexStr(x) {
 	return s;
 }
 
+/// <library>amx_assembly disasm</library>
 static stock bool:IsPrintableAscii(c) {
 	return 32 <= c <= 126;
 }
 
+/// <library>amx_assembly disasm</library>
 static stock ToPrintableAscii(c) {
 	return IsPrintableAscii(c) ? c : ' ';
 }
 
+/// <library>amx_assembly disasm</library>
 stock DisasmWriteCode(File:file) {
 	new ctx[DisasmContext];
 	DisasmInit(ctx);
@@ -392,6 +426,7 @@ stock DisasmWriteCode(File:file) {
 	}
 }
 
+/// <library>amx_assembly disasm</library>
 stock DisasmWriteDataRowChar(File:file, start, num, max) {
 	new cur = start;
 	new end = start + num*4;
@@ -416,6 +451,7 @@ stock DisasmWriteDataRowChar(File:file, start, num, max) {
 	}
 }
 
+/// <library>amx_assembly disasm</library>
 stock DisasmWriteDataRowHex(File:file, start, num, max) {
 	new cur = start;
 	new end = start + num*4;
@@ -431,6 +467,7 @@ stock DisasmWriteDataRowHex(File:file, start, num, max) {
 	}
 }
 
+/// <library>amx_assembly disasm</library>
 stock DisasmWriteData(File:file) {
 	fwrite(file, "\n\n; DATA\n");
 
@@ -451,11 +488,13 @@ stock DisasmWriteData(File:file) {
 	}
 }
 
+/// <library>amx_assembly disasm</library>
 stock DisasmWriteFile(File:file) {
 	DisasmWriteCode(file);
 	DisasmWriteData(file);
 }
 
+/// <library>amx_assembly disasm</library>
 stock bool:DisasmWrite(const filename[]) {
 	new File:file = fopen(filename, io_write);
 	if (file) {
@@ -466,6 +505,8 @@ stock bool:DisasmWrite(const filename[]) {
 	return false;
 }
 
+/// <library>amx_assembly disasm</library>
 stock DisasmDump(const filename[]) {
 	DisasmWrite(filename);
 }
+
