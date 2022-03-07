@@ -34,7 +34,7 @@
  * </library>
  */
 
-///
+/// <p/>
 
 #include <string>
 #include <file>
@@ -47,8 +47,8 @@
 #define DISASM_MAX_PUBLIC_NAME 32
 #define DISASM_MAX_NATIVE_NAME 100
 
-///
-//
+/// <p/>
+
 /// <library>amx_assembly disasm</library>
 enum DisasmContext {
 	DisasmContext_start_ip,
@@ -61,8 +61,8 @@ enum DisasmContext {
 /// <library>amx_assembly disasm</library>
 const DisasmContext:DisasmContext__ = DisasmContext;
 
-///
-//
+/// <p/>
+
 /// <library>amx_assembly disasm</library>
 enum DisasmResult {
 	DISASM_DONE = 0,

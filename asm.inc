@@ -34,7 +34,7 @@
  * </library>
  */
 
-///
+/// <p/>
 
 #include <core>
 
@@ -49,8 +49,8 @@
 	#define ASM_MAX_LABELS (8)
 #endif
 
-///
-//
+/// <p/>
+
 /// <library>amx_assembly asm</library>
 enum AsmError {
 	ASM_ERROR_NONE,

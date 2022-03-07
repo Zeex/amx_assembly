@@ -34,7 +34,7 @@
  * </library>
  */
 
-///
+/// <p/>
 
 // Only detect ONE space, so you don't need a trailing space on opcodes with no
 // parameters. Add a space on the end here incase there wasn't one already.

@@ -35,7 +35,7 @@
  * </library>
  */
 
-///
+/// <p/>
 
 #include "import_table"
 #include "..\amx_header"

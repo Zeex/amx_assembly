@@ -42,7 +42,7 @@
  * </library>
  */
 
-///
+/// <p/>
 
 #include <core>
 #include "..\phys_memory"

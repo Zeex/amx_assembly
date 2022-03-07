@@ -34,7 +34,7 @@
  * </library>
  */
 
-///
+/// <p/>
 
 #if __Pawn >= 0x30A
 	// Disable the recursion warning in the Russian compiler.
@@ -49,8 +49,8 @@
 
 #define OPCODE_MAX_INSN_NAME 15
 
-///
-//
+/// <p/>
+
 /// <library>amx_assembly opcode</library>
 enum Opcode {
   OP_NONE,         OP_LOAD_PRI,     OP_LOAD_ALT,

@@ -34,7 +34,7 @@
  * </library>
  */
 
-///
+/// <p/>
 
 #include <file>
 #include <time>
@@ -57,8 +57,8 @@
 	#define PROF_MAX_PUBLICS 1000
 #endif
 
-///
-//
+/// <p/>
+
 /// <library>amx_assembly profiler</library>
 enum ProfEntryCode {
 	Opcode:pec_push_c0,
@@ -80,8 +80,8 @@ static stock g_pecs[PROF_MAX_PUBLICS][ProfEntryCode];
 /// <library>amx_assembly profiler</library>
 static stock g_num_pecs = 0;
 
-///
-//
+/// <p/>
+
 /// <library>amx_assembly profiler</library>
 enum ProfCallInfo {
 	pci_index,
@@ -91,8 +91,8 @@ enum ProfCallInfo {
 /// <library>amx_assembly profiler</library>
 const ProfCallInfo:ProfCallInfo__ = ProfCallInfo;
 
-///
-//
+/// <p/>
+
 /// <library>amx_assembly profiler</library>
 enum ProfPublicInfo {
 	ppi_child_time,

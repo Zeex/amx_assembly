@@ -34,12 +34,12 @@
  * </library>
  */
 
-///
+/// <p/>
 
 #include "opcode"
 
-///
-//
+/// <p/>
+
 /// <library>amx_assembly os</library>
 enum OS {
 	OS_UNKNOWN,

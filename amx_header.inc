@@ -34,7 +34,7 @@
  * </library>
  */
 
-///
+/// <p/>
 
 #if !defined _samp_included
 	#tryinclude <console>
@@ -48,8 +48,8 @@
 #define AMX_TAG_MASK (0x80000000)
 #define AMX_TAG_STRONG (0x40000000)
 
-///
-//
+/// <p/>
+
 /// <library>amx_assembly amx_header</library>
 enum AMX_HDR {
 	AMX_HDR_SIZE,
@@ -125,8 +125,8 @@ const AMX_HDR_OFFSET_TAGS = 48;
 /// <library>amx_assembly amx_header</library>
 const AMX_HDR_OFFSET_NAMETABLE = 52;
 
-///
-//
+/// <p/>
+
 /// <library>amx_assembly amx_header</library>
 enum AMX_FUNCSTUBNT {
 	AMX_FUNCSTUBNT_ADDRESS,

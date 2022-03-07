@@ -34,7 +34,7 @@
  * </library>
  */
 
-///
+/// <p/>
 
 /*
 
@@ -165,8 +165,8 @@ stock MyFunc(a, b[], ...) {
 
 #define DISASM_GET_OPERAND_INLINE(%0,%1) ReadAmxMemory(%0[DisasmContext_cip] + (%1 + 1) * 4)
 
-///
-//
+/// <p/>
+
 /// <library>amx_assembly codescan</library>
 /// <summary>
 /// All the information for scanning through an AMX and extracting lots of nice
@@ -196,8 +196,8 @@ enum CodeScanner {
 /// <library>amx_assembly codescan</library>
 const CodeScanner:CodeScanner__ = CodeScanner;
 
-///
-//
+/// <p/>
+
 /// <library>amx_assembly codescan</library>
 enum CodeScanMatcher {
 	CodeScanMatcher_func,      // A pointer to the callback.

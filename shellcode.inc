@@ -34,7 +34,7 @@
  * </library>
  */
 
-///
+/// <p/>
 
 #include "amx_header"
 #include "dynamic_call"

@@ -34,7 +34,7 @@
  * </library>
  */
 
-///
+/// <p/>
 
 #if !defined _samp_included
 	#tryinclude <console>

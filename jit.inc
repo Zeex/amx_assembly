@@ -34,7 +34,7 @@
  * </library>
  */
 
-///
+/// <p/>
 
 /// <library>amx_assembly jit</library>
 stock bool:IsJITPresent() {

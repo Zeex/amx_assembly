@@ -34,7 +34,7 @@
  * </library>
  */
 
-///
+/// <p/>
 
 /// <library>amx_assembly amx_base</library>
 static stock GetAmxBaseAddress_helper() {

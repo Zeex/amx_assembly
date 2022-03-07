@@ -34,7 +34,7 @@
  * </library>
  */
 
-///
+/// <p/>
 
 #include "amx_jit"
 #include "amx_header"
