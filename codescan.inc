@@ -182,7 +182,7 @@ enum CodeScanner {
 	CodeScanMatch_cip,        // The point of the pattern match.
 	CodeScanMatch_holes[CODE_SCAN_MAX_HOLES], // Results of "???"s.
 	CodeScanMatch_hole_count, // How many holes were seen.
-	CodeScanMatch_name[32 char],
+	CodeScanMatch_name[64 char],
 	CodeScanner_first,
 	CodeScanner_minn,
 	CodeScanner_jump_switch[CODE_SCAN_MAX_JUMP_TARGETS], // For "CASETBL" not regular jumps.
@@ -562,7 +562,7 @@ CodeScanCheck_fail:
 
 /// <library>amx_assembly codescan</library>
 static stock bool:CodeScanGetFuncName(addr, name[]) {
-	// The "name" parameter is longer than 32 (which is the maximum function
+	// The "name" parameter is longer than 64 (which is the maximum function
 	// name length normally) beacause we append states to some.
 	// Name not found.
 	new
@@ -574,7 +574,7 @@ static stock bool:CodeScanGetFuncName(addr, name[]) {
 	}
 	// This code will not return great results for public functions with states.
 	return
-		GetPublicNameFromIndex(index, name, 32),
+		GetPublicNameFromIndex(index, name, 64),
 		true;
 }
 
@@ -1217,7 +1217,7 @@ stock CodeScanGetMatchName(const csm[CodeScanner], name[]) {
 		CodeScanGetMatchType(csm);
 	}
 	name[0] = '\0',
-	strcat(name, csm[CodeScanMatch_name], 32);
+	strcat(name, csm[CodeScanMatch_name], 64);
 }
 
 #undef DISASM_GET_OPERAND_INLINE

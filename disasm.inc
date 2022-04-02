@@ -44,7 +44,7 @@
 #include "amx_memory"
 #include "opcode"
 
-#define DISASM_MAX_PUBLIC_NAME 32
+#define DISASM_MAX_PUBLIC_NAME 64
 #define DISASM_MAX_NATIVE_NAME 100
 
 /// <p/>
@@ -348,7 +348,7 @@ stock DisasmWriteCode(File:file) {
 
 		switch (opcode) {
 			case OP_PROC: {
-				new name[32];
+				new name[DISASM_MAX_PUBLIC_NAME];
 				new address = cip + dat - cod;
 				if (address == hdr[AMX_HDR_CIP]) {
 					strcat(name, "main");

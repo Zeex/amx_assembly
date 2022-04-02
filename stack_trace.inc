@@ -96,7 +96,7 @@ stock PrintStackTrace(trace[], max = sizeof(trace)) {
 	new i = 0;
 
 	for (; trace[i] != 0 && i < max - 1; i++) {
-		new name[32];
+		new name[64];
 		new address = GetFunctionFromReturnAddress(trace[i + 1]);
 		if (GetPublicNameFromAddress(address, name)) {
 			printf(" %s[%08x]", name, trace[i]);

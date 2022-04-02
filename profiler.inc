@@ -144,7 +144,7 @@ static stock exit_public() {
 			g_publics[index][ppi_num_calls]++;
 		}
 		//{
-		//	new public_name[32];
+		//	new public_name[64];
 		//	GetPublicNameByIndex(index, public_name);
 		//	printf("Leaving %s", public_name);
 		//}
@@ -157,7 +157,7 @@ static stock exit_public() {
 /// <library>amx_assembly profiler</library>
 static stock enter_public(index, address) {
 	//{
-	//	new public_name[32];
+	//	new public_name[64];
 	//	GetPublicNameByIndex(index, public_name);
 	//	printf("Entering %s", public_name);
 	//}
@@ -273,7 +273,7 @@ stock bool:ProfilerWriteData(const filename[]) {
 	fwrite(file, "+----------------------------------+----------------+----------------+----------------+\n");
 
 	for (new i = 0; i < g_num_publics; i++) {
-			new name[32];
+			new name[64];
 			GetPublicNameFromIndex(i, name);
 		#if defined strformat
 			strformat(buffer, sizeof(buffer), false, "| %32s |%15d |%15d |%15d |\n",
