@@ -47,6 +47,14 @@
 	#pragma warning disable 238
 #endif
 
+#define OPCODE_HAS_O2 0
+#if defined __optimization
+	#if __optimization == 2
+		#undef OPCODE_HAS_O2
+		#define OPCODE_HAS_O2 1
+	#endif
+#endif
+
 #define OPCODE_MAX_INSN_NAME 15
 
 /// <p/>
@@ -99,6 +107,15 @@ enum Opcode {
   OP_SWITCH,       OP_CASETBL,      OP_SWAP_PRI,
   OP_SWAP_ALT,     OP_PUSH_ADR,     OP_NOP,
   OP_SYSREQ_D,     OP_SYMTAG,       OP_BREAK,
+#if OPCODE_HAS_O2
+  OP_PUSH2_C,      OP_PUSH2,        OP_PUSH2_S,
+  OP_PUSH2_ADR,    OP_PUSH3_C,      OP_PUSH3,
+  OP_PUSH3_S,      OP_PUSH3_ADR,    OP_PUSH4_C,
+  OP_PUSH4,        OP_PUSH4_S,      OP_PUSH4_ADR,
+  OP_PUSH5_C,      OP_PUSH5,        OP_PUSH5_S,
+  OP_PUSH5_ADR,    OP_LOAD_BOTH,    OP_LOAD_S_BOTH,
+  OP_CONST,        OP_CONST_S,
+#endif
   OP_LAST_
 };
 
@@ -127,6 +144,11 @@ stock const gAMXOpcodeNeedsReloc[] = {
 	false, false, false, false, false, false, false, false, false, false, false, false, false,
 	false, false, false, false, false, false, false, false, false, false, false, false, true ,
 	true , false, false, false, false, false, false, false
+#if OPCODE_HAS_O2
+	,
+	false, false, false, false, false, false, false, false, false, false, false, false, false,
+	false, false, false, false, false, false, false
+#endif
 };
 
 /// <library>amx_assembly opcode</library>
@@ -147,6 +169,12 @@ stock const gAMXOpcodeNames[][OPCODE_MAX_INSN_NAME] = {
 	"cmps", "fill", "halt", "bounds", "sysreq.pri", "sysreq.c", "file", "line", "symbol", "srange",
 	"jump.pri", "switch", "casetbl", "swap.pri", "swap.alt", "push.adr", "nop", "sysreq.d",
 	"symtag", "break"
+#if OPCODE_HAS_O2
+	,
+	"push2.c", "push2", "push2.s", "push2.adr", "push3.c", "push3", "push3.s", "push3.adr",
+	"push4.c", "push4", "push4.s", "push4.adr", "push5.c", "push5", "push5.s", "push5.adr",
+	"load.both", "load.s.both", "const", "const.s"
+#endif
 };
 
 /// <library>amx_assembly opcode</library>
@@ -156,6 +184,10 @@ stock const gAMXOpcodeBaseSizes[] = {
 	8, 4, 4, 4, 8, 8, 8, 8, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 8, 8, 4, 4, 8, 8, 4, 4, 4,
 	4, 4, 4, 4, 4, 4, 4, 4, 4, 8, 8, 4, 4, 8, 8, 4, 4, 4, 8, 8, 4, 8, 8, 8, 8, 8, 4, 8, 8, 8, 8, 8,
 	4, 8, 8, 4, 4, 8, 4, 8, 8, 4
+#if OPCODE_HAS_O2
+	,
+	12, 12, 12, 12, 16, 16, 16, 16, 20, 20, 20, 20, 24, 24, 24, 24, 12, 12, 12, 12
+#endif
 };
 
 /// <library>amx_assembly opcode</library>
@@ -189,6 +221,14 @@ static stock Opcode:ReadOpcodeNearThis(offset = 0) {
 static stock bool:HaveToRelocateOpcodes() {
 	return ReadOpcodeNearThis(-8) != OP_CALL;
 }
+
+/// <library>amx_assembly opcode</library>
+/// <remarks>
+///   Separate the macro opcodes for `-O2`.
+/// </remarks>
+#if OPCODE_HAS_O2
+	forward Opcode:RelocateMacroOpcodeNow(Opcode:opcode);
+#endif
 
 /// <library>amx_assembly opcode</library>
 /// <remarks>
@@ -734,6 +774,11 @@ stock Opcode:RelocateOpcodeNow(Opcode:opcode) {
 			return ReadOpcodeNearThis(4);
 			#emit break
 		}
+#if OPCODE_HAS_O2
+		default: {
+			return RelocateMacroOpcodeNow(opcode);
+#endif
+		}
 	}
 	return opcode;
 }
@@ -809,5 +854,96 @@ stock bool:GetOpcodeInstructionRelocatable(Opcode:opcode) {
 		return gAMXOpcodeNeedsReloc[_:opcode];
 	}
 	return false;
+}
+
+#if !OPCODE_HAS_O2
+	// some compilers can't have `#emit` in `#if` so end the file.
+	#endinput
+#endif
+
+stock Opcode:RelocateMacroOpcodeNow(Opcode:opcode)
+{
+	switch (opcode) {
+		case OP_PUSH2_C: {
+			return ReadOpcodeNearThis(4);
+			#emit push2.c 0 0
+		}
+		case OP_PUSH2: {
+			return ReadOpcodeNearThis(4);
+			#emit push2 0 0
+		}
+		case OP_PUSH2_S: {
+			return ReadOpcodeNearThis(4);
+			#emit push2.s 0 0
+		}
+		case OP_PUSH2_ADR: {
+			return ReadOpcodeNearThis(4);
+			#emit push2.adr 0 0
+		}
+		case OP_PUSH3_C: {
+			return ReadOpcodeNearThis(4);
+			#emit push3.c 0 0 0
+		}
+		case OP_PUSH3: {
+			return ReadOpcodeNearThis(4);
+			#emit push3 0 0 0
+		}
+		case OP_PUSH3_S: {
+			return ReadOpcodeNearThis(4);
+			#emit push3.s 0 0 0
+		}
+		case OP_PUSH3_ADR: {
+			return ReadOpcodeNearThis(4);
+			#emit push3.adr 0 0 0
+		}
+		case OP_PUSH4_C: {
+			return ReadOpcodeNearThis(4);
+			#emit push4.c 0 0 0 0
+		}
+		case OP_PUSH4: {
+			return ReadOpcodeNearThis(4);
+			#emit push4 0 0 0 0
+		}
+		case OP_PUSH4_S: {
+			return ReadOpcodeNearThis(4);
+			#emit push4.s 0 0 0 0
+		}
+		case OP_PUSH4_ADR: {
+			return ReadOpcodeNearThis(4);
+			#emit push4.adr 0 0 0 0
+		}
+		case OP_PUSH5_C: {
+			return ReadOpcodeNearThis(4);
+			#emit push5.c 0 0 0 0 0
+		}
+		case OP_PUSH5: {
+			return ReadOpcodeNearThis(4);
+			#emit push5 0 0 0 0 0
+		}
+		case OP_PUSH5_S: {
+			return ReadOpcodeNearThis(4);
+			#emit push5.s 0 0 0 0 0
+		}
+		case OP_PUSH5_ADR: {
+			return ReadOpcodeNearThis(4);
+			#emit push5.adr 0 0 0 0 0
+		}
+		case OP_LOAD_BOTH: {
+			return ReadOpcodeNearThis(4);
+			#emit load.both 0 0
+		}
+		case OP_LOAD_S_BOTH: {
+			return ReadOpcodeNearThis(4);
+			#emit load.s.both 0 0
+		}
+		case OP_CONST: {
+			return ReadOpcodeNearThis(4);
+			#emit const 0 0
+		}
+		case OP_CONST_S: {
+			return ReadOpcodeNearThis(4);
+			#emit const.s 0 0
+		}
+	}
 }
 
