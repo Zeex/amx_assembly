@@ -1254,3 +1254,107 @@ stock AsmGetArgOffset(n) {
 	return ASM_ARGUMENTS_OFFSET + 4 * n;
 }
 
+#if !OPCODE_HAS_O2
+	#endinput
+#endif
+
+/// <library>amx_assembly asm</library>
+stock AsmError:AsmEmitPush2C(ctx[AsmContext], a, b) {
+	return AsmEmitInstruction(ctx, OP_PUSH2_C, a, b);
+}
+
+/// <library>amx_assembly asm</library>
+stock AsmError:AsmEmitPush2(ctx[AsmContext], a, b) {
+	return AsmEmitInstruction(ctx, OP_PUSH2, a, b);
+}
+
+/// <library>amx_assembly asm</library>
+stock AsmError:AsmEmitPush2S(ctx[AsmContext], a, b) {
+	return AsmEmitInstruction(ctx, OP_PUSH2_S, a, b);
+}
+
+/// <library>amx_assembly asm</library>
+stock AsmError:AsmEmitPush2Adr(ctx[AsmContext], a, b) {
+	return AsmEmitInstruction(ctx, OP_PUSH2_ADR, a, b);
+}
+
+/// <library>amx_assembly asm</library>
+stock AsmError:AsmEmitPush3C(ctx[AsmContext], a, b, c) {
+	return AsmEmitInstruction(ctx, OP_PUSH3_C, a, b, c);
+}
+
+/// <library>amx_assembly asm</library>
+stock AsmError:AsmEmitPush3(ctx[AsmContext], a, b, c) {
+	return AsmEmitInstruction(ctx, OP_PUSH3, a, b, c);
+}
+
+/// <library>amx_assembly asm</library>
+stock AsmError:AsmEmitPush3S(ctx[AsmContext], a, b, c) {
+	return AsmEmitInstruction(ctx, OP_PUSH3_S, a, b, c);
+}
+
+/// <library>amx_assembly asm</library>
+stock AsmError:AsmEmitPush3Adr(ctx[AsmContext], a, b, c) {
+	return AsmEmitInstruction(ctx, OP_PUSH3_ADR, a, b, c);
+}
+
+/// <library>amx_assembly asm</library>
+stock AsmError:AsmEmitPush4C(ctx[AsmContext], a, b, c, d) {
+	return AsmEmitInstruction(ctx, OP_PUSH4_C, a, b, c, d);
+}
+
+/// <library>amx_assembly asm</library>
+stock AsmError:AsmEmitPush4(ctx[AsmContext], a, b, c, d) {
+	return AsmEmitInstruction(ctx, OP_PUSH4, a, b, c, d);
+}
+
+/// <library>amx_assembly asm</library>
+stock AsmError:AsmEmitPush4S(ctx[AsmContext], a, b, c, d) {
+	return AsmEmitInstruction(ctx, OP_PUSH4_S, a, b, c, d);
+}
+
+/// <library>amx_assembly asm</library>
+stock AsmError:AsmEmitPush4Adr(ctx[AsmContext], a, b, c, d) {
+	return AsmEmitInstruction(ctx, OP_PUSH4_ADR, a, b, c, d);
+}
+
+/// <library>amx_assembly asm</library>
+stock AsmError:AsmEmitPush5C(ctx[AsmContext], a, b, c, d, e) {
+	return AsmEmitInstruction(ctx, OP_PUSH5_C, a, b, c, d, e);
+}
+
+/// <library>amx_assembly asm</library>
+stock AsmError:AsmEmitPush5(ctx[AsmContext], a, b, c, d, e) {
+	return AsmEmitInstruction(ctx, OP_PUSH5, a, b, c, d, e);
+}
+
+/// <library>amx_assembly asm</library>
+stock AsmError:AsmEmitPush5S(ctx[AsmContext], a, b, c, d, e) {
+	return AsmEmitInstruction(ctx, OP_PUSH5_S, a, b, c, d, e);
+}
+
+/// <library>amx_assembly asm</library>
+stock AsmError:AsmEmitPush5Adr(ctx[AsmContext], a, b, c, d, e) {
+	return AsmEmitInstruction(ctx, OP_PUSH5_ADR, a, b, c, d, e);
+}
+
+/// <library>amx_assembly asm</library>
+stock AsmError:AsmEmitLoadBoth(ctx[AsmContext], a, b) {
+	return AsmEmitInstruction(ctx, OP_LOAD_BOTH, a, b);
+}
+
+/// <library>amx_assembly asm</library>
+stock AsmError:AsmEmitLoadSBoth(ctx[AsmContext], a, b) {
+	return AsmEmitInstruction(ctx, OP_LOAD_S_BOTH, a, b);
+}
+
+/// <library>amx_assembly asm</library>
+stock AsmError:AsmEmitConst(ctx[AsmContext], a, b) {
+	return AsmEmitInstruction(ctx, OP_CONST, a, b);
+}
+
+/// <library>amx_assembly asm</library>
+stock AsmError:AsmEmitConstS(ctx[AsmContext], a, b) {
+	return AsmEmitInstruction(ctx, OP_CONST_S, a, b);
+}
+
