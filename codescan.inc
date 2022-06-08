@@ -629,6 +629,32 @@ static stock bool:CodeScanStepInternal(dctx[DisasmContext], csState[CodeScanner]
 				}
 				parseState = 0;
 			}
+#if OPCODE_HAS_O2
+			case OP_PUSH2_C, OP_PUSH2, OP_PUSH2_S, OP_PUSH2_ADR: {
+				if (stk != cellmin) {
+					stk += cellbytes * 2;
+				}
+				parseState = 0;
+			}
+			case OP_PUSH3_C, OP_PUSH3, OP_PUSH3_S, OP_PUSH3_ADR: {
+				if (stk != cellmin) {
+					stk += cellbytes * 3;
+				}
+				parseState = 0;
+			}
+			case OP_PUSH4_C, OP_PUSH4, OP_PUSH4_S, OP_PUSH4_ADR: {
+				if (stk != cellmin) {
+					stk += cellbytes * 4;
+				}
+				parseState = 0;
+			}
+			case OP_PUSH5_C, OP_PUSH5, OP_PUSH5_S, OP_PUSH5_ADR: {
+				if (stk != cellmin) {
+					stk += cellbytes * 5;
+				}
+				parseState = 0;
+			}
+#endif
 			case OP_STACK: {
 				// The stack grows down, but our count is positive.
 				if (stk != cellmin) {
