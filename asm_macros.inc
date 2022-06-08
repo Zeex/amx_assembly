@@ -345,6 +345,7 @@
 #define AsmEmitConstPRI AsmEmitConstPri
 #define AsmEmitConstalt AsmEmitConstAlt
 #define AsmEmitConstALT AsmEmitConstAlt
+#define AsmEmitConsts AsmEmitConstS
 #define AsmEmitDec.%0(%1) AsmEmitDec%0(%1)
 #define AsmEmitDecpri AsmEmitDecPri
 #define AsmEmitDecPRI AsmEmitDecPri
@@ -414,12 +415,16 @@
 #define AsmEmitLoadPRI AsmEmitLoadPri
 #define AsmEmitLoadalt AsmEmitLoadAlt
 #define AsmEmitLoadALT AsmEmitLoadAlt
+#define AsmEmitLoadboth AsmEmitLoadBoth
+#define AsmEmitLoadBOTH AsmEmitLoadBoth
 #define AsmEmitLoads AsmEmitLoadS
 #define AsmEmitLoadS.%0(%1) AsmEmitLoadS%0(%1)
 #define AsmEmitLoadSpri AsmEmitLoadSPri
 #define AsmEmitLoadSPRI AsmEmitLoadSPri
 #define AsmEmitLoadSalt AsmEmitLoadSAlt
 #define AsmEmitLoadSALT AsmEmitLoadSAlt
+#define AsmEmitLoadSboth AsmEmitLoadSBoth
+#define AsmEmitLoadSBOTH AsmEmitLoadSBoth
 #define AsmEmitLodb.%0(%1) AsmEmitLodb%0(%1)
 #define AsmEmitLodbi AsmEmitLodbI
 #define AsmEmitLoadi AsmEmitLoadI
@@ -536,6 +541,7 @@
 #define AsmEmitPushNumARGS AsmEmitPushNumArgs
 
 // Certain OpCodes don't exist, but are the start of others - detect them here.
+// `CONST` actually is an opcode on its own with `-O2` (macro op).
 
 // Lower-case.
 #define asm_emit_addr AsmEmitAddr
@@ -761,4 +767,41 @@
 #define asm_emit_label(ctx,%2) AsmEmitLabelStringize(ctx,#%2)
 #define asm_emit_LABEL(ctx,%2) AsmEmitLabelStringize(ctx,#%2)
 #define asm_emit_Label(ctx,%2) AsmEmitLabelStringize(ctx,#%2)
+
+// O2 Macro Ops
+#define asm_emit_push2 AsmEmitPush2
+#define asm_emit_PUSH2 AsmEmitPush2
+#define asm_emit_Push2 AsmEmitPush2
+#define AsmEmitPush2.%0(%1) AsmEmitPush2%0(%1)
+#define AsmEmitPush2s AsmEmitPush2S
+#define AsmEmitPush2adr AsmEmitPush2Adr
+#define AsmEmitPush2ADR AsmEmitPush2Adr
+#define AsmEmitPush2c AsmEmitPush2C
+
+#define asm_emit_push3 AsmEmitPush3
+#define asm_emit_PUSH3 AsmEmitPush3
+#define asm_emit_Push3 AsmEmitPush3
+#define AsmEmitPush3.%0(%1) AsmEmitPush3%0(%1)
+#define AsmEmitPush3s AsmEmitPush3S
+#define AsmEmitPush3adr AsmEmitPush3Adr
+#define AsmEmitPush3ADR AsmEmitPush3Adr
+#define AsmEmitPush3c AsmEmitPush3C
+
+#define asm_emit_push4 AsmEmitPush4
+#define asm_emit_PUSH4 AsmEmitPush4
+#define asm_emit_Push4 AsmEmitPush4
+#define AsmEmitPush4.%0(%1) AsmEmitPush4%0(%1)
+#define AsmEmitPush4s AsmEmitPush4S
+#define AsmEmitPush4adr AsmEmitPush4Adr
+#define AsmEmitPush4ADR AsmEmitPush4Adr
+#define AsmEmitPush4c AsmEmitPush4C
+
+#define asm_emit_push5 AsmEmitPush5
+#define asm_emit_PUSH5 AsmEmitPush5
+#define asm_emit_Push5 AsmEmitPush5
+#define AsmEmitPush5.%0(%1) AsmEmitPush5%0(%1)
+#define AsmEmitPush5s AsmEmitPush5S
+#define AsmEmitPush5adr AsmEmitPush5Adr
+#define AsmEmitPush5ADR AsmEmitPush5Adr
+#define AsmEmitPush5c AsmEmitPush5C
 
