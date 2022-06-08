@@ -122,6 +122,13 @@ enum Opcode {
 /// <library>amx_assembly opcode</library>
 const Opcode:Opcode__ = Opcode;
 
+// Doesn't work inline.
+#if OPCODE_HAS_O2
+	#define OPCODE_O2_PARAMETER_COUNTS , 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5, 2, 2, 2, 2
+#else
+	#define OPCODE_O2_PARAMETER_COUNTS
+#endif
+
 /// <library>amx_assembly opcode</library>
 stock const gAMXOpcodeParameterCounts[] = {
 	0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 0, 1, 1, 1, 1,
@@ -129,7 +136,15 @@ stock const gAMXOpcodeParameterCounts[] = {
 	1, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 0,
 	0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 0, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1,
 	0, 1, 1, 0, 0, 1, 0, 1, 1, 0
+	OPCODE_O2_PARAMETER_COUNTS
 };
+
+// Doesn't work inline.
+#if OPCODE_HAS_O2
+	#define OPCODE_O2_NEEDS_RELOC , false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false
+#else
+	#define OPCODE_O2_NEEDS_RELOC
+#endif
 
 /// <library>amx_assembly opcode</library>
 stock const gAMXOpcodeNeedsReloc[] = {
@@ -144,12 +159,15 @@ stock const gAMXOpcodeNeedsReloc[] = {
 	false, false, false, false, false, false, false, false, false, false, false, false, false,
 	false, false, false, false, false, false, false, false, false, false, false, false, true ,
 	true , false, false, false, false, false, false, false
-#if OPCODE_HAS_O2
-	,
-	false, false, false, false, false, false, false, false, false, false, false, false, false,
-	false, false, false, false, false, false, false
-#endif
+	OPCODE_O2_NEEDS_RELOC
 };
+
+// Doesn't work inline.
+#if OPCODE_HAS_O2
+	#define OPCODE_O2_NAMES , "push2.c", "push2", "push2.s", "push2.adr", "push3.c", "push3", "push3.s", "push3.adr", "push4.c", "push4", "push4.s", "push4.adr", "push5.c", "push5", "push5.s", "push5.adr", "load.both", "load.s.both", "const", "const.s"
+#else
+	#define OPCODE_O2_NAMES
+#endif
 
 /// <library>amx_assembly opcode</library>
 stock const gAMXOpcodeNames[][OPCODE_MAX_INSN_NAME] = {
@@ -169,13 +187,15 @@ stock const gAMXOpcodeNames[][OPCODE_MAX_INSN_NAME] = {
 	"cmps", "fill", "halt", "bounds", "sysreq.pri", "sysreq.c", "file", "line", "symbol", "srange",
 	"jump.pri", "switch", "casetbl", "swap.pri", "swap.alt", "push.adr", "nop", "sysreq.d",
 	"symtag", "break"
-#if OPCODE_HAS_O2
-	,
-	"push2.c", "push2", "push2.s", "push2.adr", "push3.c", "push3", "push3.s", "push3.adr",
-	"push4.c", "push4", "push4.s", "push4.adr", "push5.c", "push5", "push5.s", "push5.adr",
-	"load.both", "load.s.both", "const", "const.s"
-#endif
+	OPCODE_O2_NAMES
 };
+
+// Doesn't work inline.
+#if OPCODE_HAS_O2
+	#define OPCODE_O2_BASE_SIZES , 12, 12, 12, 12, 16, 16, 16, 16, 20, 20, 20, 20, 24, 24, 24, 24, 12, 12, 12, 12
+#else
+	#define OPCODE_O2_BASE_SIZES
+#endif
 
 /// <library>amx_assembly opcode</library>
 stock const gAMXOpcodeBaseSizes[] = {
@@ -184,10 +204,7 @@ stock const gAMXOpcodeBaseSizes[] = {
 	8, 4, 4, 4, 8, 8, 8, 8, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 8, 8, 4, 4, 8, 8, 4, 4, 4,
 	4, 4, 4, 4, 4, 4, 4, 4, 4, 8, 8, 4, 4, 8, 8, 4, 4, 4, 8, 8, 4, 8, 8, 8, 8, 8, 4, 8, 8, 8, 8, 8,
 	4, 8, 8, 4, 4, 8, 4, 8, 8, 4
-#if OPCODE_HAS_O2
-	,
-	12, 12, 12, 12, 16, 16, 16, 16, 20, 20, 20, 20, 24, 24, 24, 24, 12, 12, 12, 12
-#endif
+	OPCODE_O2_BASE_SIZES
 };
 
 /// <library>amx_assembly opcode</library>
@@ -777,8 +794,8 @@ stock Opcode:RelocateOpcodeNow(Opcode:opcode) {
 #if OPCODE_HAS_O2
 		default: {
 			return RelocateMacroOpcodeNow(opcode);
-#endif
 		}
+#endif
 	}
 	return opcode;
 }
@@ -945,5 +962,6 @@ stock Opcode:RelocateMacroOpcodeNow(Opcode:opcode)
 			#emit const.s 0 0
 		}
 	}
+	return opcode;
 }
 
