@@ -1172,7 +1172,11 @@ stock AsmError:AsmEmitSysreqC(ctx[AsmContext], index) {
 
 /// <library>amx_assembly asm</library>
 stock AsmError:AsmEmitSysreqD(ctx[AsmContext], address) {
-	return AsmEmitInstruction(ctx, OP_SYSREQ_D, address);
+	if (HasSysreqD())
+	{
+		return AsmEmitInstruction(ctx, OP_SYSREQ_D, address);
+	}
+	return ASM_ERROR_OPCODE;
 }
 
 /// <library>amx_assembly asm</library>

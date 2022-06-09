@@ -36,6 +36,8 @@
 
 /// <p/>
 
+#include "amx_header"
+
 #if __Pawn >= 0x30A
 	// Disable the recursion warning in the Russian compiler.
 	#pragma warning push
@@ -772,19 +774,23 @@ stock Opcode:RelocateOpcodeNow(Opcode:opcode) {
 			#emit nop
 		}
 		case OP_SYSREQ_D: {
-			// Since there's no way to #emit sysreq.d we have to compute its
-			// address using a relative offset to another opcode, e.g. nop.
-			new bool:is_crashdetect = false;
-			#emit zero.pri
-			#emit lctrl 0xFF
-			#emit stor.s.pri is_crashdetect
-			if (is_crashdetect) {
-				// The offset is different when running under crashdetect as
-				// it uses its own (modified) version of the VM. This value
-				// value works only with crashdetect 4.13.
-				return RelocateOpcodeNow(OP_NOP) - Opcode:0x1EA;
+			if (HasSysreqD()) {
+				// Since there's no way to #emit sysreq.d we have to compute its
+				// address using a relative offset to another opcode, e.g. nop.
+				new bool:is_crashdetect = false;
+				#emit zero.pri
+				#emit lctrl 0xFF
+				#emit stor.s.pri is_crashdetect
+				if (is_crashdetect) {
+					// The offset is different when running under crashdetect as
+					// it uses its own (modified) version of the VM. This value
+					// value works only with crashdetect 4.13.
+					return RelocateOpcodeNow(OP_NOP) - Opcode:0x1EA;
+				} else {
+					return RelocateOpcodeNow(OP_NOP) - Opcode:0x4F;
+				}
 			} else {
-				return RelocateOpcodeNow(OP_NOP) - Opcode:0x4F;
+				return RelocateOpcodeNow(OP_NOP);
 			}
 		}
 		case OP_BREAK: {

@@ -818,5 +818,11 @@ stock bool:IsTagIndexEmpty(tag) {
 	return (tag == 0);
 }
 
+/// <library>amx_assembly amx_header</library>
+stock bool:HasSysreqD() {
+	// open.mp removed SYSREQ.D, and added a flag to say so.
+	return ((GetAmxHeaderComponent(AMX_HDR_FLAGS) & 0x0400) == 0);
+}
+
 #undef InitStaticAmxHeader
 
