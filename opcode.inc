@@ -194,7 +194,7 @@ stock const gAMXOpcodeNames[][OPCODE_MAX_INSN_NAME] = {
 
 // Doesn't work inline.
 #if OPCODE_HAS_O2
-	#define OPCODE_O2_BASE_SIZES , 12, 12, 12, 12, 16, 16, 16, 16, 20, 20, 20, 20, 24, 24, 24, 24, 12, 12, 12, 12
+	#define OPCODE_O2_BASE_SIZES , 12, 12, 12, 12, 16, 16, 16, 16, 20, 20, 20, 20, 24, 24, 24, 24, 12, 12, 12, 12, 12
 #else
 	#define OPCODE_O2_BASE_SIZES
 #endif
