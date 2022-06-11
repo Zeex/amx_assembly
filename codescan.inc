@@ -654,6 +654,13 @@ static stock bool:CodeScanStepInternal(dctx[DisasmContext], csState[CodeScanner]
 				}
 				parseState = 0;
 			}
+			case OP_SYSREQ_N: {
+				// sysreq.n cleans itself up, it isn't followed by `stack`.
+				if (stk != cellmin) {
+					stk -= DISASM_GET_OPERAND_INLINE(dctx, 1);
+				}
+				parseState = 0;
+			}
 #endif
 			case OP_STACK: {
 				// The stack grows down, but our count is positive.
