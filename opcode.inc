@@ -121,6 +121,9 @@ enum Opcode {
   OP_LAST_
 };
 
+// They share an ID in different server versions.
+const Opcode:OP_SYSREQ_N = OP_SYSREQ_D;
+
 /// <library>amx_assembly opcode</library>
 const Opcode:Opcode__ = Opcode;
 
@@ -790,7 +793,11 @@ stock Opcode:RelocateOpcodeNow(Opcode:opcode) {
 					return RelocateOpcodeNow(OP_NOP) - Opcode:0x4F;
 				}
 			} else {
+#if OPCODE_HAS_O2
+				return RelocateMacroOpcodeNow(OP_SYSREQ_N);
+#else
 				return RelocateOpcodeNow(OP_NOP);
+#endif
 			}
 		}
 		case OP_BREAK: {
@@ -857,8 +864,13 @@ stock Opcode:UnrelocateOpcode(Opcode:opcode) {
 /// <library>amx_assembly opcode</library>
 stock GetOpcodeInstructionName(Opcode:opcode) {
 	static const ret[OPCODE_MAX_INSN_NAME] = "none";
+	static const sysreqn[OPCODE_MAX_INSN_NAME] = "sysreq.n";
 	if (OP_NONE < opcode < Opcode:NUM_OPCODES) {
-		return gAMXOpcodeNames[_:opcode];
+		if (opcode != OP_SYSREQ_D || HasSysreqD()) {
+			return gAMXOpcodeNames[_:opcode];
+		} else {
+			return sysreqn;
+		}
 	}
 	return ret;
 }
@@ -866,7 +878,11 @@ stock GetOpcodeInstructionName(Opcode:opcode) {
 /// <library>amx_assembly opcode</library>
 stock GetOpcodeInstructionParameters(Opcode:opcode) {
 	if (OP_NONE < opcode < Opcode:NUM_OPCODES) {
-		return gAMXOpcodeParameterCounts[_:opcode];
+		if (opcode != OP_SYSREQ_D || HasSysreqD()) {
+			return gAMXOpcodeParameterCounts[_:opcode];
+		} else {
+			return 2;
+		}
 	}
 	return 0;
 }
@@ -874,7 +890,11 @@ stock GetOpcodeInstructionParameters(Opcode:opcode) {
 /// <library>amx_assembly opcode</library>
 stock bool:GetOpcodeInstructionRelocatable(Opcode:opcode) {
 	if (OP_NONE < opcode < Opcode:NUM_OPCODES) {
-		return gAMXOpcodeNeedsReloc[_:opcode];
+		if (opcode != OP_SYSREQ_D || HasSysreqD()) {
+			return gAMXOpcodeNeedsReloc[_:opcode];
+		} else {
+			return false;
+		}
 	}
 	return false;
 }
@@ -966,6 +986,10 @@ stock Opcode:RelocateMacroOpcodeNow(Opcode:opcode)
 		case OP_CONST_S: {
 			return ReadOpcodeNearThis(4);
 			#emit const.s 0 0
+		}
+		case OP_SYSREQ_N: {
+			return ReadOpcodeNearThis(4);
+			#emit sysreq.n 0 0
 		}
 	}
 	return opcode;

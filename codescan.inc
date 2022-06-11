@@ -407,7 +407,7 @@ stock CodeScanMatcherPattern_(searcher[CodeScanMatcher], {Opcode, Float, _}:...)
 		++j;
 		switch (optype) {
 			case OP_TYPE_OPCODE_: {
-				new opcount = gAMXOpcodeParameterCounts[_:op];
+				new opcount = (opcode != OP_SYSREQ_D || HasSysreqD()) ? gAMXOpcodeParameterCounts[_:op] : 2;
 				for (new partype = 0; i != len; )
 				{
 					partype = getarg(i + 1);
@@ -493,7 +493,7 @@ static stock bool:CodeScanCheck(Opcode:op, const dctx[DisasmContext], cs[CodeSca
 		}
 	}
 	new
-		cnt = (op == OP_CASETBL) ? (_:ReadAmxMemory(dctx[DisasmContext_cip] + 4)) : (gAMXOpcodeParameterCounts[_:op]),
+		cnt = (op == OP_CASETBL) ? (_:ReadAmxMemory(dctx[DisasmContext_cip] + 4)) : ((opcode != OP_SYSREQ_D || HasSysreqD()) ? gAMXOpcodeParameterCounts[_:op] : 2),
 		len = cs[CodeScanMatcher_len];
 	for (new idx = 0; idx != CODE_SCAN_MAX_PARALLEL; ++idx) {
 		off = cs[CodeScanMatcher_offset][idx];
