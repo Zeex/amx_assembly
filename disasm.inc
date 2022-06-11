@@ -36,13 +36,13 @@
 
 /// <p/>
 
-#include <string>
-#include <file>
+#include <string.inc>
+#include <file.inc>
 
-#include "amx_base"
-#include "amx_header"
-#include "amx_memory"
-#include "opcode"
+#include "amx_base.inc"
+#include "amx_header.inc"
+#include "amx_memory.inc"
+#include "opcode.inc"
 
 #define DISASM_MAX_PUBLIC_NAME 64
 #define DISASM_MAX_NATIVE_NAME 100

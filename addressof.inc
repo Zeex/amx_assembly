@@ -36,8 +36,8 @@
 
 /// <p/>
 
-#include "frame_info"
-#include "disasm"
+#include "frame_info.inc"
+#include "disasm.inc"
 
 // This code uses two nested conditionals because of:
 // https://github.com/Zeex/pawn/issues/96 (this doesn't work):

@@ -37,7 +37,7 @@
 /// <p/>
 
 #if !defined _samp_included
-	#tryinclude <console>
+	#tryinclude <console.inc>
 #endif
 
 //-----------------------------------------------
@@ -69,7 +69,7 @@
 //        <BOTTOM>     |         0
 //-----------------------------------------------
 
-#include "amx_memory"
+#include "amx_memory.inc"
 
 /// <library>amx_assembly stack_dump</library>
 stock DumpStack()

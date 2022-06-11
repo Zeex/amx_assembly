@@ -36,14 +36,14 @@
 
 /// <p/>
 
-#include <core>
+#include <core.inc>
 
-#include "amx_base"
-#include "amx_header"
-#include "amx_memory"
-#include "asm_macros"
-#include "dynamic_call"
-#include "opcode"
+#include "amx_base.inc"
+#include "amx_header.inc"
+#include "amx_memory.inc"
+#include "asm_macros.inc"
+#include "dynamic_call.inc"
+#include "opcode.inc"
 
 #if !defined ASM_MAX_LABELS
 	#define ASM_MAX_LABELS (8)

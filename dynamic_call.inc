@@ -36,10 +36,10 @@
 
 /// <p/>
 
-#include "amx_jit"
-#include "amx_header"
-#include "amx_memory"
-#include "opcode"
+#include "amx_jit.inc"
+#include "amx_header.inc"
+#include "amx_memory.inc"
+#include "opcode.inc"
 
 #if !defined DYNAMIC_CALL_MAX_ARGS
 	#define DYNAMIC_CALL_MAX_ARGS 256

@@ -45,9 +45,9 @@
 
 /// <p/>
 
-#include "addressof"
-#include "codescan"
-#include "asm"
+#include "addressof.inc"
+#include "codescan.inc"
+#include "asm.inc"
 
 /// <library>amx_assembly addressof_jit</library>
 static stock AddressofResolveFoundStart(const scanner[CodeScanner]) {

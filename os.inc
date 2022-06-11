@@ -36,7 +36,7 @@
 
 /// <p/>
 
-#include "opcode"
+#include "opcode.inc"
 
 /// <p/>
 

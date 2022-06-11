@@ -36,9 +36,9 @@
 
 /// <p/>
 
-#include <core>
+#include <core.inc>
 
-#include "amx_base"
+#include "amx_base.inc"
 
 /// <library>amx_assembly phys_memory</library>
 static stock GetDat() {

@@ -36,7 +36,7 @@
 
 /// <p/>
 
-#include "amx_header"
+#include "amx_header.inc"
 
 #if __Pawn >= 0x30A
 	// Disable the recursion warning in the Russian compiler.

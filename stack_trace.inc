@@ -37,12 +37,12 @@
 /// <p/>
 
 #if !defined _samp_included
-	#tryinclude <console>
+	#tryinclude <console.inc>
 #endif
 
-#include "amx_base"
-#include "amx_header"
-#include "frame_info"
+#include "amx_base.inc"
+#include "amx_header.inc"
+#include "frame_info.inc"
 
 /// <library>amx_assembly stack_trace</library>
 stock GetFunctionFromReturnAddress(ret_addr) {

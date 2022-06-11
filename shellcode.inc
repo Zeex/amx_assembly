@@ -36,9 +36,9 @@
 
 /// <p/>
 
-#include "amx_header"
-#include "dynamic_call"
-#include "phys_memory"
+#include "amx_header.inc"
+#include "dynamic_call.inc"
+#include "phys_memory.inc"
 
 /// <library>amx_assembly shellcode</library>
 stock RunShellcode(code_ptr, bool:align = true) {
