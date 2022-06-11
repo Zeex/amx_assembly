@@ -127,7 +127,7 @@ stock bool:DisasmDecodeInsn(ctx[DisasmContext]) {
 	}
 
 	return
-		ctx[DisasmContext_nip] = ip + ((opcode != OP_SYSREQ_D || HasSysreqD()) ? gAMXOpcodeBaseSizes[_:opcode] : 12),
+		ctx[DisasmContext_nip] = ip + gAMXOpcodeBaseSizes[_:opcode],
 		true;
 }
 
@@ -153,7 +153,7 @@ stock bool:DisasmDecodeInsnUnsafe(ctx[DisasmContext]) {
 		}
 
 		return
-			ctx[DisasmContext_nip] = ip + ((opcode != OP_SYSREQ_D || HasSysreqD()) ? gAMXOpcodeBaseSizes[_:opcode] : 12),
+			ctx[DisasmContext_nip] = ip + gAMXOpcodeBaseSizes[_:opcode],
 			true;
 	}
 
@@ -204,10 +204,8 @@ stock DisasmGetNumOperands(const ctx[DisasmContext]) {
 
 	if (opcode == OP_CASETBL) {
 		return ReadAmxMemory(ctx[DisasmContext_cip] + 4);
-	} else if (opcode != OP_SYSREQ_D || HasSysreqD()) {
-			return gAMXOpcodeParameterCounts[_:opcode];
 	} else {
-		return 2;
+		return gAMXOpcodeParameterCounts[_:opcode];
 	}
 }
 
@@ -397,47 +395,42 @@ stock DisasmWriteCode(File:file) {
 					fwrite(file, name);
 				}
 			}
-			case OP_SYSREQ_C: {
+			case OP_SYSREQ_C, OP_SYSREQ_D: {
 				new name[DISASM_MAX_NATIVE_NAME];
 				new address = DisasmGetOperand(ctx);
-				new index = DisasmGetOperand(ctx);
-				GetNativeNameFromIndex(index, name);
+				if (opcode == OP_SYSREQ_C) {
+					new index = DisasmGetOperand(ctx);
+					GetNativeNameFromIndex(index, name);
+				} else {
+					new index = GetNativeIndexFromAddress(address);
+					if (index >= 0) {
+						GetNativeNameFromIndex(index, name);
+					}
+				}
 				fwrite(file, ToHexStr(address));
 				if (strlen(name) > 0) {
 					fwrite(file, "; ");
 					fwrite(file, name);
 				}
 			}
-			case OP_SYSREQ_D: {
-				if (HasSysreqD()) {
-					new name[DISASM_MAX_NATIVE_NAME];
-					new address = DisasmGetOperand(ctx);
-					new index = GetNativeIndexFromAddress(address);
-					if (index >= 0) {
-						GetNativeNameFromIndex(index, name);
-					}
-					fwrite(file, ToHexStr(address));
-					if (strlen(name) > 0) {
-						fwrite(file, "; ");
-						fwrite(file, name);
-					}
-				} else {
-					// sysreq.n
-					new name[DISASM_MAX_NATIVE_NAME];
-					new address = DisasmGetOperand(ctx);
-					new index = GetNativeIndexFromAddress(address);
-					if (index >= 0) {
-						GetNativeNameFromIndex(index, name);
-					}
-					fwrite(file, ToHexStr(address));
-					fwrite(file, " ");
-					fwrite(file, ToHexStr(DisasmGetOperand(ctx, 1)));
-					if (strlen(name) > 0) {
-						fwrite(file, "; ");
-						fwrite(file, name);
-					}
+#if OPCODE_HAS_O2
+			case OP_SYSREQ_N: {
+				// sysreq.n
+				new name[DISASM_MAX_NATIVE_NAME];
+				new address = DisasmGetOperand(ctx);
+				new index = GetNativeIndexFromAddress(address);
+				if (index >= 0) {
+					GetNativeNameFromIndex(index, name);
+				}
+				fwrite(file, ToHexStr(address));
+				fwrite(file, " ");
+				fwrite(file, ToHexStr(DisasmGetOperand(ctx, 1)));
+				if (strlen(name) > 0) {
+					fwrite(file, "; ");
+					fwrite(file, name);
 				}
 			}
+#endif
 			default: {
 				new n = DisasmGetNumOperands(ctx);
 				for (new i = 0; i < n; i++) {

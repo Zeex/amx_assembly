@@ -116,20 +116,17 @@ enum Opcode {
   OP_PUSH4,        OP_PUSH4_S,      OP_PUSH4_ADR,
   OP_PUSH5_C,      OP_PUSH5,        OP_PUSH5_S,
   OP_PUSH5_ADR,    OP_LOAD_BOTH,    OP_LOAD_S_BOTH,
-  OP_CONST,        OP_CONST_S,
+  OP_CONST,        OP_CONST_S,      OP_SYSREQ_N,
 #endif
   OP_LAST_
 };
-
-// They share an ID in different server versions.
-const Opcode:OP_SYSREQ_N = OP_SYSREQ_D;
 
 /// <library>amx_assembly opcode</library>
 const Opcode:Opcode__ = Opcode;
 
 // Doesn't work inline.
 #if OPCODE_HAS_O2
-	#define OPCODE_O2_PARAMETER_COUNTS , 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5, 2, 2, 2, 2
+	#define OPCODE_O2_PARAMETER_COUNTS , 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5, 2, 2, 2, 2, 2
 #else
 	#define OPCODE_O2_PARAMETER_COUNTS
 #endif
@@ -146,7 +143,7 @@ stock const gAMXOpcodeParameterCounts[] = {
 
 // Doesn't work inline.
 #if OPCODE_HAS_O2
-	#define OPCODE_O2_NEEDS_RELOC , false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false
+	#define OPCODE_O2_NEEDS_RELOC , false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false
 #else
 	#define OPCODE_O2_NEEDS_RELOC
 #endif
@@ -169,7 +166,7 @@ stock const gAMXOpcodeNeedsReloc[] = {
 
 // Doesn't work inline.
 #if OPCODE_HAS_O2
-	#define OPCODE_O2_NAMES , "push2.c", "push2", "push2.s", "push2.adr", "push3.c", "push3", "push3.s", "push3.adr", "push4.c", "push4", "push4.s", "push4.adr", "push5.c", "push5", "push5.s", "push5.adr", "load.both", "load.s.both", "const", "const.s"
+	#define OPCODE_O2_NAMES , "push2.c", "push2", "push2.s", "push2.adr", "push3.c", "push3", "push3.s", "push3.adr", "push4.c", "push4", "push4.s", "push4.adr", "push5.c", "push5", "push5.s", "push5.adr", "load.both", "load.s.both", "const", "const.s", "sysreq.n"
 #else
 	#define OPCODE_O2_NAMES
 #endif
@@ -793,11 +790,7 @@ stock Opcode:RelocateOpcodeNow(Opcode:opcode) {
 					return RelocateOpcodeNow(OP_NOP) - Opcode:0x4F;
 				}
 			} else {
-#if OPCODE_HAS_O2
-				return RelocateMacroOpcodeNow(OP_SYSREQ_N);
-#else
 				return RelocateOpcodeNow(OP_NOP);
-#endif
 			}
 		}
 		case OP_BREAK: {
@@ -864,13 +857,8 @@ stock Opcode:UnrelocateOpcode(Opcode:opcode) {
 /// <library>amx_assembly opcode</library>
 stock GetOpcodeInstructionName(Opcode:opcode) {
 	static const ret[OPCODE_MAX_INSN_NAME] = "none";
-	static const sysreqn[OPCODE_MAX_INSN_NAME] = "sysreq.n";
 	if (OP_NONE < opcode < Opcode:NUM_OPCODES) {
-		if (opcode != OP_SYSREQ_D || HasSysreqD()) {
-			return gAMXOpcodeNames[_:opcode];
-		} else {
-			return sysreqn;
-		}
+		return gAMXOpcodeNames[_:opcode];
 	}
 	return ret;
 }
@@ -878,11 +866,7 @@ stock GetOpcodeInstructionName(Opcode:opcode) {
 /// <library>amx_assembly opcode</library>
 stock GetOpcodeInstructionParameters(Opcode:opcode) {
 	if (OP_NONE < opcode < Opcode:NUM_OPCODES) {
-		if (opcode != OP_SYSREQ_D || HasSysreqD()) {
-			return gAMXOpcodeParameterCounts[_:opcode];
-		} else {
-			return 2;
-		}
+		return gAMXOpcodeParameterCounts[_:opcode];
 	}
 	return 0;
 }
@@ -890,11 +874,7 @@ stock GetOpcodeInstructionParameters(Opcode:opcode) {
 /// <library>amx_assembly opcode</library>
 stock bool:GetOpcodeInstructionRelocatable(Opcode:opcode) {
 	if (OP_NONE < opcode < Opcode:NUM_OPCODES) {
-		if (opcode != OP_SYSREQ_D || HasSysreqD()) {
-			return gAMXOpcodeNeedsReloc[_:opcode];
-		} else {
-			return false;
-		}
+		return gAMXOpcodeNeedsReloc[_:opcode];
 	}
 	return false;
 }
