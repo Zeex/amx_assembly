@@ -843,6 +843,12 @@ stock Opcode:UnrelocateOpcode(Opcode:opcode) {
 	if (!opcode_table_is_ready) {
 		InitOpcodeTable();
 	}
+#if OPCODE_HAS_O2
+	if (opcode == OP_SYSREQ_D) {
+		// These share the same raw ID in the server.
+		return HasSysreqD() ? OP_SYSREQ_D : OP_SYSREQ_N;
+	}
+#endif
 	if (OP_NONE <= opcode < Opcode:NUM_OPCODES) {
 		return opcode;
 	}

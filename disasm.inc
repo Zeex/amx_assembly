@@ -132,11 +132,7 @@ stock bool:DisasmDecodeInsn(ctx[DisasmContext]) {
 }
 
 /// <library>amx_assembly disasm</library>
-static stock bool:gRelocateRequired;
-
-/// <library>amx_assembly disasm</library>
 stock DisasmInitUnsafe() {
-	gRelocateRequired = IsOpcodeRelocationRequired();
 }
 
 /// <library>amx_assembly disasm</library>
@@ -144,7 +140,7 @@ stock bool:DisasmDecodeInsnUnsafe(ctx[DisasmContext]) {
 	static ip, Opcode:opcode;
 
 	ctx[DisasmContext_cip] = ip = ctx[DisasmContext_nip],
-	ctx[DisasmContext_opcode] = opcode = gRelocateRequired ? (UnrelocateOpcode(Opcode:ReadAmxMemory(ip))) : (Opcode:ReadAmxMemory(ip));
+	ctx[DisasmContext_opcode] = opcode = UnrelocateOpcode(Opcode:ReadAmxMemory(ip));
 
 	if (OP_NONE < opcode < Opcode:NUM_OPCODES) {
 		if (opcode == OP_CASETBL) {
