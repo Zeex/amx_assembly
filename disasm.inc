@@ -418,6 +418,7 @@ stock DisasmWriteCode(File:file) {
 				for (new i = 0; i < n; i++) {
 					new operand = DisasmGetOperandReloc(ctx, i);
 					fwrite(file, ToHexStr(operand));
+					fwrite(file, " ");
 				}
 			}
 		}
