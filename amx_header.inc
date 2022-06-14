@@ -818,6 +818,18 @@ stock bool:IsTagIndexEmpty(tag) {
 	return (tag == 0);
 }
 
+#undef InitStaticAmxHeader
+
+#if ((__Pawn & 0x0F) >= 0x0A) || ((__Pawn & 0xF0) >= 0xA0)
+	#if !defined __PawnBuild
+		#define __PawnBuild 0
+	#endif
+	#if __PawnBuild >= 10
+		#define HasSysreqD() (bool:(__emit(zero.pri, lctrl 9, eq.c.pri 0)))
+		#endinput
+	#endif
+#endif
+
 /// <library>amx_assembly amx_header</library>
 stock bool:HasSysreqD() {
 	// SA:MP doesn't have the AMX flags in register 9, open.mp does.  Thus if
@@ -829,6 +841,4 @@ stock bool:HasSysreqD() {
 
 	return false;
 }
-
-#undef InitStaticAmxHeader
 
