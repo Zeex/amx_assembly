@@ -36,9 +36,9 @@
 
 /// <p/>
 
-#include "amx_header.inc"
-#include "amx_base.inc"
-#include "opcode.inc"
+#include "amx_header"
+#include "amx_base"
+#include "opcode"
 
 /// <library>amx_assembly frame_info</library>
 stock GetCurrentFrame() {

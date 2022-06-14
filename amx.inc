@@ -36,8 +36,8 @@
 
 /// <p/>
 
-#include "phys_memory.inc"
-#include "shellcode.inc"
+#include "phys_memory"
+#include "shellcode"
 
 /// <library>amx_assembly amx</library>
 const AMX_OFFSET_BASE = 0;

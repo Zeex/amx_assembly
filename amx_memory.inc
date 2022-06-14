@@ -36,7 +36,7 @@
 
 /// <p/>
 
-#include <core.inc>
+#include <core>
 
 /// <library>amx_assembly amx_memory</library>
 /// <summary>

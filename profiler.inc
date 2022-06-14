@@ -36,16 +36,16 @@
 
 /// <p/>
 
-#include <file.inc>
-#include <time.inc>
-#include <string.inc>
+#include <file>
+#include <time>
+#include <string>
 #if !defined _samp_included
-	#tryinclude <console.inc>
+	#tryinclude <console>
 #endif
 
-#include "amx_base.inc"
-#include "amx_header.inc"
-#include "opcode.inc"
+#include "amx_base"
+#include "amx_header"
+#include "opcode"
 
 // Call stack size (maximum call depth).
 #if !defined PROF_MAX_CALL_STACK

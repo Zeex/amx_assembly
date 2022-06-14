@@ -37,10 +37,10 @@
 /// <p/>
 
 #if !defined _samp_included
-	#tryinclude <console.inc>
+	#tryinclude <console>
 #endif
 
-#include "amx_memory.inc"
+#include "amx_memory"
 
 #define AMX_HDR_BYTES (56)
 #define AMX_HDR_CELLS (AMX_HDR_BYTES / 4)

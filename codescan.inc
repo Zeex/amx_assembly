@@ -76,12 +76,12 @@ stock MyFunc(a, b[], ...) {
 
 */
 
-#include <core.inc>
+#include <core>
 
-#include "frame_info.inc"
-#include "disasm.inc"
-#include "asm.inc"
-#include "addressof.inc"
+#include "frame_info"
+#include "disasm"
+#include "asm"
+#include "addressof"
 
 #define SCANNER_FAIL_ON_INVALID (1)
 #define SCANNER_IGNORE_NOP      (2)

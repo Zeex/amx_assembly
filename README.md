@@ -31,7 +31,7 @@ sampctl package install amx_assembly
 Include in your code and begin using the library:
 
 ```pawn
-#include <amx_assembly\include_name_here.inc>
+#include <amx_assembly\include_name_here>
 ```
 
 ## Usage

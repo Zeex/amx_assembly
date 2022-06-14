@@ -44,8 +44,8 @@
 
 /// <p/>
 
-#include <core.inc>
-#include "..\phys_memory.inc"
+#include <core>
+#include "..\phys_memory"
 
 /// <library>amx_assembly Windows import_table</library>
 const DefaultImageBase = 0x00400000;
