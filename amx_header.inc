@@ -820,19 +820,11 @@ stock bool:IsTagIndexEmpty(tag) {
 
 /// <library>amx_assembly amx_header</library>
 stock bool:HasSysreqD() {
-	// open.mp removed SYSREQ.D, and added a flag to say so.
-	//return ((GetAmxHeaderComponent(AMX_HDR_FLAGS) & 0x0400) == 0);
-
-	// Inline the code to get this, as it is called a lot.
-	#emit lctrl 1    // DAT
-	#emit neg        // -DAT
-	#emit add.c 8    // flags
-	#emit push.pri
-	#emit lref.s.pri 0xFFFFFFFC
-	#emit const.alt 0x00000400
-	#emit and
+	// SA:MP doesn't have the AMX flags in register 9, open.mp does.  Thus if
+	// `pri` is 0 it wasn't set by the control register.
+	#emit zero.pri
+	#emit lctrl 9 // flags
 	#emit eq.c.pri 0
-	#emit pop.alt
 	#emit retn
 
 	return false;
