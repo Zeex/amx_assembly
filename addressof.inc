@@ -42,6 +42,9 @@
 	#endif
 	#if __PawnBuild >= 10
 		#define addressof __addressof
+
+		// This shouldn't be needed but another include checks for it existing.
+		#define _ADDR@
 		#endinput
 	#endif
 #endif
