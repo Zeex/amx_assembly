@@ -36,19 +36,6 @@
 
 /// <p/>
 
-#if ((__Pawn & 0x0F) >= 0x0A) || ((__Pawn & 0xF0) >= 0xA0)
-	#if !defined __PawnBuild
-		#define __PawnBuild 0
-	#endif
-	#if __PawnBuild >= 10
-		#define addressof __addressof
-
-		// This shouldn't be needed but another include checks for it existing.
-		#define _ADDR@
-		#endinput
-	#endif
-#endif
-
 #include "frame_info"
 #include "disasm"
 
