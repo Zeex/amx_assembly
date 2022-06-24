@@ -51,13 +51,13 @@
 
 /// <library>amx_assembly addressof_jit</library>
 static stock AddressofResolveFoundStart(const scanner[CodeScanner]) {
-	//// Skip over now superfluous code.
-	//new ctx[AsmContext];
-	//CodeScanGetMatchAsm(scanner, ctx);
-	//new
-	//	hdr[AMX_HDR];
-	//GetAmxHeader(hdr);
-	//AsmEmitJump(ctx, CodeScanGetMatchHole(scanner, 0) + GetAmxBaseAddress() + hdr[AMX_HDR_COD]);
+	// Skip over now superfluous code.
+	new ctx[AsmContext];
+	CodeScanGetMatchAsm(scanner, ctx);
+	new
+		hdr[AMX_HDR];
+	GetAmxHeader(hdr);
+	AsmEmitJump(ctx, CodeScanGetMatchHole(scanner, 0) + GetAmxBaseAddress() + hdr[AMX_HDR_COD]);
 }
 
 /// <library>amx_assembly addressof_jit</library>
@@ -144,7 +144,6 @@ stock AddressofResolve() {
 	CodeScanAddMatcher(scanner, csm3);
 	
 	// Run the scanner.
-	//CodeScanRun(scanner);
 	CodeScanRunFast(scanner, &AddressOfGetNextCall_);
 }
 
