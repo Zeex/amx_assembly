@@ -275,6 +275,19 @@ stock GetAmxHeaderComponent(AMX_HDR:comp) {
 }
 
 /// <library>amx_assembly amx_header</library>
+static stock PrintAmxNameTable(start, end) {
+	new info[AMX_FUNCSTUBNT];
+	new name[64];
+	while (start != end) {
+		info[AMX_FUNCSTUBNT_ADDRESS] = ReadAmxMemory(start);
+		info[AMX_FUNCSTUBNT_NAMEOFS] = ReadAmxMemory(start + 4);
+		NtCopy(info[AMX_FUNCSTUBNT_NAMEOFS] - GetAmxHeaderComponent(AMX_HDR_DAT), name);
+		printf("%32s: 0x%08x", name, info[AMX_FUNCSTUBNT_ADDRESS]);
+		start += 8;
+	}
+}
+
+/// <library>amx_assembly amx_header</library>
 stock PrintAmxHeader() {
 	InitStaticAmxHeader();
 	print("------------------------");
@@ -297,6 +310,37 @@ stock PrintAmxHeader() {
 	printf("pubvars      0x%08x", gHdr[AMX_HDR_PUBVARS]);
 	printf("tags         0x%08x", gHdr[AMX_HDR_TAGS]);
 	printf("nametable    0x%08x", gHdr[AMX_HDR_NAMETABLE]);
+	print("------------------------");
+	new
+		start = gHdr[AMX_HDR_PUBLICS] - gHdr[AMX_HDR_DAT],
+		end = gHdr[AMX_HDR_NATIVES] - gHdr[AMX_HDR_DAT];
+	print("Publics:");
+	print("------------------------");
+	PrintAmxNameTable(start, end);
+	print("------------------------");
+	start = end;
+	end = gHdr[AMX_HDR_LIBRARIES] - gHdr[AMX_HDR_DAT];
+	print("Natives:");
+	print("------------------------");
+	PrintAmxNameTable(start, end);
+	print("------------------------");
+	start = end;
+	end = gHdr[AMX_HDR_PUBVARS] - gHdr[AMX_HDR_DAT];
+	print("Libraries:");
+	print("------------------------");
+	PrintAmxNameTable(start, end);
+	print("------------------------");
+	start = end;
+	end = gHdr[AMX_HDR_TAGS] - gHdr[AMX_HDR_DAT];
+	print("Pubvars:");
+	print("------------------------");
+	PrintAmxNameTable(start, end);
+	print("------------------------");
+	start = end;
+	end = gHdr[AMX_HDR_NAMETABLE] - gHdr[AMX_HDR_DAT];
+	print("Tags:");
+	print("------------------------");
+	PrintAmxNameTable(start, end);
 	print("------------------------");
 }
 
