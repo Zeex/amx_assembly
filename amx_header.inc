@@ -281,8 +281,15 @@ static stock PrintAmxNameTable(start, end) {
 	while (start != end) {
 		info[AMX_FUNCSTUBNT_ADDRESS] = ReadAmxMemory(start);
 		info[AMX_FUNCSTUBNT_NAMEOFS] = ReadAmxMemory(start + 4);
-		NtCopy(info[AMX_FUNCSTUBNT_NAMEOFS] - GetAmxHeaderComponent(AMX_HDR_DAT), name);
-		printf("%32s: 0x%08x", name, info[AMX_FUNCSTUBNT_ADDRESS]);
+		if (info[AMX_FUNCSTUBNT_NAMEOFS] == 0)
+		{
+			printf("????                            : 0x%08x", info[AMX_FUNCSTUBNT_ADDRESS]);
+		}
+		else
+		{
+			NtCopy(info[AMX_FUNCSTUBNT_NAMEOFS] - GetAmxHeaderComponent(AMX_HDR_DAT), name);
+			printf("%32s: 0x%08x", name, info[AMX_FUNCSTUBNT_ADDRESS]);
+		}
 		start += 8;
 	}
 }
