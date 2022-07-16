@@ -275,20 +275,23 @@ stock GetAmxHeaderComponent(AMX_HDR:comp) {
 }
 
 /// <library>amx_assembly amx_header</library>
-static stock PrintAmxNameTable(start, end) {
+static stock PrintAmxNameTable(start, end, decode = false, dereference = false) {
 	new info[AMX_FUNCSTUBNT];
 	new name[64];
 	while (start != end) {
 		info[AMX_FUNCSTUBNT_ADDRESS] = ReadAmxMemory(start);
 		info[AMX_FUNCSTUBNT_NAMEOFS] = ReadAmxMemory(start + 4);
-		if (info[AMX_FUNCSTUBNT_NAMEOFS] == 0)
-		{
-			printf("????                            : 0x%08x", info[AMX_FUNCSTUBNT_ADDRESS]);
-		}
-		else
-		{
+		if (info[AMX_FUNCSTUBNT_NAMEOFS] == 0) {
+			name = "????";
+		} else {
 			NtCopy(info[AMX_FUNCSTUBNT_NAMEOFS] - GetAmxHeaderComponent(AMX_HDR_DAT), name);
-			printf("%32s: 0x%08x", name, info[AMX_FUNCSTUBNT_ADDRESS]);
+		}
+		if (decode) {
+			printf("    %32s: 0x%08x%s%s", name, info[AMX_FUNCSTUBNT_ADDRESS], (info[AMX_FUNCSTUBNT_ADDRESS] & AMX_TAG_STRONG) ? (" (strong)") : (""), (info[AMX_FUNCSTUBNT_ADDRESS] & AMX_TAG_MASK) ? (" (local)") : (""));
+		} else if (dereference) {
+			printf("    %32s: 0x%08x (%d)", name, info[AMX_FUNCSTUBNT_ADDRESS], ReadAmxMemory(info[AMX_FUNCSTUBNT_ADDRESS]));
+		} else {
+			printf("    %32s: 0x%08x", name, info[AMX_FUNCSTUBNT_ADDRESS]);
 		}
 		start += 8;
 	}
@@ -297,58 +300,58 @@ static stock PrintAmxNameTable(start, end) {
 /// <library>amx_assembly amx_header</library>
 stock PrintAmxHeader() {
 	InitStaticAmxHeader();
-	print("------------------------");
+	print("---------------------------");
 	print("AMX Header:");
-	print("------------------------");
-	printf("size         %d", gHdr[AMX_HDR_SIZE]);
-	printf("magic        %x", gHdr[AMX_HDR_MAGIC]);
-	printf("file_version %d", gHdr[AMX_HDR_FILE_VERSION]);
-	printf("amx_version  %d", gHdr[AMX_HDR_AMX_VERSION]);
-	printf("flags        %d", gHdr[AMX_HDR_FLAGS]);
-	printf("defsize      %d", gHdr[AMX_HDR_DEFSIZE]);
-	printf("cod          0x%08x", gHdr[AMX_HDR_COD]);
-	printf("dat          0x%08x", gHdr[AMX_HDR_DAT]);
-	printf("hea          0x%08x", gHdr[AMX_HDR_HEA]);
-	printf("stp          0x%08x", gHdr[AMX_HDR_STP]);
-	printf("cip          0x%08x", gHdr[AMX_HDR_CIP]);
-	printf("publics      0x%08x", gHdr[AMX_HDR_PUBLICS]);
-	printf("natives      0x%08x", gHdr[AMX_HDR_NATIVES]);
-	printf("libraries    0x%08x", gHdr[AMX_HDR_LIBRARIES]);
-	printf("pubvars      0x%08x", gHdr[AMX_HDR_PUBVARS]);
-	printf("tags         0x%08x", gHdr[AMX_HDR_TAGS]);
-	printf("nametable    0x%08x", gHdr[AMX_HDR_NAMETABLE]);
-	print("------------------------");
+	print("---------------------------");
+	printf("    size         %d", gHdr[AMX_HDR_SIZE]);
+	printf("    magic        %x", gHdr[AMX_HDR_MAGIC]);
+	printf("    file_version %d", gHdr[AMX_HDR_FILE_VERSION]);
+	printf("    amx_version  %d", gHdr[AMX_HDR_AMX_VERSION]);
+	printf("    flags        %d", gHdr[AMX_HDR_FLAGS]);
+	printf("    defsize      %d", gHdr[AMX_HDR_DEFSIZE]);
+	printf("    cod          0x%08x", gHdr[AMX_HDR_COD]);
+	printf("    dat          0x%08x", gHdr[AMX_HDR_DAT]);
+	printf("    hea          0x%08x", gHdr[AMX_HDR_HEA]);
+	printf("    stp          0x%08x", gHdr[AMX_HDR_STP]);
+	printf("    cip          0x%08x", gHdr[AMX_HDR_CIP]);
+	printf("    publics      0x%08x", gHdr[AMX_HDR_PUBLICS]);
+	printf("    natives      0x%08x", gHdr[AMX_HDR_NATIVES]);
+	printf("    libraries    0x%08x", gHdr[AMX_HDR_LIBRARIES]);
+	printf("    pubvars      0x%08x", gHdr[AMX_HDR_PUBVARS]);
+	printf("    tags         0x%08x", gHdr[AMX_HDR_TAGS]);
+	printf("    nametable    0x%08x", gHdr[AMX_HDR_NAMETABLE]);
+	print("---------------------------");
 	new
 		start = gHdr[AMX_HDR_PUBLICS] - gHdr[AMX_HDR_DAT],
 		end = gHdr[AMX_HDR_NATIVES] - gHdr[AMX_HDR_DAT];
 	print("Publics:");
-	print("------------------------");
+	print("----------------------------------------------------------------");
 	PrintAmxNameTable(start, end);
-	print("------------------------");
+	print("----------------------------------------------------------------");
 	start = end;
 	end = gHdr[AMX_HDR_LIBRARIES] - gHdr[AMX_HDR_DAT];
 	print("Natives:");
-	print("------------------------");
+	print("----------------------------------------------------------------");
 	PrintAmxNameTable(start, end);
-	print("------------------------");
+	print("----------------------------------------------------------------");
 	start = end;
 	end = gHdr[AMX_HDR_PUBVARS] - gHdr[AMX_HDR_DAT];
 	print("Libraries:");
-	print("------------------------");
+	print("----------------------------------------------------------------");
 	PrintAmxNameTable(start, end);
-	print("------------------------");
+	print("----------------------------------------------------------------");
 	start = end;
 	end = gHdr[AMX_HDR_TAGS] - gHdr[AMX_HDR_DAT];
 	print("Pubvars:");
-	print("------------------------");
-	PrintAmxNameTable(start, end);
-	print("------------------------");
+	print("----------------------------------------------------------------");
+	PrintAmxNameTable(start, end, .dereference = true);
+	print("----------------------------------------------------------------");
 	start = end;
 	end = gHdr[AMX_HDR_NAMETABLE] - gHdr[AMX_HDR_DAT];
 	print("Tags:");
-	print("------------------------");
-	PrintAmxNameTable(start, end);
-	print("------------------------");
+	print("----------------------------------------------------------------");
+	PrintAmxNameTable(start, end, .decode = true);
+	print("----------------------------------------------------------------");
 }
 
 /// <library>amx_assembly amx_header</library>
