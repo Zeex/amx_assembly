@@ -880,6 +880,7 @@ stock bool:IsTagIndexEmpty(tag) {
 	#endif
 	#if __PawnBuild >= 10
 		#define HasSysreqD() (bool:(__emit(zero.pri, lctrl 9, eq.c.pri 0)))
+		#define HasReloc() (bool:(__emit(zero.pri, lctrl 9, const.alt 1536, neq)))
 		#endinput
 	#endif
 #endif
@@ -891,6 +892,19 @@ stock bool:HasSysreqD() {
 	#emit zero.pri
 	#emit lctrl 9 // flags
 	#emit eq.c.pri 0
+	#emit retn
+
+	return false;
+}
+
+/// <library>amx_assembly amx_header</library>
+stock bool:HasReloc() {
+	// SA:MP doesn't have the AMX flags in register 9, open.mp does.  Thus if
+	// `pri` is 0 it wasn't set by the control register.
+	#emit zero.pri
+	#emit lctrl 9 // flags
+	#emit const.alt 1536
+	#emit neq
 	#emit retn
 
 	return false;

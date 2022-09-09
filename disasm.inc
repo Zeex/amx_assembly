@@ -207,7 +207,7 @@ stock DisasmGetNumOperands(const ctx[DisasmContext]) {
 
 /// <library>amx_assembly disasm</library>
 stock bool:DisasmNeedReloc(const ctx[DisasmContext]) {
-	return GetOpcodeInstructionRelocatable(ctx[DisasmContext_opcode]);
+	return HasReloc() && GetOpcodeInstructionRelocatable(ctx[DisasmContext_opcode]);
 }
 
 /// <library>amx_assembly disasm</library>
@@ -265,7 +265,7 @@ stock DisasmGetOperandReloc(const ctx[DisasmContext], index = 0) {
 	//   }
 	//   
 	// I think the conditional ends up nicer in this rare case.
-	if ((op == OP_CASETBL) ? (index & 1) : _:gAMXOpcodeNeedsReloc[_:op]) {
+	if (HasReloc() && ((op == OP_CASETBL) ? (index & 1) : _:gAMXOpcodeNeedsReloc[_:op])) {
 		return param - gCodBase;
 	} else {
 		return param;
