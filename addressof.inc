@@ -50,15 +50,24 @@
 // condition, which the compiler rightly complains about.  Of course, because
 // "O@A_()" always returns "false", the entire other block of code
 // is jumped over.
-#define addressof(%1) (O@A_()?(((CALL@%1),O@V_)?1:2):(O@V_))
 #define CALL@%0\32; CALL@
-
 #define gAddressOfReturnVar_ O@V_
+
+#define addressof(%1) (O@A_()?(((CALL@%1),O@V_)?1:2):(O@V_))
+
 #define AddressOfGetNextCall_ O@A_
 #define CALL@AddressOfGetNextCall_ CALL@O@A_
 #define CALL@O@A_ O@A_()
 
 #define O@A_()?(((CALL@%1<%2>),O@V_)?1:2):(O@V_) (O@A_()?(((_ADDR@$%1()<%2>),O@V_)?(F@_@:1):(F@_@:2)):(F@_@:O@V_))
+
+#define nativeidxof(%1) (O@B_()?(((CALL@%1),O@V_)?1:2):(O@V_))
+
+#define NativeIdxOfGetNextCall_ O@B_
+#define CALL@NativeIdxOfGetNextCall_ CALL@O@B_
+#define CALL@O@B_ O@B_()
+
+#define O@B_()?(((CALL@%1<%2>),O@V_)?1:2):(O@V_) (O@B_()?(((_ADDR@$%1()<%2>),O@V_)?(F@_@:1):(F@_@:2)):(F@_@:O@V_))
 
 // Enable parameter checks for `Func<xxx>` types.
 #define _ADDR@ _ADDR@i:_ADDR@t:_ADDR@f:_ADDR@v:_ADDR@s:_ADDR@a:_ADDR@x:_ADDR@z
@@ -93,6 +102,24 @@ stock bool:AddressOfGetNextCall_() {
 		if (ctx[DisasmContext_opcode] == OP_CALL) {
 			// Return the data in a global, to be repassed from the conditional.
 			gAddressOfReturnVar_ = DisasmGetOperandReloc(ctx);
+			return false;
+		}
+	}
+	// ALWAYS returns false so that the function call within "OP(&func)" will
+	// never be called thanks to the conditional.
+	return false;
+}
+
+/// <library>amx_assembly v</library>
+stock bool:NativeIdxOfGetNextCall_() {
+	// Start reading code from the point to which this function returns, looking
+	// for the next "CALL" op to signal the function call from the macro.
+	new ctx[DisasmContext];
+	DisasmInit(ctx, GetCurrentFrameReturn());
+	while (DisasmNext(ctx)) {
+		if (ctx[DisasmContext_opcode] == OP_SYSREQ_C) {
+			// Return the data in a global, to be repassed from the conditional.
+			gAddressOfReturnVar_ = DisasmGetOperand(ctx);
 			return false;
 		}
 	}
