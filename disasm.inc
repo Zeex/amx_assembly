@@ -82,7 +82,7 @@ stock DisasmInit(ctx[DisasmContext], start = 0, end = 0) {
 	GetAmxHeader(hdr);
 	
 	gCodBase = GetAmxBaseAddress() + hdr[AMX_HDR_COD];
-
+	
 	new dat = hdr[AMX_HDR_DAT];
 	new cod = hdr[AMX_HDR_COD];
 
@@ -265,7 +265,7 @@ stock DisasmGetOperandReloc(const ctx[DisasmContext], index = 0) {
 	//   }
 	//   
 	// I think the conditional ends up nicer in this rare case.
-	if (HasReloc() && ((op == OP_CASETBL) ? (index & 1) : _:gAMXOpcodeNeedsReloc[_:op])) {
+	if ((op == OP_CASETBL) ? (index & 1) : _:gAMXOpcodeNeedsReloc[_:op]) {
 		return param - gCodBase;
 	} else {
 		return param;

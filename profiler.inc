@@ -225,7 +225,7 @@ stock ProfilerInit() {
 	new defsize = hdr[AMX_HDR_DEFSIZE];
 	new num_publics = (hdr[AMX_HDR_NATIVES] - hdr[AMX_HDR_PUBLICS]) / defsize;
 
-	new amx_base = GetAmxBaseAddress();
+	new amx_base = GetAmxBaseAddress() + hdr[AMX_HDR_COD];
 
 	// Redirect all public calls to ProfileHook().
 	for (new i = 0, cur = publics; i < num_publics; cur += defsize, i++) {
@@ -233,7 +233,7 @@ stock ProfilerInit() {
 		#emit lref.s.pri cur
 		#emit stor.s.pri address
 
-		new pec_index = new_pec(i, address, amx_base + hdr[AMX_HDR_COD]);
+		new pec_index = new_pec(i, address, amx_base);
 		if (pec_index < 0) {
 			printf("profiler warning: Too many public functions (%d). Consider increasing PROF_MAX_PUBLICS.", num_publics);
 			break;
