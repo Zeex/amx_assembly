@@ -123,7 +123,7 @@ stock bool:DisasmDecodeInsn(ctx[DisasmContext]) {
 
 	if (opcode == OP_CASETBL) {
 		ip += cellbytes,
-		ip += ReadAmxMemory(ip) * 2 * cellbytes;
+		ip += ReadAmxMemory(ip) * (2 * cellbytes);
 	}
 
 	return
@@ -145,7 +145,7 @@ stock bool:DisasmDecodeInsnUnsafe(ctx[DisasmContext]) {
 	if (OP_NONE < opcode < Opcode:NUM_OPCODES) {
 		if (opcode == OP_CASETBL) {
 			ip += cellbytes,
-			ip += ReadAmxMemory(ip) * 2 * cellbytes;
+			ip += ReadAmxMemory(ip) * (2 * cellbytes);
 		}
 
 		return

@@ -255,7 +255,7 @@ static stock bool:CodeScanCheckJumpTarget(cip, deloc, &stk, &hea, jumpTargets[Co
 		if (jumpTargets[CodeScanner_jump_target][num]) {
 			if ((sip = jumpTargets[CodeScanner_jump_switch][num])) {
 				for (new count = ReadAmxMemory(sip + cellbytes) + 1; count; --count) {
-					if (ReadAmxMemory(sip + (count * cellbytes * 2)) == deloc) {
+					if (ReadAmxMemory(sip + count * (2 * cellbytes)) == deloc) {
 						return
 							--jumpTargets[CodeScanner_jump_target][num],
 							stk = jumpTargets[CodeScanner_jump_stack][num],
