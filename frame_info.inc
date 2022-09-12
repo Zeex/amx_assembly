@@ -179,7 +179,7 @@ stock GetFrameParameter(frm_addr, param, idx = -1) {
 		#emit add.c 12
 
 		#emit push.pri
-		#emit lref.s.pri 0xfffffffc
+		#emit lref.s.pri AMX_MINUS_4
 
 		#emit stack 4
 		#emit retn
@@ -193,7 +193,7 @@ stock GetFrameParameter(frm_addr, param, idx = -1) {
 		#emit add.c 12
 
 		#emit push.pri
-		#emit lref.s.alt 0xfffffffc
+		#emit lref.s.alt AMX_MINUS_4
 
 		#emit load.s.pri idx
 		#emit lidx
@@ -213,7 +213,7 @@ stock GetFrameVariable(frm_addr, param, idx = -1) {
 		#emit add
 
 		#emit push.pri
-		#emit lref.s.pri 0xfffffffc
+		#emit lref.s.pri AMX_MINUS_4
 
 		#emit stack 4
 		#emit retn
@@ -223,7 +223,7 @@ stock GetFrameVariable(frm_addr, param, idx = -1) {
 		#emit add
 
 		#emit push.pri
-		#emit lref.s.alt 0xfffffffc
+		#emit lref.s.alt AMX_MINUS_4
 
 		#emit load.s.pri idx
 		#emit lidx
@@ -244,7 +244,7 @@ stock GetFrameLocal(frm_addr, param) {
 		#emit add
 
 		#emit push.pri
-		#emit lref.s.pri 0xfffffffc
+		#emit lref.s.pri AMX_MINUS_4
 
 		#emit stack 4
 		#emit retn
@@ -252,14 +252,14 @@ stock GetFrameLocal(frm_addr, param) {
 		#emit load.s.pri param
 		#emit shl.c.pri 2
 
-		#emit const.alt 0xfffffffc
+		#emit const.alt AMX_MINUS_4
 		#emit sub.alt
 
 		#emit load.s.alt frm_addr
 		#emit add
 
 		#emit push.pri
-		#emit lref.s.pri 0xfffffffc
+		#emit lref.s.pri AMX_MINUS_4
 
 		#emit stack 4
 		#emit retn
@@ -281,7 +281,7 @@ stock SetFrameParameter(frm_addr, param, value, idx = -1) {
 
 		#emit push.pri
 		#emit load.s.pri value
-		#emit sref.s.pri 0xfffffffc
+		#emit sref.s.pri AMX_MINUS_4
 
 		#emit stack 4
 		#emit retn
@@ -295,7 +295,7 @@ stock SetFrameParameter(frm_addr, param, value, idx = -1) {
 		#emit add.c 12
 
 		#emit push.pri
-		#emit lref.s.alt 0xfffffffc
+		#emit lref.s.alt AMX_MINUS_4
 
 		#emit load.s.pri idx
 		#emit idxaddr
@@ -320,7 +320,7 @@ stock SetFrameVariable(frm_addr, param, value, idx = -1) {
 
 		#emit push.pri
 		#emit load.s.pri value
-		#emit sref.s.pri 0xfffffffc
+		#emit sref.s.pri AMX_MINUS_4
 
 		#emit stack 4
 		#emit retn
@@ -330,7 +330,7 @@ stock SetFrameVariable(frm_addr, param, value, idx = -1) {
 		#emit add
 
 		#emit push.pri
-		#emit lref.s.alt 0xfffffffc
+		#emit lref.s.alt AMX_MINUS_4
 
 		#emit load.s.pri idx
 		#emit idxaddr
@@ -356,7 +356,7 @@ stock SetFrameLocal(frm_addr, param, value) {
 
 		#emit push.pri
 		#emit load.s.pri value
-		#emit sref.s.pri 0xfffffffc
+		#emit sref.s.pri AMX_MINUS_4
 
 		#emit stack 4
 		#emit retn
@@ -364,7 +364,7 @@ stock SetFrameLocal(frm_addr, param, value) {
 		#emit load.s.pri param
 		#emit shl.c.pri 2
 
-		#emit const.alt 0xfffffffc
+		#emit const.alt AMX_MINUS_4
 		#emit sub.alt
 
 		#emit load.s.alt frm_addr
@@ -372,7 +372,7 @@ stock SetFrameLocal(frm_addr, param, value) {
 
 		#emit push.pri
 		#emit load.s.pri value
-		#emit sref.s.pri 0xfffffffc
+		#emit sref.s.pri AMX_MINUS_4
 
 		#emit stack 4
 		#emit retn
@@ -386,10 +386,10 @@ static stock GetCallerFrame() {
 	#emit lctrl 5
 
 	#emit push.pri
-	#emit lref.s.pri 0xfffffffc
+	#emit lref.s.pri AMX_MINUS_4
 
 	#emit push.pri
-	#emit lref.s.pri 0xfffffff8
+	#emit lref.s.pri AMX_MINUS_8
 
 	#emit stack 8
 	#emit retn

@@ -40,6 +40,18 @@
 
 /// <library>amx_assembly amx_memory</library>
 /// <summary>
+///   -4, for use in <c>#emit</c> which fails with <c>-</c>.
+/// </summary>
+const AMX_MINUS_4 = -4;
+
+/// <library>amx_assembly amx_memory</library>
+/// <summary>
+///   -8, for use in <c>#emit</c> which fails with <c>-</c>.
+/// </summary>
+const AMX_MINUS_8 = -8;
+
+/// <library>amx_assembly amx_memory</library>
+/// <summary>
 ///   Returns the address of a variable/array.
 /// </summary>
 stock ref(...) {
@@ -136,7 +148,7 @@ stock GetAmxHeapBase()
 	#emit neg      // -DAT
 	#emit add.c 20 // -DAT + 20
 	#emit push.pri
-	#emit lref.s.pri 0xfffffffc
+	#emit lref.s.pri AMX_MINUS_4
 	#emit stack 4
 	#emit retn
 	return 0;
