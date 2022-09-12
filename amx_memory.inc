@@ -44,18 +44,6 @@
 
 /// <library>amx_assembly amx_memory</library>
 /// <summary>
-///   -4, for use in <c>#emit</c> which fails with <c>-</c>.
-/// </summary>
-const AMX_MINUS_4 = -4;
-
-/// <library>amx_assembly amx_memory</library>
-/// <summary>
-///   -8, for use in <c>#emit</c> which fails with <c>-</c>.
-/// </summary>
-const AMX_MINUS_8 = -8;
-
-/// <library>amx_assembly amx_memory</library>
-/// <summary>
 ///   Returns the address of a variable/array.
 /// </summary>
 stock ref(...) {
@@ -72,8 +60,8 @@ stock ref(...) {
 /// </summary>
 stock deref(v) {
 	static gFake[1];
-	const cells0 = 4 * cellbytes;
 	#emit load.s.pri  v // first argument
+	const cells0 = 4 * cellbytes;
 	#emit stor.s.pri cells0 // secret argument
 	#emit retn
 	return gFake; // make compiler happy

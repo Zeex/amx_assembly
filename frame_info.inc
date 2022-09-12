@@ -353,7 +353,7 @@ stock SetFrameParameter(frm_addr, param, value, idx = -1) {
 
 		#emit push.pri
 		const cells6 = -1 * cellbytes;
-		#emit lref.s.pri cells6
+		#emit lref.s.alt cells6
 
 		#emit load.s.pri idx
 		#emit idxaddr
