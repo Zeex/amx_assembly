@@ -59,8 +59,8 @@ stock GetFramePreviousFrame(frm_addr) {
 /// <library>amx_assembly frame_info</library>
 stock GetFrameReturn(frm_addr) {
 	#emit load.s.pri frm_addr
-	const cells = 1 * cellbytes;
-	#emit add.c 4
+	const cells0 = 1 * cellbytes;
+	#emit add.c cells0
 	#emit load.i
 	#emit retn
 
@@ -78,7 +78,8 @@ stock SetFramePreviousFrame(frm_addr, addr) {
 stock SetFrameReturn(frm_addr, addr) {
 	#emit load.s.alt addr
 	#emit load.s.pri frm_addr
-	#emit add.c 4
+	const cells0 = 1 * cellbytes;
+	#emit add.c cells0
 	#emit xchg
 	#emit stor.i
 	#emit retn
@@ -88,7 +89,8 @@ stock SetFrameReturn(frm_addr, addr) {
 stock SetFrameParameterSize(frm_addr, size) {
 	#emit load.s.alt size
 	#emit load.s.pri frm_addr
-	#emit add.c 8
+	const cells0 = 2 * cellbytes;
+	#emit add.c cells0
 	#emit xchg
 	#emit stor.i
 	#emit retn
@@ -96,7 +98,7 @@ stock SetFrameParameterSize(frm_addr, size) {
 
 /// <library>amx_assembly frame_info</library>
 stock SetFrameParameterCount(frm_addr, count) {
-	SetFrameParameterSize(frm_addr, count << 2);
+	SetFrameParameterSize(frm_addr, count * cellbytes);
 }
 
 /// <library>amx_assembly frame_info</library>
@@ -106,7 +108,7 @@ stock GetFrameTotalSize(frm_addr) {
 
 /// <library>amx_assembly frame_info</library>
 stock GetFrameTotalCount(frm_addr) {
-	return GetFrameTotalSize(frm_addr) / 4;
+	return GetFrameTotalSize(frm_addr) / cellbytes;
 }
 
 /// <library>amx_assembly frame_info</library>
@@ -139,24 +141,25 @@ stock GetFrameLocalSize(frm_addr) {
 
 /// <library>amx_assembly frame_info</library>
 stock GetFrameLocalCount(frm_addr) {
-	return GetFrameLocalSize(frm_addr) / 4;
+	return GetFrameLocalSize(frm_addr) / cellbytes;
 }
 
 /// <library>amx_assembly frame_info</library>
 stock GetFrameHeaderSize(frm_addr) {
 	#pragma unused frm_addr
-	return 12;
+	return 3 * cellbytes;
 }
 
 /// <library>amx_assembly frame_info</library>
 stock GetFrameHeaderCount(frm_addr) {
-	return GetFrameHeaderSize(frm_addr) / 4;
+	return GetFrameHeaderSize(frm_addr) / cellbytes;
 }
 
 /// <library>amx_assembly frame_info</library>
 stock GetFrameParameterSize(frm_addr) {
 	#emit load.s.pri frm_addr
-	#emit add.c 8
+	const cells0 = 2 * cellbytes;
+	#emit add.c cells0
 	#emit load.i
 	#emit retn
 
@@ -165,41 +168,61 @@ stock GetFrameParameterSize(frm_addr) {
 
 /// <library>amx_assembly frame_info</library>
 stock GetFrameParameterCount(frm_addr) {
-	return GetFrameParameterSize(frm_addr) / 4;
+	return GetFrameParameterSize(frm_addr) / cellbytes;
 }
 
 /// <library>amx_assembly frame_info</library>
 stock GetFrameParameter(frm_addr, param, idx = -1) {
 	if (idx == -1) {
 		#emit load.s.pri param
-		#emit shl.c.pri 2
+		#if cellbits == 32
+			const cells0 = 2;
+		#elseif cellbits == 64
+			const cells0 = 3;
+		#else
+			#error Unsupported `cellbits`.
+		#endif
+		#emit shl.c.pri cells0
 
 		#emit load.s.alt frm_addr
 		#emit add
 
-		#emit add.c 12
+		const cells1 = 3 * cellbytes;
+		#emit add.c cells1
 
 		#emit push.pri
-		#emit lref.s.pri AMX_MINUS_4
+		const cells2 = -1 * cellbytes;
+		#emit lref.s.pri cells2
 
-		#emit stack 4
+		const cells3 = 1 * cellbytes;
+		#emit stack cells3
 		#emit retn
 	} else {
 		#emit load.s.pri param
-		#emit shl.c.pri 2
+		#if cellbits == 32
+			const cells4 = 2;
+		#elseif cellbits == 64
+			const cells4 = 3;
+		#else
+			#error Unsupported `cellbits`.
+		#endif
+		#emit shl.c.pri cells4
 
 		#emit load.s.alt frm_addr
 		#emit add
 
-		#emit add.c 12
+		const cells5 = 3 * cellbytes;
+		#emit add.c cells5
 
 		#emit push.pri
-		#emit lref.s.alt AMX_MINUS_4
+		const cells6 = -1 * cellbytes;
+		#emit lref.s.alt cells6
 
 		#emit load.s.pri idx
 		#emit lidx
 
-		#emit stack 4
+		const cells7 = 1 * cellbytes;
+		#emit stack cells7
 		#emit retn
 	}
 
