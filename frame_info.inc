@@ -58,8 +58,8 @@ stock GetFramePreviousFrame(frm_addr) {
 
 /// <library>amx_assembly frame_info</library>
 stock GetFrameReturn(frm_addr) {
-	#emit load.s.pri frm_addr
 	const cells0 = 1 * cellbytes;
+	#emit load.s.pri frm_addr
 	#emit add.c cells0
 	#emit load.i
 	#emit retn
@@ -76,9 +76,9 @@ stock SetFramePreviousFrame(frm_addr, addr) {
 
 /// <library>amx_assembly frame_info</library>
 stock SetFrameReturn(frm_addr, addr) {
+	const cells0 = 1 * cellbytes;
 	#emit load.s.alt addr
 	#emit load.s.pri frm_addr
-	const cells0 = 1 * cellbytes;
 	#emit add.c cells0
 	#emit xchg
 	#emit stor.i
@@ -87,9 +87,9 @@ stock SetFrameReturn(frm_addr, addr) {
 
 /// <library>amx_assembly frame_info</library>
 stock SetFrameParameterSize(frm_addr, size) {
+	const cells0 = 2 * cellbytes;
 	#emit load.s.alt size
 	#emit load.s.pri frm_addr
-	const cells0 = 2 * cellbytes;
 	#emit add.c cells0
 	#emit xchg
 	#emit stor.i
@@ -157,8 +157,8 @@ stock GetFrameHeaderCount(frm_addr) {
 
 /// <library>amx_assembly frame_info</library>
 stock GetFrameParameterSize(frm_addr) {
-	#emit load.s.pri frm_addr
 	const cells0 = 2 * cellbytes;
+	#emit load.s.pri frm_addr
 	#emit add.c cells0
 	#emit load.i
 	#emit retn
@@ -174,7 +174,6 @@ stock GetFrameParameterCount(frm_addr) {
 /// <library>amx_assembly frame_info</library>
 stock GetFrameParameter(frm_addr, param, idx = -1) {
 	if (idx == -1) {
-		#emit load.s.pri param
 		#if cellbits == 32
 			const cells0 = 2;
 		#elseif cellbits == 64
@@ -182,23 +181,23 @@ stock GetFrameParameter(frm_addr, param, idx = -1) {
 		#else
 			#error Unsupported `cellbits`.
 		#endif
+		const cells1 = 3 * cellbytes;
+		const cells2 = -1 * cellbytes;
+		const cells3 = 1 * cellbytes;
+		#emit load.s.pri param
 		#emit shl.c.pri cells0
 
 		#emit load.s.alt frm_addr
 		#emit add
 
-		const cells1 = 3 * cellbytes;
 		#emit add.c cells1
 
 		#emit push.pri
-		const cells2 = -1 * cellbytes;
 		#emit lref.s.pri cells2
 
-		const cells3 = 1 * cellbytes;
 		#emit stack cells3
 		#emit retn
 	} else {
-		#emit load.s.pri param
 		#if cellbits == 32
 			const cells4 = 2;
 		#elseif cellbits == 64
@@ -206,22 +205,23 @@ stock GetFrameParameter(frm_addr, param, idx = -1) {
 		#else
 			#error Unsupported `cellbits`.
 		#endif
+		const cells5 = 3 * cellbytes;
+		const cells6 = -1 * cellbytes;
+		const cells7 = 1 * cellbytes;
+		#emit load.s.pri param
 		#emit shl.c.pri cells4
 
 		#emit load.s.alt frm_addr
 		#emit add
 
-		const cells5 = 3 * cellbytes;
 		#emit add.c cells5
 
 		#emit push.pri
-		const cells6 = -1 * cellbytes;
 		#emit lref.s.alt cells6
 
 		#emit load.s.pri idx
 		#emit lidx
 
-		const cells7 = 1 * cellbytes;
 		#emit stack cells7
 		#emit retn
 	}
@@ -232,30 +232,30 @@ stock GetFrameParameter(frm_addr, param, idx = -1) {
 /// <library>amx_assembly frame_info</library>
 stock GetFrameVariable(frm_addr, param, idx = -1) {
 	if (idx == -1) {
+		const cells0 = -1 * cellbytes;
+		const cells1 = 1 * cellbytes;
 		#emit load.s.pri param
 		#emit load.s.alt frm_addr
 		#emit add
 
 		#emit push.pri
-		const cells0 = -1 * cellbytes;
 		#emit lref.s.pri cells0
 
-		const cells1 = 1 * cellbytes;
 		#emit stack cells1
 		#emit retn
 	} else {
+		const cells2 = -1 * cellbytes;
+		const cells3 = 1 * cellbytes;
 		#emit load.s.pri param
 		#emit load.s.alt frm_addr
 		#emit add
 
 		#emit push.pri
-		const cells2 = -1 * cellbytes;
 		#emit lref.s.alt cells2
 
 		#emit load.s.pri idx
 		#emit lidx
 
-		const cells3 = 1 * cellbytes;
 		#emit stack cells3
 		#emit retn
 	}
@@ -266,20 +266,19 @@ stock GetFrameVariable(frm_addr, param, idx = -1) {
 /// <library>amx_assembly frame_info</library>
 stock GetFrameLocal(frm_addr, param) {
 	if (param < 0) {
+		const cells0 = -1 * cellbytes;
+		const cells1 = 1 * cellbytes;
 		// probably in correct format for negative offsets
 		#emit load.s.pri param
 		#emit load.s.alt frm_addr
 		#emit add
 
 		#emit push.pri
-		const cells0 = -1 * cellbytes;
 		#emit lref.s.pri cells0
 
-		const cells1 = 1 * cellbytes;
 		#emit stack cells1
 		#emit retn
 	} else {
-		#emit load.s.pri param
 		#if cellbits == 32
 			const cells2 = 2;
 		#elseif cellbits == 64
@@ -287,19 +286,20 @@ stock GetFrameLocal(frm_addr, param) {
 		#else
 			#error Unsupported `cellbits`.
 		#endif
+		const cells3 = -1 * cellbytes;
+		const cells4 = -1 * cellbytes;
+		const cells5 = 1 * cellbytes;
+		#emit load.s.pri param
 		#emit shl.c.pri cells2
 
-		const cells3 = -1 * cellbytes;
 		#emit add.c cells3
 
 		#emit load.s.alt frm_addr
 		#emit add
 
 		#emit push.pri
-		const cells4 = -1 * cellbytes;
 		#emit lref.s.pri cells4
 
-		const cells5 = 1 * cellbytes;
 		#emit stack cells5
 		#emit retn
 	}
@@ -310,7 +310,6 @@ stock GetFrameLocal(frm_addr, param) {
 /// <library>amx_assembly frame_info</library>
 stock SetFrameParameter(frm_addr, param, value, idx = -1) {
 	if (idx == -1) {
-		#emit load.s.pri param
 		#if cellbits == 32
 			const cells0 = 2;
 		#elseif cellbits == 64
@@ -318,24 +317,24 @@ stock SetFrameParameter(frm_addr, param, value, idx = -1) {
 		#else
 			#error Unsupported `cellbits`.
 		#endif
+		const cells1 = 3 * cellbytes;
+		const cells2 = -1 * cellbytes;
+		const cells3 = 1 * cellbytes;
+		#emit load.s.pri param
 		#emit shl.c.pri cells0
 
 		#emit load.s.alt frm_addr
 		#emit add
 
-		const cells1 = 3 * cellbytes;
 		#emit add.c cells1
 
 		#emit push.pri
 		#emit load.s.pri value
-		const cells2 = -1 * cellbytes;
 		#emit sref.s.pri cells2
 
-		const cells3 = 1 * cellbytes;
 		#emit stack cells3
 		#emit retn
 	} else {
-		#emit load.s.pri param
 		#if cellbits == 32
 			const cells4 = 2;
 		#elseif cellbits == 64
@@ -343,16 +342,18 @@ stock SetFrameParameter(frm_addr, param, value, idx = -1) {
 		#else
 			#error Unsupported `cellbits`.
 		#endif
+		const cells5 = 3 * cellbytes;
+		const cells6 = -1 * cellbytes;
+		const cells7 = 1 * cellbytes;
+		#emit load.s.pri param
 		#emit shl.c.pri cells4
 
 		#emit load.s.alt frm_addr
 		#emit add
 
-		const cells5 = 3 * cellbytes;
 		#emit add.c cells5
 
 		#emit push.pri
-		const cells6 = -1 * cellbytes;
 		#emit lref.s.alt cells6
 
 		#emit load.s.pri idx
@@ -362,7 +363,6 @@ stock SetFrameParameter(frm_addr, param, value, idx = -1) {
 		#emit xchg
 		#emit stor.i
 
-		const cells7 = 1 * cellbytes;
 		#emit stack cells7
 		#emit retn
 	}
@@ -373,25 +373,26 @@ stock SetFrameParameter(frm_addr, param, value, idx = -1) {
 /// <library>amx_assembly frame_info</library>
 stock SetFrameVariable(frm_addr, param, value, idx = -1) {
 	if (idx == -1) {
+		const cells0 = -1 * cellbytes;
+		const cells1 = 1 * cellbytes;
 		#emit load.s.pri param
 		#emit load.s.alt frm_addr
 		#emit add
 
 		#emit push.pri
 		#emit load.s.pri value
-		const cells0 = -1 * cellbytes;
 		#emit sref.s.pri cells0
 
-		const cells1 = 1 * cellbytes;
 		#emit stack cells1
 		#emit retn
 	} else {
+		const cells2 = -1 * cellbytes;
+		const cells3 = 1 * cellbytes;
 		#emit load.s.pri param
 		#emit load.s.alt frm_addr
 		#emit add
 
 		#emit push.pri
-		const cells2 = -1 * cellbytes;
 		#emit lref.s.alt cells2
 
 		#emit load.s.pri idx
@@ -401,7 +402,6 @@ stock SetFrameVariable(frm_addr, param, value, idx = -1) {
 		#emit xchg
 		#emit stor.i
 
-		const cells3 = 1 * cellbytes;
 		#emit stack cells3
 		#emit retn
 	}
@@ -412,6 +412,8 @@ stock SetFrameVariable(frm_addr, param, value, idx = -1) {
 /// <library>amx_assembly frame_info</library>
 stock SetFrameLocal(frm_addr, param, value) {
 	if (param < 0) {
+		const cells0 = -1 * cellbytes;
+		const cells1 = 1 * cellbytes;
 		// probably in correct format for negative offsets
 		#emit load.s.pri param
 		#emit load.s.alt frm_addr
@@ -419,14 +421,11 @@ stock SetFrameLocal(frm_addr, param, value) {
 
 		#emit push.pri
 		#emit load.s.pri value
-		const cells0 = -1 * cellbytes;
 		#emit sref.s.pri cells0
 
-		const cells1 = 1 * cellbytes;
 		#emit stack cells1
 		#emit retn
 	} else {
-		#emit load.s.pri param
 		#if cellbits == 32
 			const cells2 = 2;
 		#elseif cellbits == 64
@@ -434,9 +433,12 @@ stock SetFrameLocal(frm_addr, param, value) {
 		#else
 			#error Unsupported `cellbits`.
 		#endif
+		const cells3 = -1 * cellbytes;
+		const cells4 = -1 * cellbytes;
+		const cells5 = 1 * cellbytes;
+		#emit load.s.pri param
 		#emit shl.c.pri cells2
 
-		const cells3 = -1 * cellbytes;
 		#emit add.c cells3
 
 		#emit load.s.alt frm_addr
@@ -444,10 +446,8 @@ stock SetFrameLocal(frm_addr, param, value) {
 
 		#emit push.pri
 		#emit load.s.pri value
-		const cells4 = -1 * cellbytes;
 		#emit sref.s.pri cells4
 
-		const cells5 = 1 * cellbytes;
 		#emit stack cells5
 		#emit retn
 	}
@@ -457,17 +457,17 @@ stock SetFrameLocal(frm_addr, param, value) {
 
 /// <library>amx_assembly frame_info</library>
 static stock GetCallerFrame() {
+	const cells0 = -1 * cellbytes;
+	const cells1 = -2 * cellbytes;
+	const cells2 = 2 * cellbytes;
 	#emit lctrl 5
 
 	#emit push.pri
-	const cells0 = -1 * cellbytes;
 	#emit lref.s.pri cells0
 
 	#emit push.pri
-	const cells1 = -2 * cellbytes;
 	#emit lref.s.pri cells1
 
-	const cells2 = 2 * cellbytes;
 	#emit stack cells2
 	#emit retn
 

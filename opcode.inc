@@ -214,10 +214,11 @@ const NUM_OPCODES = _:OP_LAST_;
 
 /// <library>amx_assembly opcode</library>
 static stock Opcode:ReadOpcodeNearThis(offset = 0) {
+	const cells0 = 1 * cellbytes;
+	const cells1 = 1 * cellbytes;
 	new ret_addr = 0;
 
 	// Get return address + COD - DAT + offset.
-	const cells0 = 1 * cellbytes;
 	#emit load.s.alt cells0
 	#emit lctrl 0
 	#emit add
@@ -231,7 +232,6 @@ static stock Opcode:ReadOpcodeNearThis(offset = 0) {
 	#emit stor.s.pri ret_addr
 	#emit lref.s.pri ret_addr
 
-	const cells1 = 1 * cellbytes;
 	#emit stack cells1
 	#emit retn
 

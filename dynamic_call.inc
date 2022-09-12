@@ -92,6 +92,7 @@ stock bool:Pop(&arg = 0) {
 
 /// <library>amx_assembly dynamic_call</library>
 stock Call(address, bool:auto_pop = true) {
+	const cells0 = 9 * cellbytes;
 	new arg = 0;
 	new index = g_nargs;
 	new bytes = g_nargs * cellbytes;
@@ -106,7 +107,6 @@ stock Call(address, bool:auto_pop = true) {
 	#emit push.pri
 
 	#emit lctrl 6
-	const cells0 = 9 * cellbytes;
 	#emit add.c cells0
 	#emit lctrl 8
 	#emit push.pri
@@ -124,6 +124,7 @@ stock Call(address, bool:auto_pop = true) {
 
 /// <library>amx_assembly dynamic_call</library>
 stock CallN(address, args_to_push, bool:auto_pop = true) {
+	const cells0 = 9 * cellbytes;
 	// Like "Call", but doesn't pass all parameters.
 	new arg = 0;
 	new index = g_nargs;
@@ -144,7 +145,6 @@ stock CallN(address, args_to_push, bool:auto_pop = true) {
 	#emit push.pri
 
 	#emit lctrl 6
-	const cells0 = 9 * cellbytes;
 	#emit add.c cells0
 	#emit lctrl 8
 	#emit push.pri
@@ -162,11 +162,15 @@ stock CallN(address, args_to_push, bool:auto_pop = true) {
 
 /// <library>amx_assembly dynamic_call</library>
 stock CallFunction(address, {Float,_}:...) {
+	const cells0 = 1 * cellbytes;
+	const cells1 = 3 * cellbytes;
+	const cells2 = 4 * cellbytes;
+	const cells3 = 9 * cellbytes;
+	const cells4 = 4 * cellbytes;
 	new arg_bytes = 0, arg_begin = 0, arg_end = 0;
 
 	// Get number of bytes passed.
 	#emit load.s.pri 0x8
-	const cells0 = 1 * cellbytes;
 	#emit const.alt cells0
 	#emit sub
 	#emit stor.s.pri arg_bytes
@@ -174,14 +178,12 @@ stock CallFunction(address, {Float,_}:...) {
 
 	// Last argument is at FRM + 0x0C + arg_bytes (which is in ALT).
 	#emit lctrl 5
-	const cells1 = 3 * cellbytes;
 	#emit add.c cells1
 	#emit add
 	#emit stor.s.pri arg_end
 
 	// Frist argument is at FRM + 0x10.
 	#emit lctrl 5
-	const cells2 = 4 * cellbytes;
 	#emit add.c cells2
 	#emit stor.s.pri arg_begin
 
@@ -196,7 +198,6 @@ stock CallFunction(address, {Float,_}:...) {
 	// Call the function
 	#emit push.s arg_bytes
 	#emit lctrl 6
-	const cells3 = 9 * cellbytes;
 	#emit add.c cells3
 	#emit lctrl 8
 	#emit push.pri
@@ -205,7 +206,6 @@ stock CallFunction(address, {Float,_}:...) {
 	// Arguments are popped by callee.
 
 	// Pop locals and return.
-	const cells4 = 4 * cellbytes;
 	#emit stack cells4
 	#emit retn
 
@@ -214,6 +214,9 @@ stock CallFunction(address, {Float,_}:...) {
 
 /// <library>amx_assembly dynamic_call</library>
 stock SysreqC(index, bool:auto_pop = true) {
+	const cells0 = 23 * cellbytes;
+	const cells1 = 1 * cellbytes;
+	const cells2 = 1 * cellbytes;
 	new arg = 0;
 	new i = g_nargs;
 	new bytes = g_nargs * cellbytes;
@@ -241,7 +244,6 @@ stock SysreqC(index, bool:auto_pop = true) {
 	#emit move.alt
 	#emit lctrl 1  // DAT
 	#emit sub.alt
-	const cells0 = 23 * cellbytes;
 	#emit add.c cells0
 	#emit stor.s.pri tmp
 
@@ -251,7 +253,6 @@ stock SysreqC(index, bool:auto_pop = true) {
 
 	// tmp += 4
 	#emit load.s.pri tmp
-	const cells1 = 1 * cellbytes;
 	#emit add.c cells1
 	#emit stor.s.pri tmp
 
@@ -269,7 +270,6 @@ stock SysreqC(index, bool:auto_pop = true) {
 	#emit lctrl 4
 	#emit load.s.alt bytes
 	#emit add
-	const cells2 = 1 * cellbytes;
 	#emit add.c cells2
 	#emit sctrl 4
 
@@ -282,6 +282,9 @@ stock SysreqC(index, bool:auto_pop = true) {
 
 /// <library>amx_assembly dynamic_call</library>
 stock SysreqD(address, bool:auto_pop = true) {
+	const cells0 = 23 * cellbytes;
+	const cells1 = 1 * cellbytes;
+	const cells2 = 1 * cellbytes;
 	new arg = 0;
 	new i = g_nargs;
 	new bytes = g_nargs * cellbytes;
@@ -309,7 +312,6 @@ stock SysreqD(address, bool:auto_pop = true) {
 	#emit move.alt
 	#emit lctrl 1 // DAT
 	#emit sub.alt
-	const cells0 = 23 * cellbytes;
 	#emit add.c cells0
 	#emit stor.s.pri tmp
 
@@ -319,7 +321,6 @@ stock SysreqD(address, bool:auto_pop = true) {
 
 	// tmp += 4
 	#emit load.s.pri tmp
-	const cells1 = 1 * cellbytes;
 	#emit add.c cells1
 	#emit stor.s.pri tmp
 
@@ -336,7 +337,6 @@ stock SysreqD(address, bool:auto_pop = true) {
 	#emit lctrl 4
 	#emit load.s.alt bytes
 	#emit add
-	const cells2 = 1 * cellbytes;
 	#emit add.c cells2
 	#emit sctrl 4
 
@@ -349,6 +349,9 @@ stock SysreqD(address, bool:auto_pop = true) {
 
 /// <library>amx_assembly dynamic_call</library>
 stock SysreqCN(index, args_to_push, bool:auto_pop = true) {
+	const cells0 = 23 * cellbytes;
+	const cells1 = 1 * cellbytes;
+	const cells2 = 1 * cellbytes;
 	new arg = 0;
 	new i = g_nargs;
 	new bytes = args_to_push * cellbytes;
@@ -380,7 +383,6 @@ stock SysreqCN(index, args_to_push, bool:auto_pop = true) {
 	#emit move.alt
 	#emit lctrl 1  // DAT
 	#emit sub.alt
-	const cells0 = 23 * cellbytes;
 	#emit add.c cells0
 	#emit stor.s.pri tmp
 
@@ -390,7 +392,6 @@ stock SysreqCN(index, args_to_push, bool:auto_pop = true) {
 
 	// tmp += 4
 	#emit load.s.pri tmp
-	const cells1 = 1 * cellbytes;
 	#emit add.c cells1
 	#emit stor.s.pri tmp
 
@@ -407,7 +408,6 @@ stock SysreqCN(index, args_to_push, bool:auto_pop = true) {
 	#emit lctrl 4
 	#emit load.s.alt bytes
 	#emit add
-	const cells2 = 1 * cellbytes;
 	#emit add.c cells2
 	#emit sctrl 4
 
@@ -420,6 +420,9 @@ stock SysreqCN(index, args_to_push, bool:auto_pop = true) {
 
 /// <library>amx_assembly dynamic_call</library>
 stock SysreqDN(address, args_to_push, bool:auto_pop = true) {
+	const cells0 = 23 * cellbytes;
+	const cells1 = 1 * cellbytes;
+	const cells2 = 1 * cellbytes;
 	new arg = 0;
 	new i = g_nargs;
 	new bytes = args_to_push * cellbytes;
@@ -452,7 +455,6 @@ stock SysreqDN(address, args_to_push, bool:auto_pop = true) {
 	#emit move.alt
 	#emit lctrl 1 // DAT
 	#emit sub.alt
-	const cells0 = 23 * cellbytes;
 	#emit add.c cells0
 	#emit stor.s.pri tmp
 
@@ -462,7 +464,6 @@ stock SysreqDN(address, args_to_push, bool:auto_pop = true) {
 
 	// tmp += 4
 	#emit load.s.pri tmp
-	const cells1 = 1 * cellbytes;
 	#emit add.c cells1
 	#emit stor.s.pri tmp
 
@@ -479,7 +480,6 @@ stock SysreqDN(address, args_to_push, bool:auto_pop = true) {
 	#emit lctrl 4
 	#emit load.s.alt bytes
 	#emit add
-	const cells2 = 1 * cellbytes;
 	#emit add.c cells2
 	#emit sctrl 4
 
@@ -492,6 +492,12 @@ stock SysreqDN(address, args_to_push, bool:auto_pop = true) {
 
 /// <library>amx_assembly dynamic_call</library>
 stock CallNative(index, {Float,_}:...) {
+	const cells0 = -1 * cellbytes;
+	const cells1 = 3 * cellbytes;
+	const cells2 = 4 * cellbytes;
+	const cells3 = 23 * cellbytes;
+	const cells4 = 1 * cellbytes;
+	const cells5 = 1 * cellbytes;
 	new arg_bytes = 0, arg_begin = 0, arg_end = 0;
 	new Opcode:sysreq_c = RelocateOpcode(OP_SYSREQ_C);
 
@@ -501,21 +507,18 @@ stock CallNative(index, {Float,_}:...) {
 
 	// Get number of bytes passed.
 	#emit load.s.pri 0x8
-	const cells0 = -1 * cellbytes;
 	#emit add.c cells0
 	#emit stor.s.pri arg_bytes
 	#emit move.alt
 
 	// Last argument is at FRM + 0x0C + arg_bytes (which is in ALT).
 	#emit lctrl 5
-	const cells1 = 3 * cellbytes;
 	#emit add.c cells1
 	#emit add
 	#emit stor.s.pri arg_end
 
 	// Frist argument is at FRM + 0x10.
 	#emit lctrl 5
-	const cells2 = 4 * cellbytes;
 	#emit add.c cells2
 	#emit stor.s.pri arg_begin
 
@@ -540,7 +543,6 @@ stock CallNative(index, {Float,_}:...) {
 	#emit move.alt
 	#emit lctrl 1 // DAT
 	#emit sub.alt
-	const cells3 = 23 * cellbytes;
 	#emit add.c cells3
 	#emit stor.s.pri tmp
 
@@ -550,7 +552,6 @@ stock CallNative(index, {Float,_}:...) {
 
 	// tmp += 4
 	#emit load.s.pri tmp
-	const cells4 = 1 * cellbytes;
 	#emit add.c cells4
 	#emit stor.s.pri tmp
 
@@ -568,7 +569,6 @@ stock CallNative(index, {Float,_}:...) {
 	#emit lctrl 4
 	#emit load.s.alt arg_bytes
 	#emit add
-	const cells5 = 1 * cellbytes;
 	#emit add.c cells5
 	#emit sctrl 4
 
@@ -580,6 +580,12 @@ stock CallNative(index, {Float,_}:...) {
 ///   Unlike CallNative(), this function calls natives directly via SYSREQ.D.
 /// </remarks>
 stock CallNativeByAddress(address, {Float,_}:...) {
+	const cells0 = -1 * cellbytes;
+	const cells1 = 3 * cellbytes;
+	const cells2 = 4 * cellbytes;
+	const cells3 = 23 * cellbytes;
+	const cells4 = 1 * cellbytes;
+	const cells5 = 1 * cellbytes;
 	new arg_bytes = 0, arg_begin = 0, arg_end = 0;
 	new Opcode:sysreq_d = RelocateOpcode(OP_SYSREQ_D);
 
@@ -589,21 +595,18 @@ stock CallNativeByAddress(address, {Float,_}:...) {
 
 	// Get number of bytes passed.
 	#emit load.s.pri 0x8
-	const cells0 = -1 * cellbytes;
 	#emit add.c cells0
 	#emit stor.s.pri arg_bytes
 	#emit move.alt
 
 	// Last argument is at FRM + 0x0C + arg_bytes (which is in ALT).
 	#emit lctrl 5
-	const cells1 = 3 * cellbytes;
 	#emit add.c cells1
 	#emit add
 	#emit stor.s.pri arg_end
 
 	// Frist argument is at FRM + 0x10.
 	#emit lctrl 5
-	const cells2 = 4 * cellbytes;
 	#emit add.c cells2
 	#emit stor.s.pri arg_begin
 
@@ -628,7 +631,6 @@ stock CallNativeByAddress(address, {Float,_}:...) {
 	#emit move.alt
 	#emit lctrl 1 // DAT
 	#emit sub.alt
-	const cells3 = 23 * cellbytes;
 	#emit add.c cells3
 	#emit stor.s.pri tmp
 
@@ -638,7 +640,6 @@ stock CallNativeByAddress(address, {Float,_}:...) {
 
 	// tmp += 4
 	#emit load.s.pri tmp
-	const cells4 = 1 * cellbytes;
 	#emit add.c cells4
 	#emit stor.s.pri tmp
 
@@ -656,7 +657,6 @@ stock CallNativeByAddress(address, {Float,_}:...) {
 	#emit lctrl 4
 	#emit load.s.alt arg_bytes
 	#emit add
-	const cells5 = 1 * cellbytes;
 	#emit add.c cells5
 	#emit sctrl 4
 

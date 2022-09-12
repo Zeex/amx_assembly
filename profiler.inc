@@ -156,6 +156,7 @@ static stock exit_public() {
 
 /// <library>amx_assembly profiler</library>
 static stock enter_public(index, address) {
+	const cells0 = 5 * cellbytes;
 	//{
 	//	new public_name[64];
 	//	GetPublicNameByIndex(index, public_name);
@@ -172,7 +173,6 @@ static stock enter_public(index, address) {
 	}
 
 	// Pop locals + arguments + numbytes + return address + frm.
-	const cells0 = 5 * cellbytes;
 	#emit stack cells0
 
 	++g_call_depth;

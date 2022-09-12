@@ -808,14 +808,14 @@ static stock CodeScanCall(const cs[CodeScanMatcher], matcher__, csState[CodeScan
 	new
 		func = cs[CodeScanMatcher_func];
 	if (cs[CodeScanMatcher_flags] & SCANNER_HAS_USER_DATA) {
+		const cells0 = 2 * cellbytes;
+		const cells1 = 9 * cellbytes;
 		new
 			param = cs[CodeScanMatcher_user_data];
 		#emit PUSH.S     param
 		#emit PUSH.S     csState
-		const cells0 = 2 * cellbytes;
 		#emit PUSH.C     cells0
 		#emit LCTRL      6
-		const cells1 = 9 * cellbytes;
 		#emit ADD.C      cells1
 		#emit LCTRL      8
 		#emit PUSH.pri
@@ -823,11 +823,11 @@ static stock CodeScanCall(const cs[CodeScanMatcher], matcher__, csState[CodeScan
 		#emit SCTRL      6
 		#emit STOR.S.pri func
 	} else {
-		#emit PUSH.S     csState
 		const cells2 = 1 * cellbytes;
+		const cells3 = 9 * cellbytes;
+		#emit PUSH.S     csState
 		#emit PUSH.C     cells2
 		#emit LCTRL      6
-		const cells3 = 9 * cellbytes;
 		#emit ADD.C      cells3
 		#emit LCTRL      8
 		#emit PUSH.pri

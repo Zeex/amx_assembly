@@ -62,9 +62,9 @@ static stock RelToAbs(address) {
 ///   Returns the absolute address of a variable/array.
 /// </summary>
 stock refabs(...) {
+	const cells0 = 3 * cellbytes;
 	assert(numargs() == 1);
 	new address = 0;
-	const cells0 = 3 * cellbytes;
 	#emit load.s.pri cells0
 	#emit stor.s.pri address
 	return RelToAbs(address);
@@ -72,6 +72,7 @@ stock refabs(...) {
 
 /// <library>amx_assembly phys_memory</library>
 stock ReadPhysMemory(address, dest[], num = sizeof(dest)) {
+	const cells0 = 3 * cellbytes;
 	new rel_addr = AbsToRel(address);
 
 	// Current destination cell address.
@@ -88,7 +89,6 @@ stock ReadPhysMemory(address, dest[], num = sizeof(dest)) {
 		#emit sref.s.pri cur_dest
 	}
 
-	const cells0 = 3 * cellbytes;
 	#emit stack cells0
 	#emit retn
 
@@ -97,6 +97,7 @@ stock ReadPhysMemory(address, dest[], num = sizeof(dest)) {
 
 /// <library>amx_assembly phys_memory</library>
 stock WritePhysMemory(address, src[], num = sizeof(src)) {
+	const cells0 = 3 * cellbytes;
 	new rel_addr = AbsToRel(address);
 
 	// Current destination cell address..
@@ -113,7 +114,6 @@ stock WritePhysMemory(address, src[], num = sizeof(src)) {
 		#emit sref.s.pri cur_addr
 	}
 
-	const cells0 = 3 * cellbytes;
 	#emit stack cells0
 	#emit retn
 
@@ -122,9 +122,9 @@ stock WritePhysMemory(address, src[], num = sizeof(src)) {
 
 /// <library>amx_assembly phys_memory</library>
 stock ReadPhysMemoryCell(address) {
+	const cells0 = 1 * cellbytes;
 	new rel_addr = AbsToRel(address);
 	#emit lref.s.pri rel_addr
-	const cells0 = 1 * cellbytes;
 	#emit stack cells0
 	#emit retn
 	return 0; // make compiler happy
@@ -132,10 +132,10 @@ stock ReadPhysMemoryCell(address) {
 
 /// <library>amx_assembly phys_memory</library>
 stock WritePhysMemoryCell(address, what) {
+	const cells0 = 1 * cellbytes;
 	new rel_addr = AbsToRel(address);
 	#emit load.s.pri what
 	#emit sref.s.pri rel_addr
-	const cells0 = 1 * cellbytes;
 	#emit stack cells0
 	#emit retn
 	return 0; // make compiler happy
