@@ -194,18 +194,18 @@ stock const gAMXOpcodeNames[][OPCODE_MAX_INSN_NAME] = {
 
 // Doesn't work inline.
 #if OPCODE_HAS_O2
-	#define OPCODE_O2_BASE_SIZES , 12, 12, 12, 12, 16, 16, 16, 16, 20, 20, 20, 20, 24, 24, 24, 24, 12, 12, 12, 12, 12
+	#define OPCODE_O2_BASE_SIZES , 3 * cellbytes, 3 * cellbytes, 3 * cellbytes, 3 * cellbytes, 4 * cellbytes, 4 * cellbytes, 4 * cellbytes, 4 * cellbytes, 5 * cellbytes, 5 * cellbytes, 5 * cellbytes, 5 * cellbytes, 6 * cellbytes, 6 * cellbytes, 6 * cellbytes, 6 * cellbytes, 3 * cellbytes, 3 * cellbytes, 3 * cellbytes, 3 * cellbytes, 3 * cellbytes
 #else
 	#define OPCODE_O2_BASE_SIZES
 #endif
 
 /// <library>amx_assembly opcode</library>
 stock const gAMXOpcodeBaseSizes[] = {
-	4, 8, 8, 8, 8, 8, 8, 8, 8, 4, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 4, 8, 4, 8, 4, 8, 8, 8, 8,
-	8, 4, 4, 4, 4, 4, 8, 8, 8, 8, 4, 4, 8, 8, 4, 4, 4, 8, 4, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8,
-	8, 4, 4, 4, 8, 8, 8, 8, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 8, 8, 4, 4, 8, 8, 4, 4, 4,
-	4, 4, 4, 4, 4, 4, 4, 4, 4, 8, 8, 4, 4, 8, 8, 4, 4, 4, 8, 8, 4, 8, 8, 8, 8, 8, 4, 8, 8, 8, 8, 8,
-	4, 8, 8, 4, 4, 8, 4, 8, 8, 4
+	1 * cellbytes, 2 * cellbytes, 2 * cellbytes, 2 * cellbytes, 2 * cellbytes, 2 * cellbytes, 2 * cellbytes, 2 * cellbytes, 2 * cellbytes, 1 * cellbytes, 2 * cellbytes, 2 * cellbytes, 2 * cellbytes, 2 * cellbytes, 2 * cellbytes, 2 * cellbytes, 2 * cellbytes, 2 * cellbytes, 2 * cellbytes, 2 * cellbytes, 2 * cellbytes, 2 * cellbytes, 2 * cellbytes, 1 * cellbytes, 2 * cellbytes, 1 * cellbytes, 2 * cellbytes, 1 * cellbytes, 2 * cellbytes, 2 * cellbytes, 2 * cellbytes, 2 * cellbytes,
+	2 * cellbytes, 1 * cellbytes, 1 * cellbytes, 1 * cellbytes, 1 * cellbytes, 1 * cellbytes, 2 * cellbytes, 2 * cellbytes, 2 * cellbytes, 2 * cellbytes, 1 * cellbytes, 1 * cellbytes, 2 * cellbytes, 2 * cellbytes, 1 * cellbytes, 1 * cellbytes, 1 * cellbytes, 2 * cellbytes, 1 * cellbytes, 2 * cellbytes, 2 * cellbytes, 2 * cellbytes, 2 * cellbytes, 2 * cellbytes, 2 * cellbytes, 2 * cellbytes, 2 * cellbytes, 2 * cellbytes, 2 * cellbytes, 2 * cellbytes, 2 * cellbytes, 2 * cellbytes,
+	2 * cellbytes, 1 * cellbytes, 1 * cellbytes, 1 * cellbytes, 2 * cellbytes, 2 * cellbytes, 2 * cellbytes, 2 * cellbytes, 1 * cellbytes, 1 * cellbytes, 1 * cellbytes, 1 * cellbytes, 1 * cellbytes, 1 * cellbytes, 1 * cellbytes, 1 * cellbytes, 1 * cellbytes, 1 * cellbytes, 1 * cellbytes, 1 * cellbytes, 1 * cellbytes, 1 * cellbytes, 1 * cellbytes, 2 * cellbytes, 2 * cellbytes, 1 * cellbytes, 1 * cellbytes, 2 * cellbytes, 2 * cellbytes, 1 * cellbytes, 1 * cellbytes, 1 * cellbytes,
+	1 * cellbytes, 1 * cellbytes, 1 * cellbytes, 1 * cellbytes, 1 * cellbytes, 1 * cellbytes, 1 * cellbytes, 1 * cellbytes, 1 * cellbytes, 2 * cellbytes, 2 * cellbytes, 1 * cellbytes, 1 * cellbytes, 2 * cellbytes, 2 * cellbytes, 1 * cellbytes, 1 * cellbytes, 1 * cellbytes, 2 * cellbytes, 2 * cellbytes, 1 * cellbytes, 2 * cellbytes, 2 * cellbytes, 2 * cellbytes, 2 * cellbytes, 2 * cellbytes, 1 * cellbytes, 2 * cellbytes, 2 * cellbytes, 2 * cellbytes, 2 * cellbytes, 2 * cellbytes,
+	1 * cellbytes, 2 * cellbytes, 2 * cellbytes, 1 * cellbytes, 1 * cellbytes, 2 * cellbytes, 1 * cellbytes, 2 * cellbytes, 2 * cellbytes, 1 * cellbytes
 	OPCODE_O2_BASE_SIZES
 };
 
@@ -217,7 +217,8 @@ static stock Opcode:ReadOpcodeNearThis(offset = 0) {
 	new ret_addr = 0;
 
 	// Get return address + COD - DAT + offset.
-	#emit load.s.alt 4
+	const cells0 = 1 * cellbytes;
+	#emit load.s.alt cells0
 	#emit lctrl 0
 	#emit add
 	#emit move.alt
@@ -230,7 +231,8 @@ static stock Opcode:ReadOpcodeNearThis(offset = 0) {
 	#emit stor.s.pri ret_addr
 	#emit lref.s.pri ret_addr
 
-	#emit stack 4
+	const cells1 = 1 * cellbytes;
+	#emit stack cells1
 	#emit retn
 
 	return OP_NONE; // make compiler happy
@@ -238,7 +240,7 @@ static stock Opcode:ReadOpcodeNearThis(offset = 0) {
 
 /// <library>amx_assembly opcode</library>
 static stock bool:HaveToRelocateOpcodes() {
-	return ReadOpcodeNearThis(-8) != OP_CALL;
+	return ReadOpcodeNearThis(-2 * cellbytes) != OP_CALL;
 }
 
 /// <library>amx_assembly opcode</library>
@@ -259,487 +261,487 @@ stock Opcode:RelocateOpcodeNow(Opcode:opcode) {
 	}
 	switch (opcode) {
 		case OP_LOAD_PRI: {
-			return ReadOpcodeNearThis(4);
+			return ReadOpcodeNearThis(cellbytes);
 			#emit load.pri 0
 		}
 		case OP_LOAD_ALT: {
-			return ReadOpcodeNearThis(4);
+			return ReadOpcodeNearThis(cellbytes);
 			#emit load.alt 0
 		}
 		case OP_LOAD_S_PRI: {
-			return ReadOpcodeNearThis(4);
+			return ReadOpcodeNearThis(cellbytes);
 			#emit load.s.pri 0
 		}
 		case OP_LOAD_S_ALT: {
-			return ReadOpcodeNearThis(4);
+			return ReadOpcodeNearThis(cellbytes);
 			#emit load.s.alt 0
 		}
 		case OP_LREF_PRI: {
-			return ReadOpcodeNearThis(4);
+			return ReadOpcodeNearThis(cellbytes);
 			#emit lref.pri 0
 		}
 		case OP_LREF_ALT: {
-			return ReadOpcodeNearThis(4);
+			return ReadOpcodeNearThis(cellbytes);
 			#emit lref.alt 0
 		}
 		case OP_LREF_S_PRI: {
-			return ReadOpcodeNearThis(4);
+			return ReadOpcodeNearThis(cellbytes);
 			#emit lref.s.pri 0
 		}
 		case OP_LREF_S_ALT: {
-			return ReadOpcodeNearThis(4);
+			return ReadOpcodeNearThis(cellbytes);
 			#emit lref.s.alt 0
 		}
 		case OP_LOAD_I: {
-			return ReadOpcodeNearThis(4);
+			return ReadOpcodeNearThis(cellbytes);
 			#emit load.i
 		}
 		case OP_LODB_I: {
-			return ReadOpcodeNearThis(4);
+			return ReadOpcodeNearThis(cellbytes);
 			#emit lodb.i 1
 		}
 		case OP_CONST_PRI: {
-			return ReadOpcodeNearThis(4);
+			return ReadOpcodeNearThis(cellbytes);
 			#emit const.pri 0
 		}
 		case OP_CONST_ALT: {
-			return ReadOpcodeNearThis(4);
+			return ReadOpcodeNearThis(cellbytes);
 			#emit const.alt 0
 		}
 		case OP_ADDR_PRI: {
-			return ReadOpcodeNearThis(4);
+			return ReadOpcodeNearThis(cellbytes);
 			#emit addr.pri 0
 		}
 		case OP_ADDR_ALT: {
-			return ReadOpcodeNearThis(4);
+			return ReadOpcodeNearThis(cellbytes);
 			#emit addr.alt 0
 		}
 		case OP_STOR_PRI: {
-			return ReadOpcodeNearThis(4);
+			return ReadOpcodeNearThis(cellbytes);
 			#emit stor.pri 0
 		}
 		case OP_STOR_ALT: {
-			return ReadOpcodeNearThis(4);
+			return ReadOpcodeNearThis(cellbytes);
 			#emit stor.alt 0
 		}
 		case OP_STOR_S_PRI: {
-			return ReadOpcodeNearThis(4);
+			return ReadOpcodeNearThis(cellbytes);
 			#emit stor.s.pri 0
 		}
 		case OP_STOR_S_ALT: {
-			return ReadOpcodeNearThis(4);
+			return ReadOpcodeNearThis(cellbytes);
 			#emit stor.s.alt 0
 		}
 		case OP_SREF_PRI: {
-			return ReadOpcodeNearThis(4);
+			return ReadOpcodeNearThis(cellbytes);
 			#emit sref.pri 0
 		}
 		case OP_SREF_ALT: {
-			return ReadOpcodeNearThis(4);
+			return ReadOpcodeNearThis(cellbytes);
 			#emit sref.alt 0
 		}
 		case OP_SREF_S_PRI: {
-			return ReadOpcodeNearThis(4);
+			return ReadOpcodeNearThis(cellbytes);
 			#emit sref.s.pri 0
 		}
 		case OP_SREF_S_ALT: {
-			return ReadOpcodeNearThis(4);
+			return ReadOpcodeNearThis(cellbytes);
 			#emit sref.s.alt 0
 		}
 		case OP_STOR_I: {
-			return ReadOpcodeNearThis(4);
+			return ReadOpcodeNearThis(cellbytes);
 			#emit stor.i
 		}
 		case OP_STRB_I: {
-			return ReadOpcodeNearThis(4);
+			return ReadOpcodeNearThis(cellbytes);
 			#emit strb.i 1
 		}
 		case OP_LIDX: {
-			return ReadOpcodeNearThis(4);
+			return ReadOpcodeNearThis(cellbytes);
 			#emit lidx
 		}
 		case OP_LIDX_B: {
-			return ReadOpcodeNearThis(4);
+			return ReadOpcodeNearThis(cellbytes);
 			#emit lidx.b 0
 		}
 		case OP_IDXADDR: {
-			return ReadOpcodeNearThis(4);
+			return ReadOpcodeNearThis(cellbytes);
 			#emit idxaddr
 		}
 		case OP_IDXADDR_B: {
-			return ReadOpcodeNearThis(4);
+			return ReadOpcodeNearThis(cellbytes);
 			#emit idxaddr.b 0
 		}
 		case OP_ALIGN_PRI: {
-			return ReadOpcodeNearThis(4);
+			return ReadOpcodeNearThis(cellbytes);
 			#emit align.pri 0
 		}
 		case OP_ALIGN_ALT: {
-			return ReadOpcodeNearThis(4);
+			return ReadOpcodeNearThis(cellbytes);
 			#emit align.alt 0
 		}
 		case OP_LCTRL: {
-			return ReadOpcodeNearThis(4);
+			return ReadOpcodeNearThis(cellbytes);
 			#emit lctrl 0
 		}
 		case OP_SCTRL: {
-			return ReadOpcodeNearThis(4);
+			return ReadOpcodeNearThis(cellbytes);
 			#emit sctrl 0
 		}
 		case OP_MOVE_PRI: {
-			return ReadOpcodeNearThis(4);
+			return ReadOpcodeNearThis(cellbytes);
 			#emit move.pri
 		}
 		case OP_MOVE_ALT: {
-			return ReadOpcodeNearThis(4);
+			return ReadOpcodeNearThis(cellbytes);
 			#emit move.alt
 		}
 		case OP_XCHG: {
-			return ReadOpcodeNearThis(4);
+			return ReadOpcodeNearThis(cellbytes);
 			#emit xchg
 		}
 		case OP_PUSH_PRI: {
-			return ReadOpcodeNearThis(4);
+			return ReadOpcodeNearThis(cellbytes);
 			#emit push.pri
 		}
 		case OP_PUSH_ALT: {
-			return ReadOpcodeNearThis(4);
+			return ReadOpcodeNearThis(cellbytes);
 			#emit push.alt
 		}
 		case OP_PUSH_C: {
-			return ReadOpcodeNearThis(4);
+			return ReadOpcodeNearThis(cellbytes);
 			#emit push.c 0
 		}
 		case OP_PUSH: {
-			return ReadOpcodeNearThis(4);
+			return ReadOpcodeNearThis(cellbytes);
 			#emit push 0
 		}
 		case OP_PUSH_S: {
-			return ReadOpcodeNearThis(4);
+			return ReadOpcodeNearThis(cellbytes);
 			#emit push.s 0
 		}
 		case OP_POP_PRI: {
-			return ReadOpcodeNearThis(4);
+			return ReadOpcodeNearThis(cellbytes);
 			#emit pop.pri
 		}
 		case OP_POP_ALT: {
-			return ReadOpcodeNearThis(4);
+			return ReadOpcodeNearThis(cellbytes);
 			#emit pop.alt
 		}
 		case OP_STACK: {
-			return ReadOpcodeNearThis(4);
+			return ReadOpcodeNearThis(cellbytes);
 			#emit stack 0
 		}
 		case OP_HEAP: {
-			return ReadOpcodeNearThis(4);
+			return ReadOpcodeNearThis(cellbytes);
 			#emit heap 0
 		}
 		case OP_PROC: {
-			return ReadOpcodeNearThis(4);
+			return ReadOpcodeNearThis(cellbytes);
 			#emit proc
 		}
 		case OP_RET: {
-			return ReadOpcodeNearThis(4);
+			return ReadOpcodeNearThis(cellbytes);
 			#emit ret
 		}
 		case OP_RETN: {
-			return ReadOpcodeNearThis(4);
+			return ReadOpcodeNearThis(cellbytes);
 			#emit retn
 		}
 		case OP_CALL: {
 			// We can't do just "#emit call 0" - this will crash compiler for some reason (bug?).
-			return ReadOpcodeNearThis(-8);
+			return ReadOpcodeNearThis(-2 * cellbytes);
 		}
 		case OP_JUMP: {
-			return ReadOpcodeNearThis(4);
+			return ReadOpcodeNearThis(cellbytes);
 			#emit jump 0
 		}
 		case OP_JZER: {
-			return ReadOpcodeNearThis(4);
+			return ReadOpcodeNearThis(cellbytes);
 			#emit jzer 0
 		}
 		case OP_JNZ: {
-			return ReadOpcodeNearThis(4);
+			return ReadOpcodeNearThis(cellbytes);
 			#emit jnz 0
 		}
 		case OP_JEQ: {
-			return ReadOpcodeNearThis(4);
+			return ReadOpcodeNearThis(cellbytes);
 			#emit jeq 0
 		}
 		case OP_JNEQ: {
-			return ReadOpcodeNearThis(4);
+			return ReadOpcodeNearThis(cellbytes);
 			#emit jneq 0
 		}
 		case OP_JLESS: {
-			return ReadOpcodeNearThis(4);
+			return ReadOpcodeNearThis(cellbytes);
 			#emit jless 0
 		}
 		case OP_JLEQ: {
-			return ReadOpcodeNearThis(4);
+			return ReadOpcodeNearThis(cellbytes);
 			#emit jleq 0
 		}
 		case OP_JGRTR: {
-			return ReadOpcodeNearThis(4);
+			return ReadOpcodeNearThis(cellbytes);
 			#emit jgrtr 0
 		}
 		case OP_JGEQ: {
-			return ReadOpcodeNearThis(4);
+			return ReadOpcodeNearThis(cellbytes);
 			#emit jgeq 0
 		}
 		case OP_JSLESS: {
-			return ReadOpcodeNearThis(4);
+			return ReadOpcodeNearThis(cellbytes);
 			#emit jsless 0
 		}
 		case OP_JSLEQ: {
-			return ReadOpcodeNearThis(4);
+			return ReadOpcodeNearThis(cellbytes);
 			#emit jsleq 0
 		}
 		case OP_JSGRTR: {
-			return ReadOpcodeNearThis(4);
+			return ReadOpcodeNearThis(cellbytes);
 			#emit jsgrtr 0
 		}
 		case OP_JSGEQ: {
-			return ReadOpcodeNearThis(4);
+			return ReadOpcodeNearThis(cellbytes);
 			#emit jsgeq 0
 		}
 		case OP_SHL: {
-			return ReadOpcodeNearThis(4);
+			return ReadOpcodeNearThis(cellbytes);
 			#emit shl
 		}
 		case OP_SHR: {
-			return ReadOpcodeNearThis(4);
+			return ReadOpcodeNearThis(cellbytes);
 			#emit shr
 		}
 		case OP_SSHR: {
-			return ReadOpcodeNearThis(4);
+			return ReadOpcodeNearThis(cellbytes);
 			#emit sshr
 		}
 		case OP_SHL_C_PRI: {
-			return ReadOpcodeNearThis(4);
+			return ReadOpcodeNearThis(cellbytes);
 			#emit shl.c.pri 0
 		}
 		case OP_SHL_C_ALT: {
-			return ReadOpcodeNearThis(4);
+			return ReadOpcodeNearThis(cellbytes);
 			#emit shl.c.alt 0
 		}
 		case OP_SHR_C_PRI: {
-			return ReadOpcodeNearThis(4);
+			return ReadOpcodeNearThis(cellbytes);
 			#emit shr.c.pri 0
 		}
 		case OP_SHR_C_ALT: {
-			return ReadOpcodeNearThis(4);
+			return ReadOpcodeNearThis(cellbytes);
 			#emit shr.c.alt 0
 		}
 		case OP_SMUL: {
-			return ReadOpcodeNearThis(4);
+			return ReadOpcodeNearThis(cellbytes);
 			#emit smul
 		}
 		case OP_SDIV: {
-			return ReadOpcodeNearThis(4);
+			return ReadOpcodeNearThis(cellbytes);
 			#emit sdiv
 		}
 		case OP_SDIV_ALT: {
-			return ReadOpcodeNearThis(4);
+			return ReadOpcodeNearThis(cellbytes);
 			#emit sdiv.alt
 		}
 		case OP_UMUL: {
-			return ReadOpcodeNearThis(4);
+			return ReadOpcodeNearThis(cellbytes);
 			#emit umul
 		}
 		case OP_UDIV: {
-			return ReadOpcodeNearThis(4);
+			return ReadOpcodeNearThis(cellbytes);
 			#emit udiv
 		}
 		case OP_UDIV_ALT: {
-			return ReadOpcodeNearThis(4);
+			return ReadOpcodeNearThis(cellbytes);
 			#emit udiv.alt
 		}
 		case OP_ADD: {
-			return ReadOpcodeNearThis(4);
+			return ReadOpcodeNearThis(cellbytes);
 			#emit add
 		}
 		case OP_SUB: {
-			return ReadOpcodeNearThis(4);
+			return ReadOpcodeNearThis(cellbytes);
 			#emit sub
 		}
 		case OP_SUB_ALT: {
-			return ReadOpcodeNearThis(4);
+			return ReadOpcodeNearThis(cellbytes);
 			#emit sub.alt
 		}
 		case OP_AND: {
-			return ReadOpcodeNearThis(4);
+			return ReadOpcodeNearThis(cellbytes);
 			#emit and
 		}
 		case OP_OR: {
-			return ReadOpcodeNearThis(4);
+			return ReadOpcodeNearThis(cellbytes);
 			#emit or
 		}
 		case OP_XOR: {
-			return ReadOpcodeNearThis(4);
+			return ReadOpcodeNearThis(cellbytes);
 			#emit xor
 		}
 		case OP_NOT: {
-			return ReadOpcodeNearThis(4);
+			return ReadOpcodeNearThis(cellbytes);
 			#emit not
 		}
 		case OP_NEG: {
-			return ReadOpcodeNearThis(4);
+			return ReadOpcodeNearThis(cellbytes);
 			#emit neg
 		}
 		case OP_INVERT: {
-			return ReadOpcodeNearThis(4);
+			return ReadOpcodeNearThis(cellbytes);
 			#emit invert
 		}
 		case OP_ADD_C: {
-			return ReadOpcodeNearThis(4);
+			return ReadOpcodeNearThis(cellbytes);
 			#emit add.c 0
 		}
 		case OP_SMUL_C: {
-			return ReadOpcodeNearThis(4);
+			return ReadOpcodeNearThis(cellbytes);
 			#emit smul.c 0
 		}
 		case OP_ZERO_PRI: {
-			return ReadOpcodeNearThis(4);
+			return ReadOpcodeNearThis(cellbytes);
 			#emit zero.pri
 		}
 		case OP_ZERO_ALT: {
-			return ReadOpcodeNearThis(4);
+			return ReadOpcodeNearThis(cellbytes);
 			#emit zero.alt
 		}
 		case OP_ZERO: {
-			return ReadOpcodeNearThis(4);
+			return ReadOpcodeNearThis(cellbytes);
 			#emit zero 0
 		}
 		case OP_ZERO_S: {
-			return ReadOpcodeNearThis(4);
+			return ReadOpcodeNearThis(cellbytes);
 			#emit zero.s 0
 		}
 		case OP_SIGN_PRI: {
-			return ReadOpcodeNearThis(4);
+			return ReadOpcodeNearThis(cellbytes);
 			#emit sign.pri
 		}
 		case OP_SIGN_ALT: {
-			return ReadOpcodeNearThis(4);
+			return ReadOpcodeNearThis(cellbytes);
 			#emit sign.alt
 		}
 		case OP_EQ: {
-			return ReadOpcodeNearThis(4);
+			return ReadOpcodeNearThis(cellbytes);
 			#emit eq
 		}
 		case OP_NEQ: {
-			return ReadOpcodeNearThis(4);
+			return ReadOpcodeNearThis(cellbytes);
 			#emit neq
 		}
 		case OP_LESS: {
-			return ReadOpcodeNearThis(4);
+			return ReadOpcodeNearThis(cellbytes);
 			#emit less
 		}
 		case OP_LEQ: {
-			return ReadOpcodeNearThis(4);
+			return ReadOpcodeNearThis(cellbytes);
 			#emit leq
 		}
 		case OP_GRTR: {
-			return ReadOpcodeNearThis(4);
+			return ReadOpcodeNearThis(cellbytes);
 			#emit grtr
 		}
 		case OP_GEQ: {
-			return ReadOpcodeNearThis(4);
+			return ReadOpcodeNearThis(cellbytes);
 			#emit geq
 		}
 		case OP_SLESS: {
-			return ReadOpcodeNearThis(4);
+			return ReadOpcodeNearThis(cellbytes);
 			#emit sless
 		}
 		case OP_SLEQ: {
-			return ReadOpcodeNearThis(4);
+			return ReadOpcodeNearThis(cellbytes);
 			#emit sleq
 		}
 		case OP_SGRTR: {
-			return ReadOpcodeNearThis(4);
+			return ReadOpcodeNearThis(cellbytes);
 			#emit sgrtr
 		}
 		case OP_SGEQ: {
-			return ReadOpcodeNearThis(4);
+			return ReadOpcodeNearThis(cellbytes);
 			#emit sgeq
 		}
 		case OP_EQ_C_PRI: {
-			return ReadOpcodeNearThis(4);
+			return ReadOpcodeNearThis(cellbytes);
 			#emit eq.c.pri 0
 		}
 		case OP_EQ_C_ALT: {
-			return ReadOpcodeNearThis(4);
+			return ReadOpcodeNearThis(cellbytes);
 			#emit eq.c.alt 0
 		}
 		case OP_INC_PRI: {
-			return ReadOpcodeNearThis(4);
+			return ReadOpcodeNearThis(cellbytes);
 			#emit inc.pri
 		}
 		case OP_INC_ALT: {
-			return ReadOpcodeNearThis(4);
+			return ReadOpcodeNearThis(cellbytes);
 			#emit inc.alt
 		}
 		case OP_INC: {
-			return ReadOpcodeNearThis(4);
+			return ReadOpcodeNearThis(cellbytes);
 			#emit inc 0
 		}
 		case OP_INC_S: {
-			return ReadOpcodeNearThis(4);
+			return ReadOpcodeNearThis(cellbytes);
 			#emit inc.s 0
 		}
 		case OP_INC_I: {
-			return ReadOpcodeNearThis(4);
+			return ReadOpcodeNearThis(cellbytes);
 			#emit inc.i
 		}
 		case OP_DEC_PRI: {
-			return ReadOpcodeNearThis(4);
+			return ReadOpcodeNearThis(cellbytes);
 			#emit dec.pri
 		}
 		case OP_DEC_ALT: {
-			return ReadOpcodeNearThis(4);
+			return ReadOpcodeNearThis(cellbytes);
 			#emit dec.alt
 		}
 		case OP_DEC: {
-			return ReadOpcodeNearThis(4);
+			return ReadOpcodeNearThis(cellbytes);
 			#emit dec 0
 		}
 		case OP_DEC_S: {
-			return ReadOpcodeNearThis(4);
+			return ReadOpcodeNearThis(cellbytes);
 			#emit dec.s 0
 		}
 		case OP_DEC_I: {
-			return ReadOpcodeNearThis(4);
+			return ReadOpcodeNearThis(cellbytes);
 			#emit dec.i
 		}
 		case OP_MOVS: {
-			return ReadOpcodeNearThis(4);
+			return ReadOpcodeNearThis(cellbytes);
 			#emit movs 0
 		}
 		case OP_CMPS: {
-			return ReadOpcodeNearThis(4);
+			return ReadOpcodeNearThis(cellbytes);
 			#emit cmps 0
 		}
 		case OP_FILL: {
-			return ReadOpcodeNearThis(4);
+			return ReadOpcodeNearThis(cellbytes);
 			#emit fill 0
 		}
 		case OP_HALT: {
-			return ReadOpcodeNearThis(4);
+			return ReadOpcodeNearThis(cellbytes);
 			#emit halt 0
 		}
 		case OP_BOUNDS: {
-			return ReadOpcodeNearThis(4);
+			return ReadOpcodeNearThis(cellbytes);
 			#emit bounds 0
 		}
 		case OP_SYSREQ_C: {
-			return ReadOpcodeNearThis(4);
+			return ReadOpcodeNearThis(cellbytes);
 			#emit sysreq.c 0
 		}
 		case OP_SWITCH: {
 			static T = 1;
 			#if debug > 0
-				if (T) return ReadOpcodeNearThis(12);
+				if (T) return ReadOpcodeNearThis(3 * cellbytes);
 			#else
-				if (T) return ReadOpcodeNearThis(8);
+				if (T) return ReadOpcodeNearThis(2 * cellbytes);
 			#endif
 			#if ((__Pawn & 0x0F) >= 0x0A) || ((__Pawn & 0xF0) >= 0xA0)
 				// Disable `switch control expression is constant`.
@@ -755,22 +757,22 @@ stock Opcode:RelocateOpcodeNow(Opcode:opcode) {
 		}
 		case OP_CASETBL: {
 			new x = 0;
-			switch (x) { case 0: return ReadOpcodeNearThis(20); }
+			switch (x) { case 0: return ReadOpcodeNearThis(5 * cellbytes); }
 		}
 		case OP_SWAP_PRI: {
-			return ReadOpcodeNearThis(4);
+			return ReadOpcodeNearThis(cellbytes);
 			#emit swap.pri
 		}
 		case OP_SWAP_ALT: {
-			return ReadOpcodeNearThis(4);
+			return ReadOpcodeNearThis(cellbytes);
 			#emit swap.alt
 		}
 		case OP_PUSH_ADR: {
-			return ReadOpcodeNearThis(4);
+			return ReadOpcodeNearThis(cellbytes);
 			#emit push.adr 0
 		}
 		case OP_NOP: {
-			return ReadOpcodeNearThis(4);
+			return ReadOpcodeNearThis(cellbytes);
 			#emit nop
 		}
 		case OP_SYSREQ_D: {
@@ -794,7 +796,7 @@ stock Opcode:RelocateOpcodeNow(Opcode:opcode) {
 			}
 		}
 		case OP_BREAK: {
-			return ReadOpcodeNearThis(4);
+			return ReadOpcodeNearThis(cellbytes);
 			#emit break
 		}
 #if OPCODE_HAS_O2
@@ -894,87 +896,87 @@ stock Opcode:RelocateMacroOpcodeNow(Opcode:opcode)
 {
 	switch (opcode) {
 		case OP_PUSH2_C: {
-			return ReadOpcodeNearThis(4);
+			return ReadOpcodeNearThis(cellbytes);
 			#emit push2.c 0 0
 		}
 		case OP_PUSH2: {
-			return ReadOpcodeNearThis(4);
+			return ReadOpcodeNearThis(cellbytes);
 			#emit push2 0 0
 		}
 		case OP_PUSH2_S: {
-			return ReadOpcodeNearThis(4);
+			return ReadOpcodeNearThis(cellbytes);
 			#emit push2.s 0 0
 		}
 		case OP_PUSH2_ADR: {
-			return ReadOpcodeNearThis(4);
+			return ReadOpcodeNearThis(cellbytes);
 			#emit push2.adr 0 0
 		}
 		case OP_PUSH3_C: {
-			return ReadOpcodeNearThis(4);
+			return ReadOpcodeNearThis(cellbytes);
 			#emit push3.c 0 0 0
 		}
 		case OP_PUSH3: {
-			return ReadOpcodeNearThis(4);
+			return ReadOpcodeNearThis(cellbytes);
 			#emit push3 0 0 0
 		}
 		case OP_PUSH3_S: {
-			return ReadOpcodeNearThis(4);
+			return ReadOpcodeNearThis(cellbytes);
 			#emit push3.s 0 0 0
 		}
 		case OP_PUSH3_ADR: {
-			return ReadOpcodeNearThis(4);
+			return ReadOpcodeNearThis(cellbytes);
 			#emit push3.adr 0 0 0
 		}
 		case OP_PUSH4_C: {
-			return ReadOpcodeNearThis(4);
+			return ReadOpcodeNearThis(cellbytes);
 			#emit push4.c 0 0 0 0
 		}
 		case OP_PUSH4: {
-			return ReadOpcodeNearThis(4);
+			return ReadOpcodeNearThis(cellbytes);
 			#emit push4 0 0 0 0
 		}
 		case OP_PUSH4_S: {
-			return ReadOpcodeNearThis(4);
+			return ReadOpcodeNearThis(cellbytes);
 			#emit push4.s 0 0 0 0
 		}
 		case OP_PUSH4_ADR: {
-			return ReadOpcodeNearThis(4);
+			return ReadOpcodeNearThis(cellbytes);
 			#emit push4.adr 0 0 0 0
 		}
 		case OP_PUSH5_C: {
-			return ReadOpcodeNearThis(4);
+			return ReadOpcodeNearThis(cellbytes);
 			#emit push5.c 0 0 0 0 0
 		}
 		case OP_PUSH5: {
-			return ReadOpcodeNearThis(4);
+			return ReadOpcodeNearThis(cellbytes);
 			#emit push5 0 0 0 0 0
 		}
 		case OP_PUSH5_S: {
-			return ReadOpcodeNearThis(4);
+			return ReadOpcodeNearThis(cellbytes);
 			#emit push5.s 0 0 0 0 0
 		}
 		case OP_PUSH5_ADR: {
-			return ReadOpcodeNearThis(4);
+			return ReadOpcodeNearThis(cellbytes);
 			#emit push5.adr 0 0 0 0 0
 		}
 		case OP_LOAD_BOTH: {
-			return ReadOpcodeNearThis(4);
+			return ReadOpcodeNearThis(cellbytes);
 			#emit load.both 0 0
 		}
 		case OP_LOAD_S_BOTH: {
-			return ReadOpcodeNearThis(4);
+			return ReadOpcodeNearThis(cellbytes);
 			#emit load.s.both 0 0
 		}
 		case OP_CONST: {
-			return ReadOpcodeNearThis(4);
+			return ReadOpcodeNearThis(cellbytes);
 			#emit const 0 0
 		}
 		case OP_CONST_S: {
-			return ReadOpcodeNearThis(4);
+			return ReadOpcodeNearThis(cellbytes);
 			#emit const.s 0 0
 		}
 		case OP_SYSREQ_N: {
-			return ReadOpcodeNearThis(4);
+			return ReadOpcodeNearThis(cellbytes);
 			#emit sysreq.n 0 0
 		}
 	}

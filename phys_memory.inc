@@ -64,7 +64,8 @@ static stock RelToAbs(address) {
 stock refabs(...) {
 	assert(numargs() == 1);
 	new address = 0;
-	#emit load.s.pri 12
+	const cells0 = 3 * cellbytes;
+	#emit load.s.pri cells0
 	#emit stor.s.pri address
 	return RelToAbs(address);
 }
@@ -82,12 +83,13 @@ stock ReadPhysMemory(address, dest[], num = sizeof(dest)) {
 	new cur_addr = rel_addr;
 
 	// Read num cells to dest.
-	for (new i = 0; i < num; i++, cur_addr += 4, cur_dest += 4) {
+	for (new i = 0; i < num; i++, cur_addr += cellbytes, cur_dest += cellbytes) {
 		#emit lref.s.pri cur_addr
 		#emit sref.s.pri cur_dest
 	}
 
-	#emit stack 12
+	const cells0 = 3 * cellbytes;
+	#emit stack cells0
 	#emit retn
 
 	return 0; // make compiler happy
@@ -106,12 +108,13 @@ stock WritePhysMemory(address, src[], num = sizeof(src)) {
 	new cur_addr = rel_addr;
 
 	// Write num cells from src.
-	for (new i = 0; i < num; i++, cur_addr += 4, cur_src += 4) {
+	for (new i = 0; i < num; i++, cur_addr += cellbytes, cur_src += cellbytes) {
 		#emit lref.s.pri cur_src
 		#emit sref.s.pri cur_addr
 	}
 
-	#emit stack 12
+	const cells0 = 3 * cellbytes;
+	#emit stack cells0
 	#emit retn
 
 	return 0; // make compiler happy
@@ -121,7 +124,8 @@ stock WritePhysMemory(address, src[], num = sizeof(src)) {
 stock ReadPhysMemoryCell(address) {
 	new rel_addr = AbsToRel(address);
 	#emit lref.s.pri rel_addr
-	#emit stack 4
+	const cells0 = 1 * cellbytes;
+	#emit stack cells0
 	#emit retn
 	return 0; // make compiler happy
 }
@@ -131,7 +135,8 @@ stock WritePhysMemoryCell(address, what) {
 	new rel_addr = AbsToRel(address);
 	#emit load.s.pri what
 	#emit sref.s.pri rel_addr
-	#emit stack 4
+	const cells0 = 1 * cellbytes;
+	#emit stack cells0
 	#emit retn
 	return 0; // make compiler happy
 }

@@ -86,13 +86,13 @@ stock DumpStack()
 	print("------------------------");
 
 	// Skip locals + FRM + RETN address + paramcount.
-	stk += 20;
+	stk += 5 * cellbytes;
 
 	// Don't print above the top of the stack.
 	new i = stp;
 	printf("[0x%08x]: TOP", i);
-	i -= 4;
-	for ( ; i >= stk; i -= 4) {
+	i -= cellbytes;
+	for ( ; i >= stk; i -= cellbytes) {
 		printf("[0x%08x]: 0x%08x", i, ReadAmxMemory(i));
 	}
 

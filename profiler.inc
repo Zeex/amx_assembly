@@ -172,7 +172,8 @@ static stock enter_public(index, address) {
 	}
 
 	// Pop locals + arguments + numbytes + return address + frm.
-	#emit stack 20
+	const cells0 = 5 * cellbytes;
+	#emit stack cells0
 
 	++g_call_depth;
 
@@ -201,7 +202,7 @@ static stock new_pec(index, address, code_start) {
 		pec[pec_push_index] = index;
 
 		pec[pec_push_c2] = RelocateOpcode(OP_PUSH_C);
-		pec[pec_push_8] = 8;
+		pec[pec_push_8] = 2 * cellbytes;
 
 		new enter_proc = 0;
 		#emit const.pri enter_public

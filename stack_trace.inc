@@ -46,7 +46,7 @@
 
 /// <library>amx_assembly stack_trace</library>
 stock GetFunctionFromReturnAddress(ret_addr) {
-	new addr = ret_addr - 4;
+	new addr = ret_addr - cellbytes;
 
 	#emit load.s.alt addr
 	#emit lctrl 0

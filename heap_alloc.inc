@@ -57,7 +57,7 @@ stock HeapAllocBytes(nbytes) {
 ///   Same as HeapAllocBytes() but operates on cells.
 /// </summary>
 stock HeapAllocCells(ncells) {
-	return HeapAllocBytes(ncells * 4);
+	return HeapAllocBytes(ncells * cellbytes);
 }
 
 /// <library>amx_assembly heap_alloc</library>

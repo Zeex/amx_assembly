@@ -237,9 +237,11 @@ stock GetFrameVariable(frm_addr, param, idx = -1) {
 		#emit add
 
 		#emit push.pri
-		#emit lref.s.pri AMX_MINUS_4
+		const cells0 = -1 * cellbytes;
+		#emit lref.s.pri cells0
 
-		#emit stack 4
+		const cells1 = 1 * cellbytes;
+		#emit stack cells1
 		#emit retn
 	} else {
 		#emit load.s.pri param
@@ -247,12 +249,14 @@ stock GetFrameVariable(frm_addr, param, idx = -1) {
 		#emit add
 
 		#emit push.pri
-		#emit lref.s.alt AMX_MINUS_4
+		const cells2 = -1 * cellbytes;
+		#emit lref.s.alt cells2
 
 		#emit load.s.pri idx
 		#emit lidx
 
-		#emit stack 4
+		const cells3 = 1 * cellbytes;
+		#emit stack cells3
 		#emit retn
 	}
 
@@ -268,24 +272,35 @@ stock GetFrameLocal(frm_addr, param) {
 		#emit add
 
 		#emit push.pri
-		#emit lref.s.pri AMX_MINUS_4
+		const cells0 = -1 * cellbytes;
+		#emit lref.s.pri cells0
 
-		#emit stack 4
+		const cells1 = 1 * cellbytes;
+		#emit stack cells1
 		#emit retn
 	} else {
 		#emit load.s.pri param
-		#emit shl.c.pri 2
+		#if cellbits == 32
+			const cells2 = 2;
+		#elseif cellbits == 64
+			const cells2 = 3;
+		#else
+			#error Unsupported `cellbits`.
+		#endif
+		#emit shl.c.pri cells2
 
-		#emit const.alt AMX_MINUS_4
-		#emit sub.alt
+		const cells3 = -1 * cellbytes;
+		#emit add.c cells3
 
 		#emit load.s.alt frm_addr
 		#emit add
 
 		#emit push.pri
-		#emit lref.s.pri AMX_MINUS_4
+		const cells4 = -1 * cellbytes;
+		#emit lref.s.pri cells4
 
-		#emit stack 4
+		const cells5 = 1 * cellbytes;
+		#emit stack cells5
 		#emit retn
 	}
 
@@ -296,30 +311,49 @@ stock GetFrameLocal(frm_addr, param) {
 stock SetFrameParameter(frm_addr, param, value, idx = -1) {
 	if (idx == -1) {
 		#emit load.s.pri param
-		#emit shl.c.pri 2
+		#if cellbits == 32
+			const cells0 = 2;
+		#elseif cellbits == 64
+			const cells0 = 3;
+		#else
+			#error Unsupported `cellbits`.
+		#endif
+		#emit shl.c.pri cells0
 
 		#emit load.s.alt frm_addr
 		#emit add
 
-		#emit add.c 12
+		const cells1 = 3 * cellbytes;
+		#emit add.c cells1
 
 		#emit push.pri
 		#emit load.s.pri value
-		#emit sref.s.pri AMX_MINUS_4
+		const cells2 = -1 * cellbytes;
+		#emit sref.s.pri cells2
 
-		#emit stack 4
+		const cells3 = 1 * cellbytes;
+		#emit stack cells3
 		#emit retn
 	} else {
 		#emit load.s.pri param
-		#emit shl.c.pri 2
+		#if cellbits == 32
+			const cells4 = 2;
+		#elseif cellbits == 64
+			const cells4 = 3;
+		#else
+			#error Unsupported `cellbits`.
+		#endif
+		#emit shl.c.pri cells4
 
 		#emit load.s.alt frm_addr
 		#emit add
 
-		#emit add.c 12
+		const cells5 = 3 * cellbytes;
+		#emit add.c cells5
 
 		#emit push.pri
-		#emit lref.s.alt AMX_MINUS_4
+		const cells6 = -1 * cellbytes;
+		#emit lref.s.pri cells6
 
 		#emit load.s.pri idx
 		#emit idxaddr
@@ -328,7 +362,8 @@ stock SetFrameParameter(frm_addr, param, value, idx = -1) {
 		#emit xchg
 		#emit stor.i
 
-		#emit stack 4
+		const cells7 = 1 * cellbytes;
+		#emit stack cells7
 		#emit retn
 	}
 
@@ -344,9 +379,11 @@ stock SetFrameVariable(frm_addr, param, value, idx = -1) {
 
 		#emit push.pri
 		#emit load.s.pri value
-		#emit sref.s.pri AMX_MINUS_4
+		const cells0 = -1 * cellbytes;
+		#emit sref.s.pri cells0
 
-		#emit stack 4
+		const cells1 = 1 * cellbytes;
+		#emit stack cells1
 		#emit retn
 	} else {
 		#emit load.s.pri param
@@ -354,7 +391,8 @@ stock SetFrameVariable(frm_addr, param, value, idx = -1) {
 		#emit add
 
 		#emit push.pri
-		#emit lref.s.alt AMX_MINUS_4
+		const cells2 = -1 * cellbytes;
+		#emit lref.s.alt cells2
 
 		#emit load.s.pri idx
 		#emit idxaddr
@@ -363,7 +401,8 @@ stock SetFrameVariable(frm_addr, param, value, idx = -1) {
 		#emit xchg
 		#emit stor.i
 
-		#emit stack 4
+		const cells3 = 1 * cellbytes;
+		#emit stack cells3
 		#emit retn
 	}
 
@@ -380,25 +419,36 @@ stock SetFrameLocal(frm_addr, param, value) {
 
 		#emit push.pri
 		#emit load.s.pri value
-		#emit sref.s.pri AMX_MINUS_4
+		const cells0 = -1 * cellbytes;
+		#emit sref.s.pri cells0
 
-		#emit stack 4
+		const cells1 = 1 * cellbytes;
+		#emit stack cells1
 		#emit retn
 	} else {
 		#emit load.s.pri param
-		#emit shl.c.pri 2
+		#if cellbits == 32
+			const cells2 = 2;
+		#elseif cellbits == 64
+			const cells2 = 3;
+		#else
+			#error Unsupported `cellbits`.
+		#endif
+		#emit shl.c.pri cells2
 
-		#emit const.alt AMX_MINUS_4
-		#emit sub.alt
+		const cells3 = -1 * cellbytes;
+		#emit add.c cells3
 
 		#emit load.s.alt frm_addr
 		#emit add
 
 		#emit push.pri
 		#emit load.s.pri value
-		#emit sref.s.pri AMX_MINUS_4
+		const cells4 = -1 * cellbytes;
+		#emit sref.s.pri cells4
 
-		#emit stack 4
+		const cells5 = 1 * cellbytes;
+		#emit stack cells5
 		#emit retn
 	}
 
@@ -410,12 +460,15 @@ static stock GetCallerFrame() {
 	#emit lctrl 5
 
 	#emit push.pri
-	#emit lref.s.pri AMX_MINUS_4
+	const cells0 = -1 * cellbytes;
+	#emit lref.s.pri cells0
 
 	#emit push.pri
-	#emit lref.s.pri AMX_MINUS_8
+	const cells1 = -2 * cellbytes;
+	#emit lref.s.pri cells1
 
-	#emit stack 8
+	const cells2 = 2 * cellbytes;
+	#emit stack cells2
 	#emit retn
 
 	return 0; // make compiler happy
@@ -536,30 +589,30 @@ stock GetFrameFunction(frm_addr) {
 		return highest_found;
 	} else {
 		// called from inside the script
-		new ret_addr = (GetFrameReturn(frm_addr) - 8) + (amxhdr[AMX_HDR_COD] - amxhdr[AMX_HDR_DAT]);
+		new ret_addr = (GetFrameReturn(frm_addr) - cellbytes * 2) + (amxhdr[AMX_HDR_COD] - amxhdr[AMX_HDR_DAT]);
 
 		new Opcode:opcode = UnrelocateOpcode(Opcode:ReadAmxMemory(ret_addr));
 
 		if (opcode == OP_CALL) {
 			// standard function call, get the call address
-			return ReadAmxMemory(ret_addr + 4) - amxhdr[AMX_HDR_COD] - GetAmxBaseAddress();
+			return ReadAmxMemory(ret_addr + cellbytes) - amxhdr[AMX_HDR_COD] - GetAmxBaseAddress();
 
 		} else if (opcode == OP_SCTRL) {
 			// modified code to call a function by pointer
-			opcode = UnrelocateOpcode(Opcode:ReadAmxMemory(ret_addr - 8));
+			opcode = UnrelocateOpcode(Opcode:ReadAmxMemory(ret_addr - cellbytes * 2));
 
 			if (opcode == OP_LOAD_PRI) {
-				ret_addr = ReadAmxMemory(ret_addr - 4);
+				ret_addr = ReadAmxMemory(ret_addr - cellbytes);
 				return ReadAmxMemory(ret_addr);
 			} else if (opcode == OP_LOAD_S_PRI) {
-				return GetFrameVariable(prev_frm, ReadAmxMemory(ret_addr - 4));
+				return GetFrameVariable(prev_frm, ReadAmxMemory(ret_addr - cellbytes));
 			} else if (opcode == OP_CONST_PRI) {
-				return ReadAmxMemory(ret_addr - 4);
+				return ReadAmxMemory(ret_addr - cellbytes);
 			}
 		}
 
 		// guess!
-		new end = amxhdr[AMX_HDR_COD] - amxhdr[AMX_HDR_DAT] + 8; // "halt"
+		new end = amxhdr[AMX_HDR_COD] - amxhdr[AMX_HDR_DAT] + cellbytes; // "halt"
 		ret_addr = GetFrameReturn(GetFrameNextFrame(frm_addr)) + end;
 
 		opcode = RelocateOpcode(OP_RETN);
@@ -567,12 +620,12 @@ stock GetFrameFunction(frm_addr) {
 
 		while (ret_addr >= end) {
 			if (Opcode:ReadAmxMemory(ret_addr) == proc) {
-				if (ret_addr == end || Opcode:ReadAmxMemory(ret_addr - 4) == opcode) {
+				if (ret_addr == end || Opcode:ReadAmxMemory(ret_addr - cellbytes) == opcode) {
 					// found a retn/proc pair.
 					return ret_addr;
 				}
 			}
-			ret_addr -= 4;
+			ret_addr -= cellbytes;
 		}
 	}
 
