@@ -61,7 +61,7 @@
 
 #define O@A_()?(((CALL@%1<%2>),O@V_)?1:2):(O@V_) (O@A_()?(((_ADDR@$%1()<%2>),O@V_)?(F@_@:1):(F@_@:2)):(F@_@:O@V_))
 
-#define nativeidxof(%1) (O@B_()?(((CALL@%1),O@V_)?1:2):(O@V_))
+#define nativeidxof(%1) (_:(O@B_()?(((CALL@%1),O@V_)?1:2):(O@V_)))
 
 #define NativeIdxOfGetNextCall_ O@B_
 #define CALL@NativeIdxOfGetNextCall_ CALL@O@B_
