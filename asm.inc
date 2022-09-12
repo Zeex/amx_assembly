@@ -94,16 +94,16 @@ enum AsmContext {
 const AsmContext:AsmContext__ = AsmContext;
 
 /// <library>amx_assembly asm</library>
-stock const ASM_ARGUMENTS_OFFSET    =  0x0C;
+stock const ASM_ARGUMENTS_OFFSET    =  3 * cellbytes;
 
 /// <library>amx_assembly asm</library>
-stock const ASM_LOCALS_OFFSET       = -0x04;
+stock const ASM_LOCALS_OFFSET       = -1 * cellbytes;
 
 /// <library>amx_assembly asm</library>
 stock const ASM_CALLER_FRAME_OFFSET =  0x00;
 
 /// <library>amx_assembly asm</library>
-stock const ASM_RETURN_ADDR_OFFSET  =  0x04;
+stock const ASM_RETURN_ADDR_OFFSET  =  1 * cellbytes;
 
 /// <library>amx_assembly asm</library>
 stock const ASM_CTRL_COD = 0;
@@ -155,7 +155,7 @@ static stock AsmError:AsmEmitCell(ctx[AsmContext], value) {
 	}
 
 	WriteAmxMemory(ctx[AsmContext_buffer] + ctx[AsmContext_buffer_offset], value);
-	ctx[AsmContext_buffer_offset] += 4;
+	ctx[AsmContext_buffer_offset] += cellbytes;
 
 	return ASM_ERROR_NONE;
 }
@@ -202,7 +202,7 @@ stock AsmError:AsmEmitLabelStringize(ctx[AsmContext], const label[]) {
 	// next instruction (8 bytes later), while we want it from right here, so
 	// shift back accordingly.
 	new datAddr = ctx[AsmContext_buffer] + ctx[AsmContext_buffer_offset];
-	new codAddr = AsmGetJumpAddressFromOffset(ctx, -8);
+	new codAddr = AsmGetJumpAddressFromOffset(ctx, -2 * cellbytes);
 	if (idx == -1) {
 		// Doesn't exist.  Get a free slot.
 		idx = AsmFindLabelIndex(ctx, 0);
@@ -220,7 +220,7 @@ stock AsmError:AsmEmitLabelStringize(ctx[AsmContext], const label[]) {
 		while (cur) {
 			new next = ReadAmxMemory(cur);
 			if (AsmIsJumpRelative(next)) {
-				WriteAmxMemory(cur, datAddr - cur - 4);
+				WriteAmxMemory(cur, datAddr - cur - cellbytes);
 			} else {
 				WriteAmxMemory(cur, codAddr);
 			}
@@ -251,7 +251,7 @@ stock AsmError:AsmEmitJumpStringize(ctx[AsmContext], const label[], bool:relativ
 		// The label was in the past, jump to that.
 		new cur = AsmGetLabel(ctx, idx);
 		if (relative) {
-			error = AsmEmitCell(ctx, cur - datAddr - 4);
+			error = AsmEmitCell(ctx, cur - datAddr - cellbytes);
 		} else {
 			error = AsmEmitCell(ctx, cur);
 		}
@@ -316,7 +316,7 @@ stock AsmGetJumpAddressFromOffset(const ctx[AsmContext], offset) {
 	new amxhdr[AMX_HDR];
 	GetAmxHeader(amxhdr);
 
-	new next_offset = 2 * 4; // offset to the next instruction
+	new next_offset = 2 * cellbytes; // offset to the next instruction
 	new base = GetAmxBaseAddress() + amxhdr[AMX_HDR_DAT];
 	new dest = ctx[AsmContext_buffer] + ctx[AsmContext_buffer_offset] + next_offset + offset;
 
@@ -367,7 +367,7 @@ stock AsmGetBufferSize(const ctx[AsmContext]) {
 
 /// <library>amx_assembly asm</library>
 stock AsmError:AsmInit(ctx[AsmContext], buffer[], size = sizeof(buffer)) {
-	AsmInitPtr(ctx, ref(buffer), size * 4);
+	AsmInitPtr(ctx, ref(buffer), size * cellbytes);
 }
 
 /// <library>amx_assembly asm</library>
@@ -427,7 +427,7 @@ stock AsmEmitPadding(ctx[AsmContext], Opcode:op = OP_NOP) {
 		end = ctx[AsmContext_buffer] + ctx[AsmContext_buffer_size];
 	while (cur < end) {
 		WriteAmxMemory(cur, _:op);
-		cur += 4;
+		cur += cellbytes;
 	}
 	ctx[AsmContext_buffer_offset] = ctx[AsmContext_buffer_size];
 }
@@ -1238,7 +1238,7 @@ stock AsmError:AsmEmitSysreq(ctx[AsmContext], const name[]) {
 
 /// <library>amx_assembly asm</library>
 stock AsmError:AsmEmitPopArgs(ctx[AsmContext], n) {
-	return AsmEmitStack(ctx, (n + 1) * 4);
+	return AsmEmitStack(ctx, (n + 1) * cellbytes);
 }
 
 /// <library>amx_assembly asm</library>
@@ -1248,14 +1248,14 @@ stock AsmError:AsmEmitPushArg(ctx[AsmContext], n) {
 
 /// <library>amx_assembly asm</library>
 stock AsmError:AsmEmitPushNumArgs(ctx[AsmContext], n) {
-	return AsmEmitPushC(ctx, 4 * n);
+	return AsmEmitPushC(ctx, cellbytes * n);
 }
 
 // Helpers:
 
 /// <library>amx_assembly asm</library>
 stock AsmGetArgOffset(n) {
-	return ASM_ARGUMENTS_OFFSET + 4 * n;
+	return ASM_ARGUMENTS_OFFSET + cellbytes * n;
 }
 
 #if !OPCODE_HAS_O2

@@ -45,8 +45,15 @@
 #define AMX_HDR_BYTES (56)
 #define AMX_HDR_CELLS (AMX_HDR_BYTES / 4)
 
-#define AMX_TAG_MASK (0x80000000)
-#define AMX_TAG_STRONG (0x40000000)
+#if cellbits == 32
+	#define AMX_TAG_MASK (0x80000000)
+	#define AMX_TAG_STRONG (0x40000000)
+#elseif cellbits == 64
+	#define AMX_TAG_MASK (0x8000000000000000)
+	#define AMX_TAG_STRONG (0x4000000000000000)
+#else
+	#error Unsupported `cellbits`.
+#endif
 
 /// <p/>
 
@@ -191,7 +198,7 @@ stock GetRawAmxHeader(plain_amxhdr[AMX_HDR_CELLS]) {
 
 	for (new i = 0; i < AMX_HDR_CELLS; i++) {
 		plain_amxhdr[i] = ReadAmxMemory(address);
-		address += 4;
+		address += cellbytes;
 	}
 }
 
@@ -280,7 +287,7 @@ static stock PrintAmxNameTable(start, end, decode = false, dereference = false) 
 	new name[64];
 	while (start != end) {
 		info[AMX_FUNCSTUBNT_ADDRESS] = ReadAmxMemory(start);
-		info[AMX_FUNCSTUBNT_NAMEOFS] = ReadAmxMemory(start + 4);
+		info[AMX_FUNCSTUBNT_NAMEOFS] = ReadAmxMemory(start + cellbytes);
 		if (info[AMX_FUNCSTUBNT_NAMEOFS] == 0) {
 			name = "????";
 		} else {
@@ -293,7 +300,7 @@ static stock PrintAmxNameTable(start, end, decode = false, dereference = false) 
 		} else {
 			printf("    %32s: 0x%08x", name, info[AMX_FUNCSTUBNT_ADDRESS]);
 		}
-		start += 8;
+		start += 2 * cellbytes;
 	}
 }
 
@@ -433,7 +440,7 @@ stock bool:GetPublicInfo(index, info[AMX_FUNCSTUBNT]) {
 
 	new off = gHdr[AMX_HDR_PUBLICS] - gHdr[AMX_HDR_DAT] + index * gHdr[AMX_HDR_DEFSIZE];
 	info[AMX_FUNCSTUBNT_ADDRESS] = ReadAmxMemory(off);
-	info[AMX_FUNCSTUBNT_NAMEOFS] = ReadAmxMemory(off + 4);
+	info[AMX_FUNCSTUBNT_NAMEOFS] = ReadAmxMemory(off + cellbytes);
 
 	return true;
 }
@@ -453,7 +460,7 @@ stock GetPublicIndexFromName(const name[]) {
 		mid = (first + last) / 2;
 
 		new off = gHdr[AMX_HDR_PUBLICS] - gHdr[AMX_HDR_DAT] + mid * gHdr[AMX_HDR_DEFSIZE];
-		new nameofs = ReadAmxMemory(off + 4) - gHdr[AMX_HDR_DAT];
+		new nameofs = ReadAmxMemory(off + cellbytes) - gHdr[AMX_HDR_DAT];
 
 		new diff = NtCompare(nameofs, name);
 		if (diff < 0) {
@@ -550,7 +557,7 @@ stock bool:GetNativeInfo(index, info[AMX_FUNCSTUBNT]) {
 
 	new off = gHdr[AMX_HDR_NATIVES] - gHdr[AMX_HDR_DAT] + index * gHdr[AMX_HDR_DEFSIZE];
 	info[AMX_FUNCSTUBNT_ADDRESS] = ReadAmxMemory(off);
-	info[AMX_FUNCSTUBNT_NAMEOFS] = ReadAmxMemory(off + 4);
+	info[AMX_FUNCSTUBNT_NAMEOFS] = ReadAmxMemory(off + cellbytes);
 
 	return true;
 }
@@ -564,7 +571,7 @@ stock GetNativeIndexFromName(const name[]) {
 
 	// Linear search
 	for (new i = 0; i < num_natives; i++) {
-		new nameofs = ReadAmxMemory(off + 4) - gHdr[AMX_HDR_DAT];
+		new nameofs = ReadAmxMemory(off + cellbytes) - gHdr[AMX_HDR_DAT];
 
 		new diff = NtCompare(nameofs, name);
 		if (diff == 0) {
@@ -638,7 +645,7 @@ stock bool:GetPubVarInfo(index, info[AMX_FUNCSTUBNT]) {
 
 	new off = gHdr[AMX_HDR_PUBVARS] - gHdr[AMX_HDR_DAT] + index * gHdr[AMX_HDR_DEFSIZE];
 	info[AMX_FUNCSTUBNT_ADDRESS] = ReadAmxMemory(off);
-	info[AMX_FUNCSTUBNT_NAMEOFS] = ReadAmxMemory(off + 4);
+	info[AMX_FUNCSTUBNT_NAMEOFS] = ReadAmxMemory(off + cellbytes);
 
 	return true;
 }
@@ -652,7 +659,7 @@ stock GetPubVarIndexFromName(const name[]) {
 
 	// Linear search
 	for (new i = 0; i < num_pubvars; i++) {
-		new nameofs = ReadAmxMemory(off + 4) - gHdr[AMX_HDR_DAT];
+		new nameofs = ReadAmxMemory(off + cellbytes) - gHdr[AMX_HDR_DAT];
 
 		new diff = NtCompare(nameofs, name);
 		if (diff == 0) {
@@ -732,7 +739,7 @@ stock bool:GetTagInfo(index, info[AMX_FUNCSTUBNT]) {
 
 	new off = gHdr[AMX_HDR_TAGS] - gHdr[AMX_HDR_DAT] + index * gHdr[AMX_HDR_DEFSIZE];
 	info[AMX_FUNCSTUBNT_ID] = ReadAmxMemory(off) | AMX_TAG_MASK;
-	info[AMX_FUNCSTUBNT_NAMEOFS] = ReadAmxMemory(off + 4);
+	info[AMX_FUNCSTUBNT_NAMEOFS] = ReadAmxMemory(off + cellbytes);
 
 	return true;
 }
@@ -746,7 +753,7 @@ stock GetTagIndexFromName(const name[]) {
 
 	// Linear search
 	for (new i = 0; i < num_tags; i++) {
-		new nameofs = ReadAmxMemory(off + 4) - gHdr[AMX_HDR_DAT];
+		new nameofs = ReadAmxMemory(off + cellbytes) - gHdr[AMX_HDR_DAT];
 
 		new diff = NtCompare(nameofs, name);
 		if (diff == 0) {

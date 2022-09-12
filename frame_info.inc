@@ -59,6 +59,7 @@ stock GetFramePreviousFrame(frm_addr) {
 /// <library>amx_assembly frame_info</library>
 stock GetFrameReturn(frm_addr) {
 	#emit load.s.pri frm_addr
+	const cells = 1 * cellbytes;
 	#emit add.c 4
 	#emit load.i
 	#emit retn

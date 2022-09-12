@@ -65,7 +65,7 @@ stock GetAmxBaseAddressNow() {
 	GetAmxBaseAddress_helper();
 	#emit lctrl 6
 	#emit stor.s.pri call_addr
-	call_addr = call_addr - 12 + code_start;
+	call_addr = call_addr - 3 * cellbytes + code_start;
 	#emit lref.s.pri call_addr
 	#emit stor.s.pri fn_addr_reloc
 

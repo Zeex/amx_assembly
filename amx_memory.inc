@@ -38,6 +38,10 @@
 
 #include <core>
 
+#if !defined cellbytes
+	const cellbytes = cellbits / charbits;
+#endif
+
 /// <library>amx_assembly amx_memory</library>
 /// <summary>
 ///   -4, for use in <c>#emit</c> which fails with <c>-</c>.
@@ -56,7 +60,8 @@ const AMX_MINUS_8 = -8;
 /// </summary>
 stock ref(...) {
 	assert(numargs() == 1);
-	#emit load.s.pri 12 // first argument
+	const cells0 = 3 * cellbytes;
+	#emit load.s.pri cells0 // first argument
 	#emit retn
 	return 0; // make compiler happy
 }
@@ -67,8 +72,9 @@ stock ref(...) {
 /// </summary>
 stock deref(v) {
 	static gFake[1];
+	const cells0 = 4 * cellbytes;
 	#emit load.s.pri  v // first argument
-	#emit stor.s.pri 16 // secret argument
+	#emit stor.s.pri cells0 // secret argument
 	#emit retn
 	return gFake; // make compiler happy
 }
@@ -97,7 +103,8 @@ stock argderef(n) {
 	#emit load.s.pri n
 	#emit add.c 3
 	#emit lidx
-	#emit stor.s.pri 16 // secret argument
+	const cells0 = 4 * cellbytes;
+	#emit stor.s.pri cells0 // secret argument
 	#emit retn
 	return gFake; // make compiler happy
 }
@@ -116,14 +123,14 @@ stock argderef(n) {
 /// <library>amx_assembly amx_memory</library>
 stock ReadAmxMemoryArray(address, values[], size = sizeof(values)) {
 	for (new i = 0; i < size; i++) {
-		values[i] = ReadAmxMemory(address + i * 4);
+		values[i] = ReadAmxMemory(address + i * cellbytes);
 	}
 }
 
 /// <library>amx_assembly amx_memory</library>
 stock WriteAmxMemoryArray(address, const values[], size = sizeof(values)) {
 	for (new i = 0; i < size; i++) {
-		WriteAmxMemory(address + i * 4, values[i]);
+		WriteAmxMemory(address + i * cellbytes, values[i]);
 	}
 }
 
@@ -146,10 +153,13 @@ stock GetAmxHeapBase()
 	// straight from the original header.
 	#emit lctrl 1  // DAT
 	#emit neg      // -DAT
-	#emit add.c 20 // -DAT + 20
+	const cells0 = 5 * cellbytes;
+	#emit add.c cells0 // -DAT + 20
 	#emit push.pri
-	#emit lref.s.pri AMX_MINUS_4
-	#emit stack 4
+	const cells1 = -1 * cellbytes;
+	#emit lref.s.pri cells1
+	const cells2 = 1 * cellbytes;
+	#emit stack cells2
 	#emit retn
 	return 0;
 }
@@ -175,7 +185,8 @@ stock GetAmxStackBase()
 stock GetAmxStackBottom()
 {
 	#emit lctrl 4
-	#emit add.c 12
+	const cells0 = 3 * cellbytes;
+	#emit add.c cells0
 	#emit retn
 	return 0;
 }
@@ -205,7 +216,8 @@ stock SetAmxStackBottom(ptr)
 	// We need to be tricky here, because the return value is on the stack.
 	#emit load.s.alt ptr
 	// Store the return address.
-	#emit load.s.pri 4
+	const cells0 = 1 * cellbytes;
+	#emit load.s.pri cells0
 	#emit stor.pri cip
 	// Reset the frame.
 	#emit load.s.pri 0
@@ -224,13 +236,15 @@ stock SetAmxFrame(ptr)
 {
 	// We need to be tricky here, because the return value is in our frame.
 	// Store the return address.
-	#emit load.s.alt 4
+	const cells0 = 1 * cellbytes;
+	#emit load.s.alt cells0
 	// Modify the frame.
 	#emit load.s.pri ptr
 	#emit sctrl 5
 	// Return.
 	#emit move.pri
-	#emit stack 16
+	const cells1 = 4 * cellbytes;
+	#emit stack cells1
 	#emit sctrl 8
 	#emit sctrl 6
 }
@@ -244,7 +258,8 @@ stock SetAmxNextInstructionPointer(ptr)
 	#emit sctrl 5
 	// Return.
 	#emit move.pri
-	#emit stack 16
+	const cells0 = 4 * cellbytes;
+	#emit stack cells0
 	#emit sctrl 8
 	#emit sctrl 6
 }
