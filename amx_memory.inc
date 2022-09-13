@@ -42,6 +42,19 @@
 	const cellbytes = cellbits / charbits;
 #endif
 
+#if !defined __register_names
+	const __cod = 0;
+	const __dat = 1;
+	const __hea = 2;
+	const __stp = 3;
+	const __stk = 4;
+	const __frm = 5;
+	const __cip = 6;
+	const __jit = 8;
+	const __flg = 9;
+	#define __register_names
+#endif
+
 /// <library>amx_assembly amx_memory</library>
 /// <summary>
 ///   Returns the address of a variable/array.
