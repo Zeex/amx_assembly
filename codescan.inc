@@ -891,7 +891,7 @@ static stock CodeScanRunFastPrescanLocated(&proc, &nextaddr, const searchFuncAdd
 				addr += cellbytes;
 			}
 			case OP_CASETBL: {
-				addr += ReadAmxMemory(addr + cellbytes) * (2 * cellbytes) + (3 + cellbytes);
+				addr += ReadAmxMemory(addr + cellbytes) * (2 * cellbytes) + (3 * cellbytes);
 			}
 			case OP_CALL: {
 				if (ReadAmxMemory(addr + cellbytes) - gCodBase == searchFuncAddr) {
@@ -921,7 +921,7 @@ static stock CodeScanRunFastPrescanRelocate(&proc, &nextaddr, const searchFuncAd
 				addr += cellbytes;
 			}
 			case OP_CASETBL: {
-				addr += ReadAmxMemory(addr + cellbytes) * (2 * cellbytes) + (3 + cellbytes);
+				addr += ReadAmxMemory(addr + cellbytes) * (2 * cellbytes) + (3 * cellbytes);
 			}
 			case OP_CALL: {
 				if (ReadAmxMemory(addr + cellbytes) - gCodBase == searchFuncAddr) {
