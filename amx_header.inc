@@ -45,15 +45,10 @@
 #define AMX_HDR_BYTES (56)
 #define AMX_HDR_CELLS (AMX_HDR_BYTES / 4)
 
-#if cellbits == 32
-	#define AMX_TAG_MASK (0x80000000)
-	#define AMX_TAG_STRONG (0x40000000)
-#elseif cellbits == 64
-	#define AMX_TAG_MASK (0x8000000000000000)
-	#define AMX_TAG_STRONG (0x4000000000000000)
-#else
-	#error Unsupported `cellbits`.
-#endif
+// Always 32-bit.
+#define AMX_TAG_LOCAL (0x80000000)
+#define AMX_TAG_MASK (0x7FFFFFFF)
+#define AMX_TAG_STRONG (0x40000000)
 
 /// <p/>
 
@@ -294,7 +289,7 @@ static stock PrintAmxNameTable(start, end, decode = false, dereference = false) 
 			NtCopy(info[AMX_FUNCSTUBNT_NAMEOFS] - GetAmxHeaderComponent(AMX_HDR_DAT), name);
 		}
 		if (decode) {
-			printf("    %32s: 0x%08x%s%s", name, info[AMX_FUNCSTUBNT_ADDRESS], (info[AMX_FUNCSTUBNT_ADDRESS] & AMX_TAG_STRONG) ? (" (strong)") : (""), (info[AMX_FUNCSTUBNT_ADDRESS] & AMX_TAG_MASK) ? (" (local)") : (""));
+			printf("    %32s: 0x%08x%s%s", name, info[AMX_FUNCSTUBNT_ADDRESS], (info[AMX_FUNCSTUBNT_ADDRESS] & AMX_TAG_STRONG) ? (" (strong)") : (""), (info[AMX_FUNCSTUBNT_ADDRESS] & AMX_TAG_LOCAL ? (" (local)") : (""));
 		} else if (dereference) {
 			printf("    %32s: 0x%08x (%d)", name, info[AMX_FUNCSTUBNT_ADDRESS], ReadAmxMemory(info[AMX_FUNCSTUBNT_ADDRESS]));
 		} else {
@@ -725,7 +720,7 @@ stock GetNumTags(const amxhdr[AMX_HDR]) {
 /// <library>amx_assembly amx_header</library>
 stock bool:GetTagInfo(index, info[AMX_FUNCSTUBNT]) {
 	if (index == 0) {
-		info[AMX_FUNCSTUBNT_ID] = AMX_TAG_MASK;
+		info[AMX_FUNCSTUBNT_ID] = AMX_TAG_LOCAL;
 		info[AMX_FUNCSTUBNT_NAMEOFS] = 0;
 		return true;
 	}
@@ -738,7 +733,7 @@ stock bool:GetTagInfo(index, info[AMX_FUNCSTUBNT]) {
 	}
 
 	new off = gHdr[AMX_HDR_TAGS] - gHdr[AMX_HDR_DAT] + index * gHdr[AMX_HDR_DEFSIZE];
-	info[AMX_FUNCSTUBNT_ID] = ReadAmxMemory(off) | AMX_TAG_MASK;
+	info[AMX_FUNCSTUBNT_ID] = ReadAmxMemory(off) | AMX_TAG_LOCAL;
 	info[AMX_FUNCSTUBNT_NAMEOFS] = ReadAmxMemory(off + cellbytes);
 
 	return true;
@@ -768,7 +763,7 @@ stock GetTagIndexFromName(const name[]) {
 
 /// <library>amx_assembly amx_header</library>
 stock GetTagIndexFromID(id) {
-	id &= ~AMX_TAG_MASK;
+	id &= AMX_TAG_MASK;
 	if (id == 0)
 		return 0;
 	InitStaticAmxHeader();
@@ -790,7 +785,7 @@ stock GetTagIndexFromID(id) {
 /// <library>amx_assembly amx_header</library>
 stock GetTagIDFromIndex(index) {
 	if (index == 0)
-		return AMX_TAG_MASK;
+		return AMX_TAG_LOCAL;
 	new info[AMX_FUNCSTUBNT];
 	GetTagInfo(index, info);
 	return info[AMX_FUNCSTUBNT_ID];
@@ -799,7 +794,7 @@ stock GetTagIDFromIndex(index) {
 /// <library>amx_assembly amx_header</library>
 stock GetTagIDFromName(const name[]) {
 	if (name[0] == '_' && name[1] == '\0')
-		return AMX_TAG_MASK;
+		return AMX_TAG_LOCAL;
 	return GetTagIDFromIndex(GetTagIndexFromName(name));
 }
 
@@ -844,7 +839,7 @@ stock bool:IsTagIDWeak(tag) {
 
 /// <library>amx_assembly amx_header</library>
 stock bool:IsTagIDEmpty(tag) {
-	return !(tag & ~AMX_TAG_MASK);
+	return !(tag & AMX_TAG_MASK);
 }
 
 /// <library>amx_assembly amx_header</library>
