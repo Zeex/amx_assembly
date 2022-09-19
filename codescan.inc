@@ -366,7 +366,7 @@ stock CodeScanMatcherInit_(searcher[CodeScanMatcher], address, flags = SCANNER_I
 	searcher[CodeScanMatcher_user_data] = 0,
 	searcher[CodeScanMatcher_offset] = lReset,
 	searcher[CodeScanMatcher_holeidx] = lReset,
-	DisasmInitUnsafe(), // Initialise the opcode system safely.
+	RelocateOpcode(OP_NOP); // Initialise the opcode system safely.
 	gRelocateRequired = IsOpcodeRelocationRequired();
 }
 
@@ -580,215 +580,224 @@ static stock bool:CodeScanStepInternal(dctx[DisasmContext], csState[CodeScanner]
 	// that any "false" returns are because of invalid data since the "< 0"
 	// check is also the only other way that "false" can be returned and we pre-
 	// empt that one.
-	if (dctx[DisasmContext_nip] >= dctx[DisasmContext_end_ip]) {
+	static cip, Opcode:op;
+	dctx[DisasmContext_cip] = cip = dctx[DisasmContext_nip];
+	if (cip >= dctx[DisasmContext_end_ip]) {
 		return false;
-	} else if (DisasmDecodeInsnUnsafe(dctx)) {
-		new
-			stk = csState[CodeScanMatch_stack],
-			hea = csState[CodeScanMatch_heap],
-			cip = dctx[DisasmContext_cip],
-			Opcode:op = dctx[DisasmContext_opcode];
-		// The compiler sometimes inserts extra instructions like "NOP" and
-		// "BREAK" for debugging and padding (as do we) - maybe ignore them.
-		CodeScanCheckJumpTarget(cip, cip + gBase, stk, hea, csState);
-		switch (op) {
-			case OP_HALT: {
-				if (parseState == 4) {
-					csState[CodeScanMatch_type] = SCANNER_FUNC_HALT_NO_NAME,
-					csState[CodeScanMatch_func] = cip,
-					stk = hea = 0,
-					CodeScanResetJumpTargets(csState);
-				}
-			}
-			case OP_PROC: {
-				// This is the start of a new function.  The only functions
-				// that don't start like this are the automata stubs.
-				csState[CodeScanMatch_type] = SCANNER_FUNC_UNKNOWN,
-				csState[CodeScanMatch_func] = cip,
-				CodeScanResetJumpTargets(csState),
-				stk = hea = parseState = 0;
-			}
-			case OP_LOAD_PRI: {
-				// If we are not in the main functions yet and this is the
-				// first instruction seen, then it is the start of an
-				// automata function stub.
-				if (parseState == 4) {
-					csState[CodeScanMatch_type] = SCANNER_FUNC_AUTOMATA_NO_NAME,
-					csState[CodeScanMatch_func] = cip,
-					stk = hea = 0,
-					CodeScanResetJumpTargets(csState);
-				}
-			}
-			case OP_PUSH_PRI, OP_PUSH_ALT, OP_PUSH_R, OP_PUSH_S, OP_PUSH, OP_PUSH_ADR: {
-				if (stk != cellmin) {
-					stk += cellbytes;
-				}
-				parseState = 0;
-			}
-#if OPCODE_HAS_O2
-			case OP_PUSH2_C, OP_PUSH2, OP_PUSH2_S, OP_PUSH2_ADR: {
-				if (stk != cellmin) {
-					stk += cellbytes * 2;
-				}
-				parseState = 0;
-			}
-			case OP_PUSH3_C, OP_PUSH3, OP_PUSH3_S, OP_PUSH3_ADR: {
-				if (stk != cellmin) {
-					stk += cellbytes * 3;
-				}
-				parseState = 0;
-			}
-			case OP_PUSH4_C, OP_PUSH4, OP_PUSH4_S, OP_PUSH4_ADR: {
-				if (stk != cellmin) {
-					stk += cellbytes * 4;
-				}
-				parseState = 0;
-			}
-			case OP_PUSH5_C, OP_PUSH5, OP_PUSH5_S, OP_PUSH5_ADR: {
-				if (stk != cellmin) {
-					stk += cellbytes * 5;
-				}
-				parseState = 0;
-			}
-			case OP_SYSREQ_N: {
-				// sysreq.n cleans itself up, it isn't followed by `stack`.
-				if (stk != cellmin) {
-					stk -= DISASM_GET_OPERAND_INLINE(dctx, 1);
-				}
-				parseState = 0;
-			}
-#endif
-			case OP_STACK: {
-				// The stack grows down, but our count is positive.
-				if (stk != cellmin) {
-					stk -= DISASM_GET_OPERAND_INLINE(dctx, 0);
-				}
-				parseState = 0;
-			}
-			case OP_HEAP: {
-				if (hea != cellmin) {
-					hea += DISASM_GET_OPERAND_INLINE(dctx, 0);
-				}
-				parseState = 0;
-			}
-			case OP_POP_PRI, OP_POP_ALT: {
-				if (stk != cellmin) {
-					stk -= cellbytes;
-				}
-				parseState = 0;
-			}
-			case OP_CALL, OP_CALL_PRI: {
-				// Remove all the function parameters.
-				if (parseState == 3) {
-					stk -= parseParam;
-				}
-				parseState = 0;
-			}
-			case OP_PUSH_C: {
-				// The "+ cellbytes" is because when calling a function, the
-				// parameter is the number of bytes pushed, not including
-				// this one, with that one implicitly popped on return.
-				parseParam = DISASM_GET_OPERAND_INLINE(dctx, 0) + cellbytes;
-				if (stk != cellmin) {
-					stk += cellbytes,
-					parseState = 3;
-				}
-			}
-			// There is a code-get pattern of:
-			// 
-			//   LCTRL 5
-			//   ADD.C n
-			//   SCTRL 4
-			// 
-			// Which adjusts the stack to the correct size after "goto".  We
-			// have to deal with that explcitly.  Note that the "ADD.C" may
-			// be missing if there are no variables currently in scope.
-			case OP_LCTRL: {
-				if (DISASM_GET_OPERAND_INLINE(dctx, 0) == 5) {
-					parseParam = 0;
-					parseState = 1;
-				} else {
+	} else {
+		dctx[DisasmContext_opcode] = op = UnsafeUnrelocateOpcode(Opcode:ReadAmxMemory(cip));
+		if (OP_NONE < op < Opcode:NUM_OPCODES) {
+			new
+				stk = csState[CodeScanMatch_stack],
+				hea = csState[CodeScanMatch_heap];
+			// The compiler sometimes inserts extra instructions like "NOP" and
+			// "BREAK" for debugging and padding (as do we) - maybe ignore them.
+			CodeScanCheckJumpTarget(cip, cip + gBase, stk, hea, csState);
+			switch (op) {
+				case OP_CASETBL: {
+					cip += cellbytes,
+					cip += ReadAmxMemory(cip) * (2 * cellbytes),
 					parseState = 0;
 				}
-			}
-			case OP_ADD_C: {
-				if (parseState == 1) {
-					parseParam = -DISASM_GET_OPERAND_INLINE(dctx, 0),
-					parseState = 2;
-				} else {
-					parseState = 0;
-				}
-			}
-			case OP_SCTRL: {
-				// This is the tricky one, since it can mess up the stack in
-				// strange ways.  Deal with the case where it comes from
-				// "goto", even though that is generally considered bad.
-				switch (DISASM_GET_OPERAND_INLINE(dctx, 0)) {
-					case 2: {
-						hea = cellmin;
+				case OP_HALT: {
+					if (parseState == 4) {
+						csState[CodeScanMatch_type] = SCANNER_FUNC_HALT_NO_NAME,
+						csState[CodeScanMatch_func] = cip,
+						stk = hea = 0,
+						CodeScanResetJumpTargets(csState);
 					}
-					case 4: {
-						switch (parseState) {
-							case 1: {
-								stk = 0;
-							}
-							case 2: {
-								stk = parseParam;
-							}
-							default: {
-								stk = cellmin;
+				}
+				case OP_PROC: {
+					// This is the start of a new function.  The only functions
+					// that don't start like this are the automata stubs.
+					csState[CodeScanMatch_type] = SCANNER_FUNC_UNKNOWN,
+					csState[CodeScanMatch_func] = cip,
+					CodeScanResetJumpTargets(csState),
+					stk = hea = parseState = 0;
+				}
+				case OP_LOAD_PRI: {
+					// If we are not in the main functions yet and this is the
+					// first instruction seen, then it is the start of an
+					// automata function stub.
+					if (parseState == 4) {
+						csState[CodeScanMatch_type] = SCANNER_FUNC_AUTOMATA_NO_NAME,
+						csState[CodeScanMatch_func] = cip,
+						stk = hea = 0,
+						CodeScanResetJumpTargets(csState);
+					}
+				}
+				case OP_PUSH_PRI, OP_PUSH_ALT, OP_PUSH_R, OP_PUSH_S, OP_PUSH, OP_PUSH_ADR: {
+					if (stk != cellmin) {
+						stk += cellbytes;
+					}
+					parseState = 0;
+				}
+#if OPCODE_HAS_O2
+				case OP_PUSH2_C, OP_PUSH2, OP_PUSH2_S, OP_PUSH2_ADR: {
+					if (stk != cellmin) {
+						stk += cellbytes * 2;
+					}
+					parseState = 0;
+				}
+				case OP_PUSH3_C, OP_PUSH3, OP_PUSH3_S, OP_PUSH3_ADR: {
+					if (stk != cellmin) {
+						stk += cellbytes * 3;
+					}
+					parseState = 0;
+				}
+				case OP_PUSH4_C, OP_PUSH4, OP_PUSH4_S, OP_PUSH4_ADR: {
+					if (stk != cellmin) {
+						stk += cellbytes * 4;
+					}
+					parseState = 0;
+				}
+				case OP_PUSH5_C, OP_PUSH5, OP_PUSH5_S, OP_PUSH5_ADR: {
+					if (stk != cellmin) {
+						stk += cellbytes * 5;
+					}
+					parseState = 0;
+				}
+				case OP_SYSREQ_N: {
+					// sysreq.n cleans itself up, it isn't followed by `stack`.
+					if (stk != cellmin) {
+						stk -= DISASM_GET_OPERAND_INLINE(dctx, 1);
+					}
+					parseState = 0;
+				}
+#endif
+				case OP_STACK: {
+					// The stack grows down, but our count is positive.
+					if (stk != cellmin) {
+						stk -= DISASM_GET_OPERAND_INLINE(dctx, 0);
+					}
+					parseState = 0;
+				}
+				case OP_HEAP: {
+					if (hea != cellmin) {
+						hea += DISASM_GET_OPERAND_INLINE(dctx, 0);
+					}
+					parseState = 0;
+				}
+				case OP_POP_PRI, OP_POP_ALT: {
+					if (stk != cellmin) {
+						stk -= cellbytes;
+					}
+					parseState = 0;
+				}
+				case OP_CALL, OP_CALL_PRI: {
+					// Remove all the function parameters.
+					if (parseState == 3) {
+						stk -= parseParam;
+					}
+					parseState = 0;
+				}
+				case OP_PUSH_C: {
+					// The "+ cellbytes" is because when calling a function, the
+					// parameter is the number of bytes pushed, not including
+					// this one, with that one implicitly popped on return.
+					parseParam = DISASM_GET_OPERAND_INLINE(dctx, 0) + cellbytes;
+					if (stk != cellmin) {
+						stk += cellbytes,
+						parseState = 3;
+					}
+				}
+				// There is a code-get pattern of:
+				// 
+				//   LCTRL 5
+				//   ADD.C n
+				//   SCTRL 4
+				// 
+				// Which adjusts the stack to the correct size after "goto".  We
+				// have to deal with that explcitly.  Note that the "ADD.C" may
+				// be missing if there are no variables currently in scope.
+				case OP_LCTRL: {
+					if (DISASM_GET_OPERAND_INLINE(dctx, 0) == 5) {
+						parseParam = 0;
+						parseState = 1;
+					} else {
+						parseState = 0;
+					}
+				}
+				case OP_ADD_C: {
+					if (parseState == 1) {
+						parseParam = -DISASM_GET_OPERAND_INLINE(dctx, 0),
+						parseState = 2;
+					} else {
+						parseState = 0;
+					}
+				}
+				case OP_SCTRL: {
+					// This is the tricky one, since it can mess up the stack in
+					// strange ways.  Deal with the case where it comes from
+					// "goto", even though that is generally considered bad.
+					switch (DISASM_GET_OPERAND_INLINE(dctx, 0)) {
+						case 2: {
+							hea = cellmin;
+						}
+						case 4: {
+							switch (parseState) {
+								case 1: {
+									stk = 0;
+								}
+								case 2: {
+									stk = parseParam;
+								}
+								default: {
+									stk = cellmin;
+								}
 							}
 						}
+						case 5: {
+							stk = cellmin;
+						}
 					}
-					case 5: {
-						stk = cellmin;
+					parseState = 0;
+				}
+				case OP_JUMP, OP_JZER, OP_JNZ, OP_JEQ, OP_JNEQ, OP_JLESS, OP_JLEQ, OP_JGRTR, OP_JGEQ, OP_JSLESS, OP_JSLEQ, OP_JSGRTR, OP_JSGEQ: {
+					// Add a jump target.  These require relocation as they are
+					// translated to absolute RAM locations.  "DisasmNeedReloc"
+					// will return "true", but we don't need to call it.
+					// Relocate it relative to "dat" not "cod" for simpler
+					// comparisons - just see if the read address matches
+					// instead of the true code address.
+					//   
+					//   val = val - (base + cod) + (cod - dat);
+					//   val = val - base - cod + cod - dat;
+					//   val = val - base - dat;
+					//   val = val - (base + dat);
+					//   base = base + dat;
+					//   val = val - base;
+					//   
+					// Only jumps that go forwards.
+					parseParam = DISASM_GET_OPERAND_INLINE(dctx, 0) - gBase,
+					parseState = 0;
+					if (parseParam > cip) {
+						CodeScanAddJumpTarget(parseParam, stk, hea, csState);
 					}
 				}
-				parseState = 0;
-			}
-			case OP_JUMP, OP_JZER, OP_JNZ, OP_JEQ, OP_JNEQ, OP_JLESS, OP_JLEQ, OP_JGRTR, OP_JGEQ, OP_JSLESS, OP_JSLEQ, OP_JSGRTR, OP_JSGEQ: {
-				// Add a jump target.  These require relocation as they are
-				// translated to absolute RAM locations.  "DisasmNeedReloc"
-				// will return "true", but we don't need to call it.
-				// Relocate it relative to "dat" not "cod" for simpler
-				// comparisons - just see if the read address matches
-				// instead of the true code address.
-				//   
-				//   val = val - (base + cod) + (cod - dat);
-				//   val = val - base - cod + cod - dat;
-				//   val = val - base - dat;
-				//   val = val - (base + dat);
-				//   base = base + dat;
-				//   val = val - base;
-				//   
-				// Only jumps that go forwards.
-				parseParam = DISASM_GET_OPERAND_INLINE(dctx, 0) - gBase,
-				parseState = 0;
-				if (parseParam > cip) {
-					CodeScanAddJumpTarget(parseParam, stk, hea, csState);
+				case OP_JREL: {
+					// Add a jump target.  Only jumps that go forwards.
+					parseParam = DISASM_GET_OPERAND_INLINE(dctx, 0) + cip,
+					parseState = 0;
+					if (parseParam > cip) {
+						CodeScanAddJumpTarget(parseParam, stk, hea, csState);
+					}
+				}
+				case OP_SWITCH: {
+					// Add a jump target.  These are always forwards.
+					CodeScanAddSwitchTarget(dctx, stk, hea, csState),
+					parseState = 0;
+				}
+				default: {
+					parseState = 0;
 				}
 			}
-			case OP_JREL: {
-				// Add a jump target.  Only jumps that go forwards.
-				parseParam = DISASM_GET_OPERAND_INLINE(dctx, 0) + cip,
-				parseState = 0;
-				if (parseParam > cip) {
-					CodeScanAddJumpTarget(parseParam, stk, hea, csState);
-				}
-			}
-			case OP_SWITCH: {
-				// Add a jump target.  These are always forwards.
-				CodeScanAddSwitchTarget(dctx, stk, hea, csState),
-				parseState = 0;
-			}
-			default: {
-				parseState = 0;
-			}
+			dctx[DisasmContext_nip] = cip + gAMXOpcodeBaseSizes[_:op],
+			csState[CodeScanMatch_stack] = stk,
+			csState[CodeScanMatch_heap] = hea;
+		} else {
+			parseState = 0;
 		}
-		csState[CodeScanMatch_stack] = stk,
-		csState[CodeScanMatch_heap] = hea;
-	} else {
-		parseState = 0;
 	}
 	return true;
 }
