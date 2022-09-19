@@ -809,7 +809,9 @@ stock Opcode:RelocateOpcodeNow(Opcode:opcode) {
 }
 
 /// <library>amx_assembly opcode</library>
-static stock Opcode:opcode_table[NUM_OPCODES];
+static stock Opcode:opcode_lookup[NUM_OPCODES];
+static stock Opcode:opcode_reverse_op[NUM_OPCODES];
+static stock Opcode:opcode_reverse_addr[NUM_OPCODES];
 
 /// <library>amx_assembly opcode</library>
 static stock bool:opcode_table_is_ready = false;
@@ -820,10 +822,55 @@ stock bool:IsOpcodeValid(Opcode:opcode) {
 }
 
 /// <library>amx_assembly opcode</library>
+static stock OpcodeTablePartition(low, high) {
+	new pivot = opcode_reverse_addr[high];
+	new i = low - 1;
+	new tmp;
+	for (new j = low; j != high; ++j) {
+		if (opcode_reverse_addr[j] < pivot) {
+			// Swap.
+			++i,
+			tmp = opcode_reverse_addr[i],
+			opcode_reverse_addr[i] = opcode_reverse_addr[j],
+			opcode_reverse_addr[j] = tmp,
+			tmp = opcode_reverse_op[i],
+			opcode_reverse_op[i] = opcode_reverse_op[j],
+			opcode_reverse_op[j] = tmp;
+		}
+	}
+	return
+		++i,
+		tmp = opcode_reverse_addr[i],
+		opcode_reverse_addr[i] = opcode_reverse_addr[high],
+		opcode_reverse_addr[high] = tmp,
+		tmp = opcode_reverse_op[i],
+		opcode_reverse_op[i] = opcode_reverse_op[high],
+		opcode_reverse_op[high] = tmp,
+		i;
+}
+
+/// <library>amx_assembly opcode</library>
+static stock OpcodeTableQuickSort(low, high) {
+	if (low < high) {
+		new partition = OpcodeTablePartition(low, high);
+		OpcodeTableQuickSort(low, partition - 1);
+		OpcodeTableQuickSort(partition + 1, high);
+	}
+}
+
+/// <library>amx_assembly opcode</library>
 static stock InitOpcodeTable() {
 	for (new i = 0; i < NUM_OPCODES; i++) {
-		opcode_table[i] = RelocateOpcodeNow(Opcode:i);
+		opcode_reverse_addr[i] = opcode_lookup[i] = RelocateOpcodeNow(Opcode:i);
+		opcode_reverse_op[i] = Opcode:i;
+		//printf("Unsorted: %d = %08x", opcode_reverse_op[i], opcode_reverse_addr[i]);
 	}
+	// Sort the reverse lookup table.
+	OpcodeTableQuickSort(0, NUM_OPCODES - 1);
+	//for (new i = 0; i < NUM_OPCODES; i++) {
+	//	printf("Sorted: %d = %08x", opcode_reverse_op[i], opcode_reverse_addr[i]);
+	//}
+	
 	opcode_table_is_ready = true;
 }
 
@@ -832,7 +879,7 @@ stock Opcode:RelocateOpcode(Opcode:opcode) {
 	if (!opcode_table_is_ready) {
 		InitOpcodeTable();
 	}
-	return opcode_table[_:opcode];
+	return opcode_lookup[_:opcode];
 }
 
 /// <library>amx_assembly opcode</library>
@@ -855,8 +902,8 @@ stock Opcode:UnrelocateOpcode(Opcode:opcode) {
 		return opcode;
 	}
 	for (new i = 0; i < NUM_OPCODES; i++) {
-		if (opcode_table[i] == opcode) {
-			return Opcode:i;
+		if (opcode_reverse_addr[i] == opcode) {
+			return opcode_reverse_op[i];
 		}
 	}
 	return opcode;
