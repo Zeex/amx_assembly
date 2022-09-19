@@ -864,6 +864,16 @@ static stock InitOpcodeTable() {
 		opcode_reverse_op[i] = Opcode:i;
 		//printf("Unsorted: %d = %08x", opcode_reverse_op[i], opcode_reverse_addr[i]);
 	}
+#if OPCODE_HAS_O2
+	// These are the same ID in the server.
+	if (HasSysreqD()) {
+		opcode_reverse_addr[OP_SYSREQ_N] = opcode_reverse_addr[OP_SYSREQ_D];
+		opcode_reverse_op[OP_SYSREQ_N] = OP_SYSREQ_D;
+	} else {
+		opcode_reverse_addr[OP_SYSREQ_D] = opcode_reverse_addr[OP_SYSREQ_N];
+		opcode_reverse_op[OP_SYSREQ_D] = OP_SYSREQ_N;
+	}
+#endif
 	// Sort the reverse lookup table.
 	OpcodeTableQuickSort(0, NUM_OPCODES - 1);
 	//for (new i = 0; i < NUM_OPCODES; i++) {
@@ -902,6 +912,26 @@ stock Opcode:UnrelocateOpcode(Opcode:opcode) {
 	}
 
 	// Binary search for Linux.
+	new first = 0;
+	new last = NUM_OPCODES - 1;
+	new mid = 0;
+
+	while (first <= last) {
+		mid = (first + last) / 2;
+		new diff = opcode_reverse_addr[mid] - opcode;
+		if (diff < 0) {
+			first = mid + 1;
+		} else if (diff > 0) {
+			last = mid - 1;
+		} else {
+			return opcode_reverse_op[mid];
+		}
+	}
+	return opcode;
+}
+
+/// <library>amx_assembly opcode</library>
+stock Opcode:UnsafeUnrelocateOpcode(Opcode:opcode) {
 	new first = 0;
 	new last = NUM_OPCODES - 1;
 	new mid = 0;

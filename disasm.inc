@@ -80,6 +80,7 @@ static stock gCodBase = 0;
 stock DisasmInit(ctx[DisasmContext], start = 0, end = 0) {
 	new hdr[AMX_HDR];
 	GetAmxHeader(hdr);
+	RelocateOpcode(OP_NOP);
 	
 	gCodBase = GetAmxBaseAddress() + hdr[AMX_HDR_COD];
 	
@@ -113,7 +114,7 @@ stock bool:DisasmDecodeInsn(ctx[DisasmContext]) {
 		return false;
 	}
 
-	new Opcode:opcode = UnrelocateOpcode(Opcode:ReadAmxMemory(ip));
+	new Opcode:opcode = UnsafeUnrelocateOpcode(Opcode:ReadAmxMemory(ip));
 	if (opcode <= OP_NONE || _:opcode >= NUM_OPCODES) {
 		return false;
 	}
@@ -133,6 +134,7 @@ stock bool:DisasmDecodeInsn(ctx[DisasmContext]) {
 
 /// <library>amx_assembly disasm</library>
 stock DisasmInitUnsafe() {
+	RelocateOpcode(OP_NOP);
 }
 
 /// <library>amx_assembly disasm</library>
@@ -140,7 +142,7 @@ stock bool:DisasmDecodeInsnUnsafe(ctx[DisasmContext]) {
 	static ip, Opcode:opcode;
 
 	ctx[DisasmContext_cip] = ip = ctx[DisasmContext_nip],
-	ctx[DisasmContext_opcode] = opcode = UnrelocateOpcode(Opcode:ReadAmxMemory(ip));
+	ctx[DisasmContext_opcode] = opcode = UnsafeUnrelocateOpcode(Opcode:ReadAmxMemory(ip));
 
 	if (OP_NONE < opcode < Opcode:NUM_OPCODES) {
 		if (opcode == OP_CASETBL) {
