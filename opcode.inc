@@ -897,21 +897,7 @@ stock bool:IsOpcodeRelocationRequired() {
 }
 
 /// <library>amx_assembly opcode</library>
-stock Opcode:UnrelocateOpcode(Opcode:opcode) {
-	if (!opcode_table_is_ready) {
-		InitOpcodeTable();
-	}
-#if OPCODE_HAS_O2
-	if (opcode == OP_SYSREQ_D) {
-		// These share the same raw ID in the server.
-		return HasSysreqD() ? OP_SYSREQ_D : OP_SYSREQ_N;
-	}
-#endif
-	if (OP_NONE <= opcode < Opcode:NUM_OPCODES) {
-		return opcode;
-	}
-
-	// Binary search for Linux.
+stock Opcode:UnsafeUnrelocateOpcode(Opcode:opcode) {
 	new first = 0;
 	new last = NUM_OPCODES - 1;
 	new mid = 0;
@@ -931,23 +917,21 @@ stock Opcode:UnrelocateOpcode(Opcode:opcode) {
 }
 
 /// <library>amx_assembly opcode</library>
-stock Opcode:UnsafeUnrelocateOpcode(Opcode:opcode) {
-	new first = 0;
-	new last = NUM_OPCODES - 1;
-	new mid = 0;
-
-	while (first <= last) {
-		mid = (first + last) / 2;
-		new diff = opcode_reverse_addr[mid] - opcode;
-		if (diff < 0) {
-			first = mid + 1;
-		} else if (diff > 0) {
-			last = mid - 1;
-		} else {
-			return opcode_reverse_op[mid];
-		}
+stock Opcode:UnrelocateOpcode(Opcode:opcode) {
+	if (!opcode_table_is_ready) {
+		InitOpcodeTable();
 	}
-	return opcode;
+#if OPCODE_HAS_O2
+	if (opcode == OP_SYSREQ_D) {
+		// These share the same raw ID in the server.
+		return HasSysreqD() ? OP_SYSREQ_D : OP_SYSREQ_N;
+	}
+#endif
+	if (OP_NONE <= opcode < Opcode:NUM_OPCODES) {
+		return opcode;
+	}
+
+	return UnsafeUnrelocateOpcode(opcode);
 }
 
 /// <library>amx_assembly opcode</library>
