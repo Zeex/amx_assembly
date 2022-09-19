@@ -159,7 +159,7 @@ stock MyFunc(a, b[], ...) {
 	#define CODE_SCAN_MAX_JUMP_TARGETS (32)
 #endif
 
-#define DISASM_GET_OPERAND_INLINE(%0,%1) ReadAmxMemory(%0[DisasmContext_cip] + (%1 + 1) * 4)
+#define DISASM_GET_OPERAND_INLINE(%0,%1) ReadAmxMemory(%0[DisasmContext_cip] + (%1 + 1) * cellbytes)
 
 /// <p/>
 
