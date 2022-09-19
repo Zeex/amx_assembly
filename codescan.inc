@@ -159,7 +159,7 @@ stock MyFunc(a, b[], ...) {
 	#define CODE_SCAN_MAX_JUMP_TARGETS (32)
 #endif
 
-#define DISASM_GET_OPERAND_INLINE(%0,%1) ReadAmxMemory(%0[DisasmContext_cip] + (%1 + 1) * cellbytes)
+#define DISASM_GET_OPERAND_INLINE(%0,%1) ReadAmxMemory((%0) + (%1 + 1) * cellbytes)
 
 /// <p/>
 
@@ -303,7 +303,7 @@ static stock CodeScanAddJumpTarget(cip, stk, hea, jumpTargets[CodeScanner], num 
 /// <library>amx_assembly codescan</library>
 static stock CodeScanAddSwitchTarget(const dctx[DisasmContext], stk, hea, jumpTargets[CodeScanner], num = CODE_SCAN_MAX_JUMP_TARGETS) {
 	new
-		sip = DISASM_GET_OPERAND_INLINE(dctx, 0) - gBase,
+		sip = DISASM_GET_OPERAND_INLINE(dctx[DisasmContext_cip], 0) - gBase,
 		codepos = sip + gHdr[AMX_HDR_DAT] - gHdr[AMX_HDR_COD];
 	if ((codepos < 0) || (codepos > gHdr[AMX_HDR_DAT]) || (_:ReadAmxMemory(sip) != _:gOP_CASETBL)) {
 		// Can happen when we parse "RelocateOpcodeNow" because it has an
@@ -660,7 +660,7 @@ static stock bool:CodeScanStepInternal(dctx[DisasmContext], csState[CodeScanner]
 				case OP_SYSREQ_N: {
 					// sysreq.n cleans itself up, it isn't followed by `stack`.
 					if (stk != cellmin) {
-						stk -= DISASM_GET_OPERAND_INLINE(dctx, 1);
+						stk -= DISASM_GET_OPERAND_INLINE(cip, 1);
 					}
 					parseState = 0;
 				}
@@ -668,13 +668,13 @@ static stock bool:CodeScanStepInternal(dctx[DisasmContext], csState[CodeScanner]
 				case OP_STACK: {
 					// The stack grows down, but our count is positive.
 					if (stk != cellmin) {
-						stk -= DISASM_GET_OPERAND_INLINE(dctx, 0);
+						stk -= DISASM_GET_OPERAND_INLINE(cip, 0);
 					}
 					parseState = 0;
 				}
 				case OP_HEAP: {
 					if (hea != cellmin) {
-						hea += DISASM_GET_OPERAND_INLINE(dctx, 0);
+						hea += DISASM_GET_OPERAND_INLINE(cip, 0);
 					}
 					parseState = 0;
 				}
@@ -695,7 +695,7 @@ static stock bool:CodeScanStepInternal(dctx[DisasmContext], csState[CodeScanner]
 					// The "+ cellbytes" is because when calling a function, the
 					// parameter is the number of bytes pushed, not including
 					// this one, with that one implicitly popped on return.
-					parseParam = DISASM_GET_OPERAND_INLINE(dctx, 0) + cellbytes;
+					parseParam = DISASM_GET_OPERAND_INLINE(cip, 0) + cellbytes;
 					if (stk != cellmin) {
 						stk += cellbytes,
 						parseState = 3;
@@ -711,7 +711,7 @@ static stock bool:CodeScanStepInternal(dctx[DisasmContext], csState[CodeScanner]
 				// have to deal with that explcitly.  Note that the "ADD.C" may
 				// be missing if there are no variables currently in scope.
 				case OP_LCTRL: {
-					if (DISASM_GET_OPERAND_INLINE(dctx, 0) == 5) {
+					if (DISASM_GET_OPERAND_INLINE(cip, 0) == 5) {
 						parseParam = 0;
 						parseState = 1;
 					} else {
@@ -720,7 +720,7 @@ static stock bool:CodeScanStepInternal(dctx[DisasmContext], csState[CodeScanner]
 				}
 				case OP_ADD_C: {
 					if (parseState == 1) {
-						parseParam = -DISASM_GET_OPERAND_INLINE(dctx, 0),
+						parseParam = -DISASM_GET_OPERAND_INLINE(cip, 0),
 						parseState = 2;
 					} else {
 						parseState = 0;
@@ -730,7 +730,7 @@ static stock bool:CodeScanStepInternal(dctx[DisasmContext], csState[CodeScanner]
 					// This is the tricky one, since it can mess up the stack in
 					// strange ways.  Deal with the case where it comes from
 					// "goto", even though that is generally considered bad.
-					switch (DISASM_GET_OPERAND_INLINE(dctx, 0)) {
+					switch (DISASM_GET_OPERAND_INLINE(cip, 0)) {
 						case 2: {
 							hea = cellmin;
 						}
@@ -769,7 +769,7 @@ static stock bool:CodeScanStepInternal(dctx[DisasmContext], csState[CodeScanner]
 					//   val = val - base;
 					//   
 					// Only jumps that go forwards.
-					parseParam = DISASM_GET_OPERAND_INLINE(dctx, 0) - gBase,
+					parseParam = DISASM_GET_OPERAND_INLINE(cip, 0) - gBase,
 					parseState = 0;
 					if (parseParam > cip) {
 						CodeScanAddJumpTarget(parseParam, stk, hea, csState);
@@ -777,7 +777,7 @@ static stock bool:CodeScanStepInternal(dctx[DisasmContext], csState[CodeScanner]
 				}
 				case OP_JREL: {
 					// Add a jump target.  Only jumps that go forwards.
-					parseParam = DISASM_GET_OPERAND_INLINE(dctx, 0) + cip,
+					parseParam = DISASM_GET_OPERAND_INLINE(cip, 0) + cip,
 					parseState = 0;
 					if (parseParam > cip) {
 						CodeScanAddJumpTarget(parseParam, stk, hea, csState);
