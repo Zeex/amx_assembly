@@ -822,31 +822,29 @@ stock bool:IsOpcodeValid(Opcode:opcode) {
 }
 
 /// <library>amx_assembly opcode</library>
+static stock OpcodeTableSwap(&a, &b) {
+	// Reuse a variable just to make this as fast as possible in a hot loop.
+	opcode_table_is_ready = bool:a,
+	a = b,
+	b = _:opcode_table_is_ready;
+}
+
+/// <library>amx_assembly opcode</library>
 static stock OpcodeTablePartition(low, high) {
 	new pivot = opcode_reverse_addr[high];
-	new i = low - 1;
-	new tmp;
-	for (new j = low; j != high; ++j) {
+	for (new j = low--; j != high; ++j) {
 		if (opcode_reverse_addr[j] < pivot) {
 			// Swap.
-			++i,
-			tmp = opcode_reverse_addr[i],
-			opcode_reverse_addr[i] = opcode_reverse_addr[j],
-			opcode_reverse_addr[j] = tmp,
-			tmp = opcode_reverse_op[i],
-			opcode_reverse_op[i] = opcode_reverse_op[j],
-			opcode_reverse_op[j] = tmp;
+			++low,
+			OpcodeTableSwap(opcode_reverse_addr[low], opcode_reverse_addr[j]),
+			OpcodeTableSwap(opcode_reverse_op[low], opcode_reverse_op[j]);
 		}
 	}
 	return
-		++i,
-		tmp = opcode_reverse_addr[i],
-		opcode_reverse_addr[i] = opcode_reverse_addr[high],
-		opcode_reverse_addr[high] = tmp,
-		tmp = opcode_reverse_op[i],
-		opcode_reverse_op[i] = opcode_reverse_op[high],
-		opcode_reverse_op[high] = tmp,
-		i;
+		++low,
+		OpcodeTableSwap(opcode_reverse_addr[low], opcode_reverse_addr[high]),
+		OpcodeTableSwap(opcode_reverse_op[low], opcode_reverse_op[high]),
+		low;
 }
 
 /// <library>amx_assembly opcode</library>
