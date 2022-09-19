@@ -595,8 +595,7 @@ static stock bool:CodeScanStepInternal(dctx[DisasmContext], csState[CodeScanner]
 			CodeScanCheckJumpTarget(cip, cip + gBase, stk, hea, csState);
 			switch (op) {
 				case OP_CASETBL: {
-					cip += cellbytes,
-					cip += ReadAmxMemory(cip) * (2 * cellbytes),
+					cip = cip + ReadAmxMemory(cip + cellbytes) * (2 * cellbytes),
 					parseState = 0;
 				}
 				case OP_HALT: {
