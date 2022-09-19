@@ -162,6 +162,7 @@ stock CallN(address, args_to_push, bool:auto_pop = true) {
 
 /// <library>amx_assembly dynamic_call</library>
 stock CallFunction(address, {Float,_}:...) {
+	const cells_ = 2 * cellbytes;
 	const cells0 = 1 * cellbytes;
 	const cells1 = 3 * cellbytes;
 	const cells2 = 4 * cellbytes;
@@ -170,7 +171,7 @@ stock CallFunction(address, {Float,_}:...) {
 	new arg_bytes = 0, arg_begin = 0, arg_end = 0;
 
 	// Get number of bytes passed.
-	#emit load.s.pri 0x8
+	#emit load.s.pri cells_
 	#emit const.alt cells0
 	#emit sub
 	#emit stor.s.pri arg_bytes

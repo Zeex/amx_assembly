@@ -289,7 +289,7 @@ static stock PrintAmxNameTable(start, end, decode = false, dereference = false) 
 			NtCopy(info[AMX_FUNCSTUBNT_NAMEOFS] - GetAmxHeaderComponent(AMX_HDR_DAT), name);
 		}
 		if (decode) {
-			printf("    %32s: 0x%08x%s%s", name, info[AMX_FUNCSTUBNT_ADDRESS], (info[AMX_FUNCSTUBNT_ADDRESS] & AMX_TAG_STRONG) ? (" (strong)") : (""), (info[AMX_FUNCSTUBNT_ADDRESS] & AMX_TAG_LOCAL ? (" (local)") : (""));
+			printf("    %32s: 0x%08x%s%s", name, info[AMX_FUNCSTUBNT_ADDRESS], (info[AMX_FUNCSTUBNT_ADDRESS] & AMX_TAG_STRONG) ? (" (strong)") : (""), (info[AMX_FUNCSTUBNT_ADDRESS] & AMX_TAG_LOCAL) ? (" (local)") : (""));
 		} else if (dereference) {
 			printf("    %32s: 0x%08x (%d)", name, info[AMX_FUNCSTUBNT_ADDRESS], ReadAmxMemory(info[AMX_FUNCSTUBNT_ADDRESS]));
 		} else {
