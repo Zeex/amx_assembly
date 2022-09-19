@@ -824,9 +824,10 @@ stock bool:IsOpcodeValid(Opcode:opcode) {
 /// <library>amx_assembly opcode</library>
 static stock OpcodeTableSwap(&a, &b) {
 	// Reuse a variable just to make this as fast as possible in a hot loop.
-	opcode_table_is_ready = bool:a,
-	a = b,
-	b = _:opcode_table_is_ready;
+	return
+		opcode_table_is_ready = bool:a,
+		a = b,
+		b = _:opcode_table_is_ready;
 }
 
 /// <library>amx_assembly opcode</library>
@@ -899,9 +900,21 @@ stock Opcode:UnrelocateOpcode(Opcode:opcode) {
 	if (OP_NONE <= opcode < Opcode:NUM_OPCODES) {
 		return opcode;
 	}
-	for (new i = 0; i < NUM_OPCODES; i++) {
-		if (opcode_reverse_addr[i] == opcode) {
-			return opcode_reverse_op[i];
+
+	// Binary search for Linux.
+	new first = 0;
+	new last = NUM_OPCODES - 1;
+	new mid = 0;
+
+	while (first <= last) {
+		mid = (first + last) / 2;
+		new diff = opcode_reverse_addr[mid] - opcode;
+		if (diff < 0) {
+			first = mid + 1;
+		} else if (diff > 0) {
+			last = mid - 1;
+		} else {
+			return opcode_reverse_op[mid];
 		}
 	}
 	return opcode;
