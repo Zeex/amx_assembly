@@ -822,17 +822,17 @@ stock bool:IsOpcodeValid(Opcode:opcode) {
 }
 
 /// <library>amx_assembly opcode</library>
-static stock OpcodeTableSwap(&a, &b) {
+static stock Opcode:OpcodeTableSwap(&Opcode:a, &Opcode:b) {
 	// Reuse a variable just to make this as fast as possible in a hot loop.
 	return
 		opcode_table_is_ready = bool:a,
 		a = b,
-		b = _:opcode_table_is_ready;
+		b = Opcode:opcode_table_is_ready;
 }
 
 /// <library>amx_assembly opcode</library>
 static stock OpcodeTablePartition(low, high) {
-	new pivot = opcode_reverse_addr[high];
+	new Opcode:pivot = opcode_reverse_addr[high];
 	for (new j = low--; j != high; ++j) {
 		if (opcode_reverse_addr[j] < pivot) {
 			// Swap.
@@ -904,7 +904,7 @@ stock Opcode:UnsafeUnrelocateOpcode(Opcode:opcode) {
 
 	while (first <= last) {
 		mid = (first + last) / 2;
-		new diff = opcode_reverse_addr[mid] - opcode;
+		new diff = _:opcode_reverse_addr[mid] - _:opcode;
 		if (diff < 0) {
 			first = mid + 1;
 		} else if (diff > 0) {
