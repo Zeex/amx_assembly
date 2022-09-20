@@ -491,167 +491,65 @@ static stock bool:CodeScanCheck(Opcode:op, const dctx[DisasmContext], cs[CodeSca
 	new
 		cnt = (op == OP_CASETBL) ? (_:ReadAmxMemory(dctx[DisasmContext_cip] + cellbytes)) : (gAMXOpcodeParameterCounts[_:op]),
 		len = cs[CodeScanMatcher_len];
-	switch (cnt) {
-	case 0:
-		for (new idx = 0; idx != CODE_SCAN_MAX_PARALLEL; ++idx) {
-			off = cs[CodeScanMatcher_offset][idx];
-			// Ensure that only one of the parallel scanners starts from the
-			// beginning on each instruction.
-			if (off) {
-			} else if (zero) {
-				// Get the start point of this match.
-				cs[CodeScanMatcher_start][idx] = dctx[DisasmContext_cip],
-				zero = false;
-			} else {
-				continue;
-			}
-			if (cs[CodeScanMatcher_type][off] == OP_TYPE_OPCODE_ && Opcode:cs[CodeScanMatcher_code][off] == op) {
-				// Check if there are enough parameters for this opcode.
-				++off;
-				if (off == len) {
-					// Get the address of the START of the match.
-					return
-						memcpy(fctx[CodeScanMatch_holes], cs[CodeScanMatcher_holes][idx * CODE_SCAN_MAX_HOLES], 0, cs[CodeScanMatcher_holeidx][idx] * cellbytes, CODE_SCAN_MAX_HOLES),
-						fctx[CodeScanMatch_hole_count] = cs[CodeScanMatcher_holeidx][idx],
-						fctx[CodeScanMatch_cip] = cs[CodeScanMatcher_start][idx],
-						fctx[CodeScanMatch_size] = dctx[DisasmContext_nip] - cs[CodeScanMatcher_start][idx],
-						true;
-				} else switch (cs[CodeScanMatcher_type][off]) {
-					case OP_TYPE_INTEGER_, OP_TYPE_FUNCTION_, OP_TYPE_UNKNOWN_: {
-						// Parameters remaining, none expected.
-						goto CodeScanCheck_fail_0;
-					}
-					default: {
-						// Out of parameters to check but still looking correct.
-						cs[CodeScanMatcher_offset][idx] = off;
-						continue;
-					}
-				}
-			}
-CodeScanCheck_fail_0:
-			// The parameter is wrong.
-			cs[CodeScanMatcher_holeidx][idx] = cs[CodeScanMatcher_offset][idx] = 0;
+	for (new idx = 0; idx != CODE_SCAN_MAX_PARALLEL; ++idx) {
+		off = cs[CodeScanMatcher_offset][idx];
+		// Ensure that only one of the parallel scanners starts from the
+		// beginning on each instruction.
+		if (off) {
+		} else if (zero) {
+			// Get the start point of this match.
+			cs[CodeScanMatcher_start][idx] = dctx[DisasmContext_cip],
+			zero = false;
+		} else {
+			continue;
 		}
-	case 1:
-		for (new idx = 0, arg = DisasmGetOperandReloc(dctx, 0); idx != CODE_SCAN_MAX_PARALLEL; ++idx) {
-			off = cs[CodeScanMatcher_offset][idx];
-			// Ensure that only one of the parallel scanners starts from the
-			// beginning on each instruction.
-			if (off) {
-			} else if (zero) {
-				// Get the start point of this match.
-				cs[CodeScanMatcher_start][idx] = dctx[DisasmContext_cip],
-				zero = false;
-			} else {
-				continue;
-			}
-			if (cs[CodeScanMatcher_type][off] == OP_TYPE_OPCODE_ && Opcode:cs[CodeScanMatcher_code][off] == op) {
-				// Check if there are enough parameters for this opcode.
-				++off;
+		if (cs[CodeScanMatcher_type][off] == OP_TYPE_OPCODE_ && Opcode:cs[CodeScanMatcher_code][off] == op) {
+			// Check if there are enough parameters for this opcode.
+			++off;
+			for (new i = 0; i != cnt; ++i) {
 				switch (cs[CodeScanMatcher_type][off]) {
 					// Because we now abstract relocations to the disasm system,
 					// we don't need to differentiate between fixed parameters
 					// and function parameters any more - they are always fully
 					// resolved.
 					case OP_TYPE_INTEGER_, OP_TYPE_FUNCTION_: {
-						if (cs[CodeScanMatcher_code][off] != arg) {
-							goto CodeScanCheck_fail_1;
+					if (cs[CodeScanMatcher_code][off] != DisasmGetOperandReloc(dctx, i)) {
+							goto CodeScanCheck_fail;
 						}
 					}
 					case OP_TYPE_UNKNOWN_: {
 						// Save the parameter.
-						cs[CodeScanMatcher_holes][idx * CODE_SCAN_MAX_HOLES + cs[CodeScanMatcher_holeidx][idx]++] = arg;
+						cs[CodeScanMatcher_holes][idx * CODE_SCAN_MAX_HOLES + cs[CodeScanMatcher_holeidx][idx]++] = DisasmGetOperandReloc(dctx, i);
 					}
 					case OP_TYPE_OPCODE_: {
-						goto CodeScanCheck_fail_1;
+						goto CodeScanCheck_fail;
 					}
 				}
 				++off;
-				if (off == len) {
-					// Get the address of the START of the match.
-					return
-						memcpy(fctx[CodeScanMatch_holes], cs[CodeScanMatcher_holes][idx * CODE_SCAN_MAX_HOLES], 0, cs[CodeScanMatcher_holeidx][idx] * cellbytes, CODE_SCAN_MAX_HOLES),
-						fctx[CodeScanMatch_hole_count] = cs[CodeScanMatcher_holeidx][idx],
-						fctx[CodeScanMatch_cip] = cs[CodeScanMatcher_start][idx],
-						fctx[CodeScanMatch_size] = dctx[DisasmContext_nip] - cs[CodeScanMatcher_start][idx],
-						true;
-				} else switch (cs[CodeScanMatcher_type][off]) {
-					case OP_TYPE_INTEGER_, OP_TYPE_FUNCTION_, OP_TYPE_UNKNOWN_: {
-						// Parameters remaining, none expected.
-						goto CodeScanCheck_fail_1;
-					}
-					default: {
-						// Out of parameters to check but still looking correct.
-						cs[CodeScanMatcher_offset][idx] = off;
-						continue;
-					}
+			}
+			if (off == len) {
+				// Get the address of the START of the match.
+				return
+					memcpy(fctx[CodeScanMatch_holes], cs[CodeScanMatcher_holes][idx * CODE_SCAN_MAX_HOLES], 0, cs[CodeScanMatcher_holeidx][idx] * cellbytes, CODE_SCAN_MAX_HOLES),
+					fctx[CodeScanMatch_hole_count] = cs[CodeScanMatcher_holeidx][idx],
+					fctx[CodeScanMatch_cip] = cs[CodeScanMatcher_start][idx],
+					fctx[CodeScanMatch_size] = dctx[DisasmContext_nip] - cs[CodeScanMatcher_start][idx],
+					true;
+			} else switch (cs[CodeScanMatcher_type][off]) {
+				case OP_TYPE_INTEGER_, OP_TYPE_FUNCTION_, OP_TYPE_UNKNOWN_: {
+					// Parameters remaining, none expected.
+					goto CodeScanCheck_fail;
+				}
+				default: {
+					// Out of parameters to check but still looking correct.
+					cs[CodeScanMatcher_offset][idx] = off;
+					continue;
 				}
 			}
-CodeScanCheck_fail_1:
-			// The parameter is wrong.
-			cs[CodeScanMatcher_holeidx][idx] = cs[CodeScanMatcher_offset][idx] = 0;
 		}
-	default:
-		for (new idx = 0; idx != CODE_SCAN_MAX_PARALLEL; ++idx) {
-			off = cs[CodeScanMatcher_offset][idx];
-			// Ensure that only one of the parallel scanners starts from the
-			// beginning on each instruction.
-			if (off) {
-			} else if (zero) {
-				// Get the start point of this match.
-				cs[CodeScanMatcher_start][idx] = dctx[DisasmContext_cip],
-				zero = false;
-			} else {
-				continue;
-			}
-			if (cs[CodeScanMatcher_type][off] == OP_TYPE_OPCODE_ && Opcode:cs[CodeScanMatcher_code][off] == op) {
-				// Check if there are enough parameters for this opcode.
-				++off;
-				for (new i = 0; i != cnt; ++i) {
-					switch (cs[CodeScanMatcher_type][off]) {
-						// Because we now abstract relocations to the disasm system,
-						// we don't need to differentiate between fixed parameters
-						// and function parameters any more - they are always fully
-						// resolved.
-						case OP_TYPE_INTEGER_, OP_TYPE_FUNCTION_: {
-							if (cs[CodeScanMatcher_code][off] != DisasmGetOperandReloc(dctx, i)) {
-								goto CodeScanCheck_fail_N;
-							}
-						}
-						case OP_TYPE_UNKNOWN_: {
-							// Save the parameter.
-							cs[CodeScanMatcher_holes][idx * CODE_SCAN_MAX_HOLES + cs[CodeScanMatcher_holeidx][idx]++] = DisasmGetOperandReloc(dctx, i);
-						}
-						case OP_TYPE_OPCODE_: {
-							goto CodeScanCheck_fail_N;
-						}
-					}
-					++off;
-				}
-				if (off == len) {
-					// Get the address of the START of the match.
-					return
-						memcpy(fctx[CodeScanMatch_holes], cs[CodeScanMatcher_holes][idx * CODE_SCAN_MAX_HOLES], 0, cs[CodeScanMatcher_holeidx][idx] * cellbytes, CODE_SCAN_MAX_HOLES),
-						fctx[CodeScanMatch_hole_count] = cs[CodeScanMatcher_holeidx][idx],
-						fctx[CodeScanMatch_cip] = cs[CodeScanMatcher_start][idx],
-						fctx[CodeScanMatch_size] = dctx[DisasmContext_nip] - cs[CodeScanMatcher_start][idx],
-						true;
-				} else switch (cs[CodeScanMatcher_type][off]) {
-					case OP_TYPE_INTEGER_, OP_TYPE_FUNCTION_, OP_TYPE_UNKNOWN_: {
-						// Parameters remaining, none expected.
-						goto CodeScanCheck_fail_N;
-					}
-					default: {
-						// Out of parameters to check but still looking correct.
-						cs[CodeScanMatcher_offset][idx] = off;
-						continue;
-					}
-				}
-			}
-CodeScanCheck_fail_N:
-			// The parameter is wrong.
-			cs[CodeScanMatcher_holeidx][idx] = cs[CodeScanMatcher_offset][idx] = 0;
-		}
+CodeScanCheck_fail:
+		// The parameter is wrong.
+		cs[CodeScanMatcher_holeidx][idx] = cs[CodeScanMatcher_offset][idx] = 0;
 	}
 	return
 		next = cs[CodeScanMatcher_next],
