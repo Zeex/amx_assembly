@@ -56,20 +56,19 @@
 #define addressof(%1) (O@A_()?(((CALL@%1()),O@V_)?1:2):(O@V_))
 
 // Generate an example call, then extract the parameters from it.
-#define prototypeof(%1) (_:CALL@%1:M@:O@D_:O@C_:$()(F@_@:A@=F@_@:tagof(F@_@:)))
+#define prototypeof(%1) (_:CALL@%1:M@:N@:O@C_:$()(F@_@:A@=F@_@:tagof(F@_@:)))
 
 // Strip internal spaces.
 #define M@:%8$(%0\32;%1)( M@:%8$(%0%1)(
 
 // No parameters (end).
-#define O@D_:%8$()
+#define N@:%8$()
 
 // Give the call a trailing comma, and start the macros.
-#define O@C_:$(%0) O@E_:O@D_:$(%0,)
+#define O@C_:$(%0) O@E_:N@:$(%0,)
 
 // Detect the end of the parameter list.
-#define O@E_:%8$(%0,%7) N@:O@H_:(%0)O@E_:%8$(%7)
-#define N@:O@H_:(%0:%1)O@E_: O@H_:(%1)O@E_:
+#define O@E_:%8$(%0,%7) O@H_:(%0)O@E_:%8$(%7)
 
 // Detect common parameter types.  The extra `0` is to distinguish between `0`
 // and `0.0`.  The first will have the macro name changed, the second won't.
@@ -79,7 +78,15 @@
 #define P@__ARR0:%8$(%7)(%4:A@=%4:tagof(%4:)) %8$(%7)(%4s:A@=%4s:tagof(%4s:))
 #define P@0.00:%8$(%7)(%4:A@=%4:tagof(%4:)) %8$(%7)(%4f:A@=%4f:tagof(%4f:))
 #define P@00:%8$(%7)(%4:A@=%4:tagof(%4:)) %8$(%7)(%4i:A@=%4i:tagof(%4i:))
+#define P@true0:%8$(%7)(%4:A@=%4:tagof(%4:)) %8$(%7)(%4i:A@=%4i:tagof(%4i:))
+#define P@false0:%8$(%7)(%4:A@=%4:tagof(%4:)) %8$(%7)(%4i:A@=%4i:tagof(%4i:))
 #define P@__minus10:%8$(%7)(%4:A@=%4:tagof(%4:)) %8$(%7)(%4i:A@=%4i:tagof(%4i:))
+
+#define P@Text: P@
+#define P@PlayerText: P@
+#define P@Float: P@
+#define P@File: P@
+#define P@bool: P@
 
 // For internal tag creation.
 stock A@ = 0;
