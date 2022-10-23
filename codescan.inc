@@ -142,7 +142,7 @@ stock MyFunc(a, b[], ...) {
 #define O@W_:%9$%0)       %0)
 
 #define O@1_:%9$%0???%1|||%2) O@U_ ),(_:O@X_:O@Y_:O@Z_:$0%2)
-#define O@2_:%9$%0&%1|||%2)   O@F_),(O@A_()?(((CALL@%1()),O@V_)?1:2):_:O@X_:O@Y_:O@Z_:$(O@V_)%2)
+#define O@2_:%9$%0&%1|||%2)   O@F_),((O@D_:O@A_())?(((CALL@%1()),O@V_)?1:2):_:O@X_:O@Y_:O@Z_:$(O@V_)%2)
 #define O@3_:%9$%1|||%2)      O@I_ ),(_:O@X_:O@Y_:O@Z_:$(%1)%2)
 
 #if !defined CODE_SCAN_MAX_PATTERN
@@ -215,7 +215,7 @@ const CodeScanMatcher:CodeScanMatcher__ = CodeScanMatcher;
 // This macro is to let anyone use `&callback` for a scanner callback without
 // having to define the `CALL@...` macro for the required parameters (since we
 // know to call scanner callbacks in this code).
-#define addressof_ScannerCallback_(%1) (O@A_()?(((%1((gCodeScanCallback_match))),O@V_)?1:2):(O@V_))
+#define addressof_ScannerCallback_(%1) ((O@D_:O@A_())?(((%1((gCodeScanCallback_match))),O@V_)?1:2):(O@V_))
 
 /// <library>amx_assembly codescan</library>
 stock gCodeScanCallback_match[CodeScanner] = {};
