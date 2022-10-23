@@ -55,6 +55,8 @@
 
 #define addressof(%1) (O@A_()?(((CALL@%1()),O@V_)?1:2):(O@V_))
 
+#define prototypeof(%1) (_:CALL@%1:TODO:())
+
 #define AddressOfGetNextCall_ O@A_
 #define CALL@AddressOfGetNextCall_%8() CALL@O@A_%8()
 #define CALL@O@A_%8() O@A_%8()
