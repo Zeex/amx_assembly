@@ -55,7 +55,34 @@
 
 #define addressof(%1) (O@A_()?(((CALL@%1()),O@V_)?1:2):(O@V_))
 
-#define prototypeof(%1) (_:CALL@%1:TODO:())
+// Generate an example call, then extract the parameters from it.
+#define prototypeof(%1) (_:CALL@%1:O@L_:O@D_:O@C_:$()(F@_@:O@J_=F@_@:tagof(F@_@:)))
+
+// Strip internal spaces.
+#define O@L_:%8$(%0\32;%1)( O@L_:%8$(%0%1)(
+
+// No parameters (end).
+#define O@D_:%8$()
+
+// Give the call a trailing comma, and start the macros.
+#define O@C_:$(%0) O@E_:O@D_:$(%0,)
+
+// Detect the end of the parameter list.
+#define O@E_:%8$(%0,%7) O@G_:O@H_:(%0)O@E_:%8$(%7)
+#define O@G_:O@H_:(%0:%1)O@E_: O@H_:(%1)O@E_:
+
+// Detect common parameter types.  The extra `0` is to distinguish between `0`
+// and `0.0`.  The first will have the macro name changed, the second won't.
+#define O@H_:(%0) O@J_%00:
+#define O@J_""0:%8$(%7)(%4:O@J_=%4:tagof(%4:)) %8$(%7)(%4s:O@J_=%4s:tagof(%4s:))
+#define O@J___REF0:%8$(%7)(%4:O@J_=%4:tagof(%4:)) %8$(%7)(%4v:O@J_=%4v:tagof(%4v:))
+#define O@J___ARR0:%8$(%7)(%4:O@J_=%4:tagof(%4:)) %8$(%7)(%4s:O@J_=%4s:tagof(%4s:))
+#define O@J_0.00:%8$(%7)(%4:O@J_=%4:tagof(%4:)) %8$(%7)(%4f:O@J_=%4f:tagof(%4f:))
+#define O@J_00:%8$(%7)(%4:O@J_=%4:tagof(%4:)) %8$(%7)(%4i:O@J_=%4i:tagof(%4i:))
+#define O@J___minus10:%8$(%7)(%4:O@J_=%4:tagof(%4:)) %8$(%7)(%4i:O@J_=%4i:tagof(%4i:))
+
+// For internal tag creation.
+stock O@J_ = 0;
 
 #define AddressOfGetNextCall_ O@A_
 #define CALL@AddressOfGetNextCall_%8() CALL@O@A_%8()
