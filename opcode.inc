@@ -844,6 +844,7 @@ static stock InitOpcodeTable() {
 			printf("Opcode error: Addresses are unsorted");
 		}
 		prev = opcode_lookup[i];
+		printf("Opcode %d (%s) at %08x", _:i, gAMXOpcodeNames[i], _:prev);
 	}
 #if OPCODE_HAS_O2
 	opcode_lookup[_:OP_SYSREQ_N] = opcode_lookup[_:OP_SYSREQ_D];
