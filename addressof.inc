@@ -56,9 +56,8 @@
 #define addressof(%1) ((O@D_:O@A_())?(((CALL@%1()),O@V_)?1:2):(O@V_))
 
 #define AddressOfGetNextCall_ O@A_
-#define AddressOfCallback_ O@A@
 #define CALL@AddressOfGetNextCall_%8() CALL@O@A_%8()
-#define CALL@AddressOfCallback_%8() CALL@O@A@%8()
+#define CALL@GetPublicAddressFromName%8() CALL@O@A@%8()
 #define CALL@O@A_%8() O@A_%8()
 #define CALL@O@A@%8() O@A@%8("")
 
@@ -157,11 +156,6 @@ stock bool:AddressOfGetNextCall_() {
 	// ALWAYS returns false so that the function call within "OP(&func)" will
 	// never be called thanks to the conditional.
 	return false;
-}
-
-/// <library>amx_assembly addressof</library>
-stock AddressOfCallback_(const callback[]) {
-	return GetPublicAddressFromIndex(funcidx(callback));
 }
 
 /// <library>amx_assembly addressof</library>
