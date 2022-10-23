@@ -204,7 +204,7 @@ stock const gAMXOpcodeNames[][OPCODE_MAX_INSN_NAME] = {
 
 /// <library>amx_assembly opcode</library>
 stock const gAMXOpcodeBaseSizes[] = {
-	0 * cellbytes, 2 * cellbytes, 2 * cellbytes, 2 * cellbytes, 2 * cellbytes, 2 * cellbytes, 2 * cellbytes, 2 * cellbytes, 2 * cellbytes, 1 * cellbytes, 2 * cellbytes, 2 * cellbytes, 2 * cellbytes, 2 * cellbytes, 2 * cellbytes, 2 * cellbytes, 2 * cellbytes, 2 * cellbytes, 2 * cellbytes, 2 * cellbytes, 2 * cellbytes, 2 * cellbytes, 2 * cellbytes, 1 * cellbytes, 2 * cellbytes, 1 * cellbytes, 2 * cellbytes, 1 * cellbytes, 2 * cellbytes, 2 * cellbytes, 2 * cellbytes, 2 * cellbytes,
+	1 * cellbytes, 2 * cellbytes, 2 * cellbytes, 2 * cellbytes, 2 * cellbytes, 2 * cellbytes, 2 * cellbytes, 2 * cellbytes, 2 * cellbytes, 1 * cellbytes, 2 * cellbytes, 2 * cellbytes, 2 * cellbytes, 2 * cellbytes, 2 * cellbytes, 2 * cellbytes, 2 * cellbytes, 2 * cellbytes, 2 * cellbytes, 2 * cellbytes, 2 * cellbytes, 2 * cellbytes, 2 * cellbytes, 1 * cellbytes, 2 * cellbytes, 1 * cellbytes, 2 * cellbytes, 1 * cellbytes, 2 * cellbytes, 2 * cellbytes, 2 * cellbytes, 2 * cellbytes,
 	2 * cellbytes, 1 * cellbytes, 1 * cellbytes, 1 * cellbytes, 1 * cellbytes, 1 * cellbytes, 2 * cellbytes, 2 * cellbytes, 2 * cellbytes, 2 * cellbytes, 1 * cellbytes, 1 * cellbytes, 2 * cellbytes, 2 * cellbytes, 1 * cellbytes, 1 * cellbytes, 1 * cellbytes, 2 * cellbytes, 1 * cellbytes, 2 * cellbytes, 2 * cellbytes, 2 * cellbytes, 2 * cellbytes, 2 * cellbytes, 2 * cellbytes, 2 * cellbytes, 2 * cellbytes, 2 * cellbytes, 2 * cellbytes, 2 * cellbytes, 2 * cellbytes, 2 * cellbytes,
 	2 * cellbytes, 1 * cellbytes, 1 * cellbytes, 1 * cellbytes, 2 * cellbytes, 2 * cellbytes, 2 * cellbytes, 2 * cellbytes, 1 * cellbytes, 1 * cellbytes, 1 * cellbytes, 1 * cellbytes, 1 * cellbytes, 1 * cellbytes, 1 * cellbytes, 1 * cellbytes, 1 * cellbytes, 1 * cellbytes, 1 * cellbytes, 1 * cellbytes, 1 * cellbytes, 1 * cellbytes, 1 * cellbytes, 2 * cellbytes, 2 * cellbytes, 1 * cellbytes, 1 * cellbytes, 2 * cellbytes, 2 * cellbytes, 1 * cellbytes, 1 * cellbytes, 1 * cellbytes,
 	1 * cellbytes, 1 * cellbytes, 1 * cellbytes, 1 * cellbytes, 1 * cellbytes, 1 * cellbytes, 1 * cellbytes, 1 * cellbytes, 1 * cellbytes, 2 * cellbytes, 2 * cellbytes, 1 * cellbytes, 1 * cellbytes, 2 * cellbytes, 2 * cellbytes, 1 * cellbytes, 1 * cellbytes, 1 * cellbytes, 2 * cellbytes, 2 * cellbytes, 1 * cellbytes, 2 * cellbytes, 2 * cellbytes, 2 * cellbytes, 2 * cellbytes, 2 * cellbytes, 1 * cellbytes, 2 * cellbytes, 2 * cellbytes, 2 * cellbytes, 2 * cellbytes, 2 * cellbytes,
@@ -852,34 +852,45 @@ static stock InitOpcodeTable() {
 	
 	opcode_table_is_ready = true;
 
-	//// Now rewrite the giant switch in `UnsafeUnrelocateOpcode` for speed.  This
-	//// is extra fun because we can't use any of the features provided by this
-	//// file or `disasm.inc` to do the code reading!  So instead we need a very
-	//// very very simple system to decompile code here.  Fortuantely it only
-	//// needs to be run on like three instructions, so can be slow.
-	//new hdr[AMX_HDR];
-	//GetAmxHeader(hdr);
-	//for (new addr = GetPublicAddressFromName("UnsafeUnrelocateOpcode") + hdr[AMX_HDR_COD] - hdr[AMX_HDR_DAT]; ; ) {
-	//	op = Opcode:ReadAmxMemory(addr);
-	//	// Slowly determine the opcode.
-	//	for (new Opcode:i = OP_NONE; i < OP_LAST_; i++) {
-	//		if (op == opcode_lookup[_:i]) {
-	//			if (i == OP_CASETBL) {
-	//				// Found the instruction we want.  Do the complete rewrite.
-	//				printf("Found the case table at %08x", addr - hdr[AMX_HDR_COD] + hdr[AMX_HDR_DAT]);
-	//				printf("hi");
-	//				printf("hi");
-	//				printf("hi");
-	//				printf("hi");
-	//				printf("hi");
-	//				return;
-	//			} else {
-	//				addr += gAMXOpcodeBaseSizes[_:i];
-	//			}
-	//			break;
-	//		}
-	//	}
-	//}
+	// Now rewrite the giant switch in `UnsafeUnrelocateOpcode` for speed.  This
+	// is extra fun because we can't use any of the features provided by this
+	// file or `disasm.inc` to do the code reading!  So instead we need a very
+	// very very simple system to decompile code here.  Fortuantely it only
+	// needs to be run on like three instructions, so can be slow.
+	new hdr[AMX_HDR];
+	GetAmxHeader(hdr);
+	for (new addr = GetPublicAddressFromName("UnsafeUnrelocateOpcode") + hdr[AMX_HDR_COD] - hdr[AMX_HDR_DAT]; ; ) {
+		op = Opcode:ReadAmxMemory(addr);
+		// Slowly determine the opcode.
+		for (new Opcode:i = OP_NONE; i < OP_LAST_; i++) {
+			if (op == opcode_lookup[_:i]) {
+				if (i == OP_SWITCH) {
+					// Jump straight to the casetable, to save time.
+					//printf("Found the switch at %08x", addr - hdr[AMX_HDR_COD] + hdr[AMX_HDR_DAT]);
+					//printf("Parameter is %08x", ReadAmxMemory(addr + cellbytes) - GetAmxBaseAddress() - hdr[AMX_HDR_COD]);
+					addr = ReadAmxMemory(addr + cellbytes) - GetAmxBaseAddress() - hdr[AMX_HDR_DAT];
+					//printf("New pointers is %08x", addr - hdr[AMX_HDR_COD] + hdr[AMX_HDR_DAT]);
+					//return;
+				} else if (i == OP_CASETBL) {
+					// Found the instruction we want.  Do the complete rewrite.
+					printf("Found the case table at %08x", addr - hdr[AMX_HDR_COD] + hdr[AMX_HDR_DAT]);
+					// Loop through all the opcodes in the table and replace them.
+					addr += cellbytes,
+					i = Opcode:ReadAmxMemory(addr);
+					while (i--) {
+						addr += 2 * cellbytes,
+						op = Opcode:ReadAmxMemory(addr),
+						op = opcode_lookup[_:op],
+						WriteAmxMemory(addr, _:op);
+					}
+					return;
+				} else {
+					addr += gAMXOpcodeBaseSizes[_:i];
+				}
+				break;
+			}
+		}
+	}
 }
 
 /// <library>amx_assembly opcode</library>
