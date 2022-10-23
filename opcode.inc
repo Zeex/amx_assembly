@@ -124,6 +124,9 @@ enum Opcode {
 /// <library>amx_assembly opcode</library>
 const Opcode:Opcode__ = Opcode;
 
+#if OPCODE_HAS_O2
+	static Opcode:OP_SYSREQ_DN = OP_SYSREQ_D;
+#endif
 // Doesn't work inline.
 #if OPCODE_HAS_O2
 	#define OPCODE_O2_PARAMETER_COUNTS , 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5, 2, 2, 2, 2, 2
@@ -777,6 +780,9 @@ stock Opcode:RelocateOpcodeNow(Opcode:opcode) {
 		}
 		case OP_SYSREQ_D: {
 			if (HasSysreqD()) {
+#if OPCODE_HAS_O2
+				OP_SYSREQ_DN = OP_SYSREQ_D;
+#endif
 				// Since there's no way to #emit sysreq.d we have to compute its
 				// address using a relative offset to another opcode, e.g. nop.
 				new bool:is_crashdetect = false;
@@ -810,8 +816,6 @@ stock Opcode:RelocateOpcodeNow(Opcode:opcode) {
 
 /// <library>amx_assembly opcode</library>
 static stock Opcode:opcode_lookup[NUM_OPCODES];
-static stock Opcode:opcode_reverse_op[NUM_OPCODES];
-static stock Opcode:opcode_reverse_addr[NUM_OPCODES];
 
 /// <library>amx_assembly opcode</library>
 static stock bool:opcode_table_is_ready = false;
@@ -822,63 +826,26 @@ stock bool:IsOpcodeValid(Opcode:opcode) {
 }
 
 /// <library>amx_assembly opcode</library>
-static stock Opcode:OpcodeTableSwap(&Opcode:a, &Opcode:b) {
-	// Reuse a variable just to make this as fast as possible in a hot loop.
-	return
-		opcode_table_is_ready = bool:a,
-		a = b,
-		b = Opcode:opcode_table_is_ready;
-}
-
-/// <library>amx_assembly opcode</library>
-static stock OpcodeTablePartition(low, high) {
-	new Opcode:pivot = opcode_reverse_addr[high];
-	for (new j = low--; j != high; ++j) {
-		if (opcode_reverse_addr[j] < pivot) {
-			// Swap.
-			++low,
-			OpcodeTableSwap(opcode_reverse_addr[low], opcode_reverse_addr[j]),
-			OpcodeTableSwap(opcode_reverse_op[low], opcode_reverse_op[j]);
-		}
-	}
-	return
-		++low,
-		OpcodeTableSwap(opcode_reverse_addr[low], opcode_reverse_addr[high]),
-		OpcodeTableSwap(opcode_reverse_op[low], opcode_reverse_op[high]),
-		low;
-}
-
-/// <library>amx_assembly opcode</library>
-static stock OpcodeTableQuickSort(low, high) {
-	if (low < high) {
-		new partition = OpcodeTablePartition(low, high);
-		OpcodeTableQuickSort(low, partition - 1);
-		OpcodeTableQuickSort(partition + 1, high);
-	}
-}
-
-/// <library>amx_assembly opcode</library>
 static stock InitOpcodeTable() {
+	new prev = -1;
 	for (new i = 0; i < NUM_OPCODES; i++) {
-		opcode_reverse_addr[i] = opcode_lookup[i] = RelocateOpcodeNow(Opcode:i);
-		opcode_reverse_op[i] = Opcode:i;
-		//printf("Unsorted: %d = %08x", opcode_reverse_op[i], opcode_reverse_addr[i]);
+		new Opcode:op = Opcode:i;
+#if OPCODE_HAS_O2
+		if (op == OP_SYSREQ_D) {
+			op = OP_SYSREQ_N;
+		} else if (op == OP_SYSREQ_N) {
+			continue;
+		}
+#endif
+		if (prev > (opcode_lookup[i] = RelocateOpcodeNow(op))) {
+			printf("Opcode error: Addresses are unsorted");
+		}
+		prev = opcode_lookup[i];
 	}
 #if OPCODE_HAS_O2
-	// These are the same ID in the server.
-	if (HasSysreqD()) {
-		opcode_reverse_addr[OP_SYSREQ_N] = opcode_reverse_addr[OP_SYSREQ_D];
-		opcode_reverse_op[OP_SYSREQ_N] = OP_SYSREQ_D;
-	} else {
-		opcode_reverse_addr[OP_SYSREQ_D] = opcode_reverse_addr[OP_SYSREQ_N];
-		opcode_reverse_op[OP_SYSREQ_D] = OP_SYSREQ_N;
-	}
+	opcode_lookup[_:OP_SYSREQ_N] = opcode_lookup[_:OP_SYSREQ_D];
+	opcode_lookup[_:OP_SYSREQ_D] = opcode_lookup[_:OP_NOP];
 #endif
-	// Sort the reverse lookup table.
-	OpcodeTableQuickSort(0, NUM_OPCODES - 1);
-	//for (new i = 0; i < NUM_OPCODES; i++) {
-	//	printf("Sorted: %d = %08x", opcode_reverse_op[i], opcode_reverse_addr[i]);
-	//}
 	
 	opcode_table_is_ready = true;
 }
@@ -898,20 +865,170 @@ stock bool:IsOpcodeRelocationRequired() {
 
 /// <library>amx_assembly opcode</library>
 stock Opcode:UnsafeUnrelocateOpcode(Opcode:opcode) {
-	new first = 0;
-	new last = NUM_OPCODES - 1;
-	new mid = 0;
-
-	while (first <= last) {
-		mid = (first + last) / 2;
-		new diff = _:opcode_reverse_addr[mid] - _:opcode;
-		if (diff < 0) {
-			first = mid + 1;
-		} else if (diff > 0) {
-			last = mid - 1;
-		} else {
-			return opcode_reverse_op[mid];
-		}
+	// This code seems pointless.  It isn't.  It gets rewritten at runtime based
+	// on the true opcode internal values, so the whole function is a switch on
+	// different values than the ones shown here.
+	switch (opcode) {
+	case OP_LOAD_PRI: return OP_LOAD_PRI;
+	case OP_LOAD_ALT: return OP_LOAD_ALT;
+	case OP_LOAD_S_PRI: return OP_LOAD_S_PRI;
+	case OP_LOAD_S_ALT: return OP_LOAD_S_ALT;
+	case OP_LREF_PRI: return OP_LREF_PRI;
+	case OP_LREF_ALT: return OP_LREF_ALT;
+	case OP_LREF_S_PRI: return OP_LREF_S_PRI;
+	case OP_LREF_S_ALT: return OP_LREF_S_ALT;
+	case OP_LOAD_I: return OP_LOAD_I;
+	case OP_LODB_I: return OP_LODB_I;
+	case OP_CONST_PRI: return OP_CONST_PRI;
+	case OP_CONST_ALT: return OP_CONST_ALT;
+	case OP_ADDR_PRI: return OP_ADDR_PRI;
+	case OP_ADDR_ALT: return OP_ADDR_ALT;
+	case OP_STOR_PRI: return OP_STOR_PRI;
+	case OP_STOR_ALT: return OP_STOR_ALT;
+	case OP_STOR_S_PRI: return OP_STOR_S_PRI;
+	case OP_STOR_S_ALT: return OP_STOR_S_ALT;
+	case OP_SREF_PRI: return OP_SREF_PRI;
+	case OP_SREF_ALT: return OP_SREF_ALT;
+	case OP_SREF_S_PRI: return OP_SREF_S_PRI;
+	case OP_SREF_S_ALT: return OP_SREF_S_ALT;
+	case OP_STOR_I: return OP_STOR_I;
+	case OP_STRB_I: return OP_STRB_I;
+	case OP_LIDX: return OP_LIDX;
+	case OP_LIDX_B: return OP_LIDX_B;
+	case OP_IDXADDR: return OP_IDXADDR;
+	case OP_IDXADDR_B: return OP_IDXADDR_B;
+	case OP_ALIGN_PRI: return OP_ALIGN_PRI;
+	case OP_ALIGN_ALT: return OP_ALIGN_ALT;
+	case OP_LCTRL: return OP_LCTRL;
+	case OP_SCTRL: return OP_SCTRL;
+	case OP_MOVE_PRI: return OP_MOVE_PRI;
+	case OP_MOVE_ALT: return OP_MOVE_ALT;
+	case OP_XCHG: return OP_XCHG;
+	case OP_PUSH_PRI: return OP_PUSH_PRI;
+	case OP_PUSH_ALT: return OP_PUSH_ALT;
+	case OP_PUSH_R: return OP_PUSH_R;
+	case OP_PUSH_C: return OP_PUSH_C;
+	case OP_PUSH: return OP_PUSH;
+	case OP_PUSH_S: return OP_PUSH_S;
+	case OP_POP_PRI: return OP_POP_PRI;
+	case OP_POP_ALT: return OP_POP_ALT;
+	case OP_STACK: return OP_STACK;
+	case OP_HEAP: return OP_HEAP;
+	case OP_PROC: return OP_PROC;
+	case OP_RET: return OP_RET;
+	case OP_RETN: return OP_RETN;
+	case OP_CALL: return OP_CALL;
+	case OP_CALL_PRI: return OP_CALL_PRI;
+	case OP_JUMP: return OP_JUMP;
+	case OP_JREL: return OP_JREL;
+	case OP_JZER: return OP_JZER;
+	case OP_JNZ: return OP_JNZ;
+	case OP_JEQ: return OP_JEQ;
+	case OP_JNEQ: return OP_JNEQ;
+	case OP_JLESS: return OP_JLESS;
+	case OP_JLEQ: return OP_JLEQ;
+	case OP_JGRTR: return OP_JGRTR;
+	case OP_JGEQ: return OP_JGEQ;
+	case OP_JSLESS: return OP_JSLESS;
+	case OP_JSLEQ: return OP_JSLEQ;
+	case OP_JSGRTR: return OP_JSGRTR;
+	case OP_JSGEQ: return OP_JSGEQ;
+	case OP_SHL: return OP_SHL;
+	case OP_SHR: return OP_SHR;
+	case OP_SSHR: return OP_SSHR;
+	case OP_SHL_C_PRI: return OP_SHL_C_PRI;
+	case OP_SHL_C_ALT: return OP_SHL_C_ALT;
+	case OP_SHR_C_PRI: return OP_SHR_C_PRI;
+	case OP_SHR_C_ALT: return OP_SHR_C_ALT;
+	case OP_SMUL: return OP_SMUL;
+	case OP_SDIV: return OP_SDIV;
+	case OP_SDIV_ALT: return OP_SDIV_ALT;
+	case OP_UMUL: return OP_UMUL;
+	case OP_UDIV: return OP_UDIV;
+	case OP_UDIV_ALT: return OP_UDIV_ALT;
+	case OP_ADD: return OP_ADD;
+	case OP_SUB: return OP_SUB;
+	case OP_SUB_ALT: return OP_SUB_ALT;
+	case OP_AND: return OP_AND;
+	case OP_OR: return OP_OR;
+	case OP_XOR: return OP_XOR;
+	case OP_NOT: return OP_NOT;
+	case OP_NEG: return OP_NEG;
+	case OP_INVERT: return OP_INVERT;
+	case OP_ADD_C: return OP_ADD_C;
+	case OP_SMUL_C: return OP_SMUL_C;
+	case OP_ZERO_PRI: return OP_ZERO_PRI;
+	case OP_ZERO_ALT: return OP_ZERO_ALT;
+	case OP_ZERO: return OP_ZERO;
+	case OP_ZERO_S: return OP_ZERO_S;
+	case OP_SIGN_PRI: return OP_SIGN_PRI;
+	case OP_SIGN_ALT: return OP_SIGN_ALT;
+	case OP_EQ: return OP_EQ;
+	case OP_NEQ: return OP_NEQ;
+	case OP_LESS: return OP_LESS;
+	case OP_LEQ: return OP_LEQ;
+	case OP_GRTR: return OP_GRTR;
+	case OP_GEQ: return OP_GEQ;
+	case OP_SLESS: return OP_SLESS;
+	case OP_SLEQ: return OP_SLEQ;
+	case OP_SGRTR: return OP_SGRTR;
+	case OP_SGEQ: return OP_SGEQ;
+	case OP_EQ_C_PRI: return OP_EQ_C_PRI;
+	case OP_EQ_C_ALT: return OP_EQ_C_ALT;
+	case OP_INC_PRI: return OP_INC_PRI;
+	case OP_INC_ALT: return OP_INC_ALT;
+	case OP_INC: return OP_INC;
+	case OP_INC_S: return OP_INC_S;
+	case OP_INC_I: return OP_INC_I;
+	case OP_DEC_PRI: return OP_DEC_PRI;
+	case OP_DEC_ALT: return OP_DEC_ALT;
+	case OP_DEC: return OP_DEC;
+	case OP_DEC_S: return OP_DEC_S;
+	case OP_DEC_I: return OP_DEC_I;
+	case OP_MOVS: return OP_MOVS;
+	case OP_CMPS: return OP_CMPS;
+	case OP_FILL: return OP_FILL;
+	case OP_HALT: return OP_HALT;
+	case OP_BOUNDS: return OP_BOUNDS;
+	case OP_SYSREQ_PRI: return OP_SYSREQ_PRI;
+	case OP_SYSREQ_C: return OP_SYSREQ_C;
+	case OP_FILE: return OP_FILE;
+	case OP_LINE: return OP_LINE;
+	case OP_SYMBOL: return OP_SYMBOL;
+	case OP_SRANGE: return OP_SRANGE;
+	case OP_JUMP_PRI: return OP_JUMP_PRI;
+	case OP_SWITCH: return OP_SWITCH;
+	case OP_CASETBL: return OP_CASETBL;
+	case OP_SWAP_PRI: return OP_SWAP_PRI;
+	case OP_SWAP_ALT: return OP_SWAP_ALT;
+	case OP_PUSH_ADR: return OP_PUSH_ADR;
+	case OP_NOP: return OP_NOP;
+	case OP_SYSREQ_D: return OP_SYSREQ_D;
+	case OP_SYMTAG: return OP_SYMTAG;
+	case OP_BREAK: return OP_BREAK;
+#if OPCODE_HAS_O2
+	case OP_PUSH2_C: return OP_PUSH2_C;
+	case OP_PUSH2: return OP_PUSH2;
+	case OP_PUSH2_S: return OP_PUSH2_S;
+	case OP_PUSH2_ADR: return OP_PUSH2_ADR;
+	case OP_PUSH3_C: return OP_PUSH3_C;
+	case OP_PUSH3: return OP_PUSH3;
+	case OP_PUSH3_S: return OP_PUSH3_S;
+	case OP_PUSH3_ADR: return OP_PUSH3_ADR;
+	case OP_PUSH4_C: return OP_PUSH4_C;
+	case OP_PUSH4: return OP_PUSH4;
+	case OP_PUSH4_S: return OP_PUSH4_S;
+	case OP_PUSH4_ADR: return OP_PUSH4_ADR;
+	case OP_PUSH5_C: return OP_PUSH5_C;
+	case OP_PUSH5: return OP_PUSH5;
+	case OP_PUSH5_S: return OP_PUSH5_S;
+	case OP_PUSH5_ADR: return OP_PUSH5_ADR;
+	case OP_LOAD_BOTH: return OP_LOAD_BOTH;
+	case OP_LOAD_S_BOTH: return OP_LOAD_S_BOTH;
+	case OP_CONST: return OP_CONST;
+	case OP_CONST_S: return OP_CONST_S;
+	case OP_SYSREQ_N: return OP_SYSREQ_N;
+#endif
 	}
 	return opcode;
 }
@@ -924,7 +1041,7 @@ stock Opcode:UnrelocateOpcode(Opcode:opcode) {
 #if OPCODE_HAS_O2
 	if (opcode == OP_SYSREQ_D) {
 		// These share the same raw ID in the server.
-		return HasSysreqD() ? OP_SYSREQ_D : OP_SYSREQ_N;
+		return OP_SYSREQ_DN;
 	}
 #endif
 	if (OP_NONE <= opcode < Opcode:NUM_OPCODES) {
@@ -964,8 +1081,7 @@ stock bool:GetOpcodeInstructionRelocatable(Opcode:opcode) {
 	#endinput
 #endif
 
-stock Opcode:RelocateMacroOpcodeNow(Opcode:opcode)
-{
+stock Opcode:RelocateMacroOpcodeNow(Opcode:opcode) {
 	switch (opcode) {
 		case OP_PUSH2_C: {
 			return ReadOpcodeNearThis(cellbytes);
