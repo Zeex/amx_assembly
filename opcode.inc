@@ -204,7 +204,7 @@ stock const gAMXOpcodeNames[][OPCODE_MAX_INSN_NAME] = {
 
 /// <library>amx_assembly opcode</library>
 stock const gAMXOpcodeBaseSizes[] = {
-	1 * cellbytes, 2 * cellbytes, 2 * cellbytes, 2 * cellbytes, 2 * cellbytes, 2 * cellbytes, 2 * cellbytes, 2 * cellbytes, 2 * cellbytes, 1 * cellbytes, 2 * cellbytes, 2 * cellbytes, 2 * cellbytes, 2 * cellbytes, 2 * cellbytes, 2 * cellbytes, 2 * cellbytes, 2 * cellbytes, 2 * cellbytes, 2 * cellbytes, 2 * cellbytes, 2 * cellbytes, 2 * cellbytes, 1 * cellbytes, 2 * cellbytes, 1 * cellbytes, 2 * cellbytes, 1 * cellbytes, 2 * cellbytes, 2 * cellbytes, 2 * cellbytes, 2 * cellbytes,
+	0 * cellbytes, 2 * cellbytes, 2 * cellbytes, 2 * cellbytes, 2 * cellbytes, 2 * cellbytes, 2 * cellbytes, 2 * cellbytes, 2 * cellbytes, 1 * cellbytes, 2 * cellbytes, 2 * cellbytes, 2 * cellbytes, 2 * cellbytes, 2 * cellbytes, 2 * cellbytes, 2 * cellbytes, 2 * cellbytes, 2 * cellbytes, 2 * cellbytes, 2 * cellbytes, 2 * cellbytes, 2 * cellbytes, 1 * cellbytes, 2 * cellbytes, 1 * cellbytes, 2 * cellbytes, 1 * cellbytes, 2 * cellbytes, 2 * cellbytes, 2 * cellbytes, 2 * cellbytes,
 	2 * cellbytes, 1 * cellbytes, 1 * cellbytes, 1 * cellbytes, 1 * cellbytes, 1 * cellbytes, 2 * cellbytes, 2 * cellbytes, 2 * cellbytes, 2 * cellbytes, 1 * cellbytes, 1 * cellbytes, 2 * cellbytes, 2 * cellbytes, 1 * cellbytes, 1 * cellbytes, 1 * cellbytes, 2 * cellbytes, 1 * cellbytes, 2 * cellbytes, 2 * cellbytes, 2 * cellbytes, 2 * cellbytes, 2 * cellbytes, 2 * cellbytes, 2 * cellbytes, 2 * cellbytes, 2 * cellbytes, 2 * cellbytes, 2 * cellbytes, 2 * cellbytes, 2 * cellbytes,
 	2 * cellbytes, 1 * cellbytes, 1 * cellbytes, 1 * cellbytes, 2 * cellbytes, 2 * cellbytes, 2 * cellbytes, 2 * cellbytes, 1 * cellbytes, 1 * cellbytes, 1 * cellbytes, 1 * cellbytes, 1 * cellbytes, 1 * cellbytes, 1 * cellbytes, 1 * cellbytes, 1 * cellbytes, 1 * cellbytes, 1 * cellbytes, 1 * cellbytes, 1 * cellbytes, 1 * cellbytes, 1 * cellbytes, 2 * cellbytes, 2 * cellbytes, 1 * cellbytes, 1 * cellbytes, 2 * cellbytes, 2 * cellbytes, 1 * cellbytes, 1 * cellbytes, 1 * cellbytes,
 	1 * cellbytes, 1 * cellbytes, 1 * cellbytes, 1 * cellbytes, 1 * cellbytes, 1 * cellbytes, 1 * cellbytes, 1 * cellbytes, 1 * cellbytes, 2 * cellbytes, 2 * cellbytes, 1 * cellbytes, 1 * cellbytes, 2 * cellbytes, 2 * cellbytes, 1 * cellbytes, 1 * cellbytes, 1 * cellbytes, 2 * cellbytes, 2 * cellbytes, 1 * cellbytes, 2 * cellbytes, 2 * cellbytes, 2 * cellbytes, 2 * cellbytes, 2 * cellbytes, 1 * cellbytes, 2 * cellbytes, 2 * cellbytes, 2 * cellbytes, 2 * cellbytes, 2 * cellbytes,
@@ -214,6 +214,9 @@ stock const gAMXOpcodeBaseSizes[] = {
 
 /// <library>amx_assembly opcode</library>
 const NUM_OPCODES = _:OP_LAST_;
+
+/// <library>amx_assembly opcode</library>
+forward Opcode:UnsafeUnrelocateOpcode(Opcode:opcode);
 
 /// <library>amx_assembly opcode</library>
 static stock Opcode:ReadOpcodeNearThis(offset = 0) {
@@ -827,9 +830,9 @@ stock bool:IsOpcodeValid(Opcode:opcode) {
 
 /// <library>amx_assembly opcode</library>
 static stock InitOpcodeTable() {
-	new prev = -1;
-	for (new i = 0; i < NUM_OPCODES; i++) {
-		new Opcode:op = Opcode:i;
+	new Opcode:op;
+	for (new i = 0, Opcode:prev = OP_NONE; i < NUM_OPCODES; i++) {
+		op = Opcode:i;
 #if OPCODE_HAS_O2
 		if (op == OP_SYSREQ_D) {
 			op = OP_SYSREQ_N;
@@ -848,6 +851,35 @@ static stock InitOpcodeTable() {
 #endif
 	
 	opcode_table_is_ready = true;
+
+	//// Now rewrite the giant switch in `UnsafeUnrelocateOpcode` for speed.  This
+	//// is extra fun because we can't use any of the features provided by this
+	//// file or `disasm.inc` to do the code reading!  So instead we need a very
+	//// very very simple system to decompile code here.  Fortuantely it only
+	//// needs to be run on like three instructions, so can be slow.
+	//new hdr[AMX_HDR];
+	//GetAmxHeader(hdr);
+	//for (new addr = GetPublicAddressFromName("UnsafeUnrelocateOpcode") + hdr[AMX_HDR_COD] - hdr[AMX_HDR_DAT]; ; ) {
+	//	op = Opcode:ReadAmxMemory(addr);
+	//	// Slowly determine the opcode.
+	//	for (new Opcode:i = OP_NONE; i < OP_LAST_; i++) {
+	//		if (op == opcode_lookup[_:i]) {
+	//			if (i == OP_CASETBL) {
+	//				// Found the instruction we want.  Do the complete rewrite.
+	//				printf("Found the case table at %08x", addr - hdr[AMX_HDR_COD] + hdr[AMX_HDR_DAT]);
+	//				printf("hi");
+	//				printf("hi");
+	//				printf("hi");
+	//				printf("hi");
+	//				printf("hi");
+	//				return;
+	//			} else {
+	//				addr += gAMXOpcodeBaseSizes[_:i];
+	//			}
+	//			break;
+	//		}
+	//	}
+	//}
 }
 
 /// <library>amx_assembly opcode</library>
@@ -863,8 +895,10 @@ stock bool:IsOpcodeRelocationRequired() {
 	return RelocateOpcode(OP_LOAD_PRI) != OP_LOAD_PRI;
 }
 
+// Why is this function public?  So that we can get its address without
+// `addressof.inc`, only `amx_header.inc`.
 /// <library>amx_assembly opcode</library>
-stock Opcode:UnsafeUnrelocateOpcode(Opcode:opcode) {
+public Opcode:UnsafeUnrelocateOpcode(Opcode:opcode) {
 	// This code seems pointless.  It isn't.  It gets rewritten at runtime based
 	// on the true opcode internal values, so the whole function is a switch on
 	// different values than the ones shown here.
