@@ -875,6 +875,7 @@ static stock OpcodeTableQuickSort(low, high) {
 
 /// <library>amx_assembly opcode</library>
 static stock OpcodeTableWrite(addr, i) {
+	// Loop through all the opcodes in the table and replace them.
 	new Opcode:op;
 	while (i--) {
 		op = Opcode:ReadAmxMemory(addr),
@@ -907,15 +908,9 @@ static stock InitOpcodeTable() {
 			if (op == opcode_lookup[_:i]) {
 				if (i == OP_SWITCH) {
 					// Jump straight to the casetable, to save time.
-					//printf("Found the switch at %08x", addr - hdr[AMX_HDR_COD] + hdr[AMX_HDR_DAT]);
-					//printf("Parameter is %08x", ReadAmxMemory(addr + cellbytes) - GetAmxBaseAddress() - hdr[AMX_HDR_COD]);
 					addr = ReadAmxMemory(addr + cellbytes) - GetAmxBaseAddress() - hdr[AMX_HDR_DAT];
-					//printf("New pointers is %08x", addr - hdr[AMX_HDR_COD] + hdr[AMX_HDR_DAT]);
-					//return;
 				} else if (i == OP_CASETBL) {
 					// Found the instruction we want.  Do the complete rewrite.
-					//printf("Found the case table at %08x", addr - hdr[AMX_HDR_COD] + hdr[AMX_HDR_DAT]);
-					// Loop through all the opcodes in the table and replace them.
 					addr += cellbytes,
 					i = Opcode:ReadAmxMemory(addr),
 					OpcodeTableWrite(addr + 2 * cellbytes, _:i),
