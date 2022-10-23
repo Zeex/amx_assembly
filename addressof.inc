@@ -57,7 +57,6 @@
 
 #define AddressOfGetNextCall_ O@A_
 #define CALL@AddressOfGetNextCall_%8() CALL@O@A_%8()
-#define CALL@GetPublicAddressFromName%8() CALL@O@A@%8()
 #define CALL@O@A_%8() O@A_%8()
 #define CALL@O@A@%8() O@A@%8("")
 

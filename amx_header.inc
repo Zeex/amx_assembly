@@ -143,7 +143,7 @@ const AMX_FUNCSTUBNT:AMX_FUNCSTUBNT__ = AMX_FUNCSTUBNT;
 forward bool:GetPublicInfo(index, info[AMX_FUNCSTUBNT]);
 forward GetPublicIndexFromAddress(address);
 //forward GetPublicIndexFromName(const name[]);
-forward GetPublicAddressFromName(const name[]);
+//forward GetPublicAddressFromName(const name[]);
 forward GetPublicAddressFromIndex(index);
 forward bool:GetPublicNameFromIndex(index, name[], size = sizeof(name));
 forward bool:GetPublicNameFromAddress(address, name[], size = sizeof(name));
@@ -450,12 +450,10 @@ stock GetPublicAddressFromIndex(index) {
 	return info[AMX_FUNCSTUBNT_ADDRESS];
 }
 
-// Has a silly name in reality due to `addressof`.
-#define GetPublicAddressFromName O@A@
-
 /// <library>amx_assembly amx_header</library>
+#define GetPublicAddressFromName O@A@
 stock GetPublicAddressFromName(const name[]) {
-	return GetPublicAddressFromIndex(GetPublicIndexFromName(name));
+	return GetPublicAddressFromIndex(funcidx(name));
 }
 
 /// <library>amx_assembly amx_header</library>
