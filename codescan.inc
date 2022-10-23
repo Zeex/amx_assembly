@@ -69,7 +69,7 @@ public TailCall_FoundCallback(m[CodeScanner]) {
 // Create a default call for this function, so that we can include it in the AMX
 // and take the address in "OP".  Note that you do NOT need to do this for
 // scanner callbacks if you only use their address in "CodeScanMatcherInit".
-#define CALL@MyFunc MyFunc(0, "")
+#define CALL@MyFunc%8() MyFunc%8(0, "")
 stock MyFunc(a, b[], ...) {
 	// Normal function.
 }
@@ -125,7 +125,7 @@ stock MyFunc(a, b[], ...) {
 // Any function that you want to take the address of in this way must have its
 // call pattern defined as:
 //   
-//   #define CALL@my_func my_func(0, "hi", false)
+//   #define CALL@my_func%8() my_func%8(0, "", false)
 //   
 // Because otherwise a) the code can't guarantee that the function will be in
 // the final amx, and b) we need a call to it from which to extract the addr.
@@ -142,7 +142,7 @@ stock MyFunc(a, b[], ...) {
 #define O@W_:%9$%0)       %0)
 
 #define O@1_:%9$%0???%1|||%2) O@U_ ),(_:O@X_:O@Y_:O@Z_:$0%2)
-#define O@2_:%9$%0&%1|||%2)   O@F_),(O@A_()?(((CALL@%1),O@V_)?1:2):_:O@X_:O@Y_:O@Z_:$(O@V_)%2)
+#define O@2_:%9$%0&%1|||%2)   O@F_),(O@A_()?(((CALL@%1()),O@V_)?1:2):_:O@X_:O@Y_:O@Z_:$(O@V_)%2)
 #define O@3_:%9$%1|||%2)      O@I_ ),(_:O@X_:O@Y_:O@Z_:$(%1)%2)
 
 #if !defined CODE_SCAN_MAX_PATTERN

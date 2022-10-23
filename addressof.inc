@@ -42,10 +42,10 @@
 // This code uses two nested conditionals because of:
 // https://github.com/Zeex/pawn/issues/96 (this doesn't work):
 //   
-//   (O@A_() ? ((CALL@%1), 0) : (O@V_))
+//   (O@A_() ? ((CALL@%1()), 0) : (O@V_))
 //   
 // Even though it is the obvious solution when you don't want the result of
-// "CALL@%1" to be used (as it may not exist), and you can't use a constant
+// "CALL@%1()" to be used (as it may not exist), and you can't use a constant
 // instead of "O@V_" because then if becomes a constant in a
 // condition, which the compiler rightly complains about.  Of course, because
 // "O@A_()" always returns "false", the entire other block of code
@@ -53,21 +53,21 @@
 #define CALL@%0\32; CALL@
 #define gAddressOfReturnVar_ O@V_
 
-#define addressof(%1) (O@A_()?(((CALL@%1),O@V_)?1:2):(O@V_))
+#define addressof(%1) (O@A_()?(((CALL@%1()),O@V_)?1:2):(O@V_))
 
 #define AddressOfGetNextCall_ O@A_
-#define CALL@AddressOfGetNextCall_ CALL@O@A_
-#define CALL@O@A_ O@A_()
+#define CALL@AddressOfGetNextCall_%8() CALL@O@A_%8()
+#define CALL@O@A_%8() O@A_%8()
 
-#define O@A_()?(((CALL@%1<%2>),O@V_)?1:2):(O@V_) (O@A_()?(((_ADDR@$%1()<%2>),O@V_)?(F@_@:1):(F@_@:2)):(F@_@:O@V_))
+#define O@A_()?(((CALL@%1<%2>()),O@V_)?1:2):(O@V_) (O@A_()?(((_ADDR@$%1()<%2>),O@V_)?(F@_@:1):(F@_@:2)):(F@_@:O@V_))
 
-#define nativeidxof(%1) (_:(O@B_()?(((CALL@%1),O@V_)?1:2):(O@V_)))
+#define nativeidxof(%1) (_:(O@B_()?(((CALL@%1()),O@V_)?1:2):(O@V_)))
 
 #define NativeIdxOfGetNextCall_ O@B_
-#define CALL@NativeIdxOfGetNextCall_ CALL@O@B_
-#define CALL@O@B_ O@B_()
+#define CALL@NativeIdxOfGetNextCall_%8() CALL@O@B_%8()
+#define CALL@O@B_%8() O@B_%8()
 
-#define O@B_()?(((CALL@%1<%2>),O@V_)?1:2):(O@V_) (O@B_()?(((_ADDR@$%1()<%2>),O@V_)?(F@_@:1):(F@_@:2)):(F@_@:O@V_))
+#define O@B_()?(((CALL@%1<%2>()),O@V_)?1:2):(O@V_) (O@B_()?(((_ADDR@$%1()<%2>),O@V_)?(F@_@:1):(F@_@:2)):(F@_@:O@V_))
 
 // Enable parameter checks for `Func<xxx>` types.
 #define _ADDR@ _ADDR@i:_ADDR@t:_ADDR@f:_ADDR@v:_ADDR@s:_ADDR@a:_ADDR@x:_ADDR@z
