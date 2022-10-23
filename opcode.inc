@@ -829,28 +829,68 @@ stock bool:IsOpcodeValid(Opcode:opcode) {
 }
 
 /// <library>amx_assembly opcode</library>
+static stock OpcodeTableSwap(addr0, addr1) {
+	new v0, v1;
+	return
+		// Swap the cases.
+		v0 = ReadAmxMemory(addr0),
+		v1 = ReadAmxMemory(addr1),
+		WriteAmxMemory(addr1, v0),
+		WriteAmxMemory(addr0, v1),
+		// Move on.
+		addr0 += cellbytes,
+		addr1 += cellbytes,
+		// Swap the pointers.
+		v0 = ReadAmxMemory(addr0),
+		v1 = ReadAmxMemory(addr1),
+		WriteAmxMemory(addr1, v0),
+		WriteAmxMemory(addr0, v1);
+}
+
+/// <library>amx_assembly opcode</library>
+static stock OpcodeTablePartition(low, high) {
+	new pivot = ReadAmxMemory(high);
+	new j = low;
+	for (low -= 2 * cellbytes; j != high; j += 2 * cellbytes) {
+		if (ReadAmxMemory(j) < pivot) {
+			// Swap.
+			low += 2 * cellbytes,
+			OpcodeTableSwap(low, j);
+		}
+	}
+	return
+		low += 2 * cellbytes,
+		OpcodeTableSwap(low, high),
+		low;
+}
+
+/// <library>amx_assembly opcode</library>
+static stock OpcodeTableQuickSort(low, high) {
+	if (low < high) {
+		new partition = OpcodeTablePartition(low, high);
+		OpcodeTableQuickSort(low, partition - (2 * cellbytes));
+		OpcodeTableQuickSort(partition + (2 * cellbytes), high);
+	}
+}
+
+/// <library>amx_assembly opcode</library>
+static stock OpcodeTableWrite(addr, i) {
+	new Opcode:op;
+	while (i--) {
+		op = Opcode:ReadAmxMemory(addr),
+		op = opcode_lookup[_:op],
+		WriteAmxMemory(addr, _:op),
+		addr += 2 * cellbytes;
+	}
+}
+
+/// <library>amx_assembly opcode</library>
 static stock InitOpcodeTable() {
 	new Opcode:op;
-	for (new i = 0, Opcode:prev = OP_NONE; i < NUM_OPCODES; i++) {
+	for (new i = 0; i < NUM_OPCODES; i++) {
 		op = Opcode:i;
-#if OPCODE_HAS_O2
-		if (op == OP_SYSREQ_D) {
-			op = OP_SYSREQ_N;
-		} else if (op == OP_SYSREQ_N) {
-			continue;
-		}
-#endif
-		if (prev > (opcode_lookup[i] = RelocateOpcodeNow(op))) {
-			printf("Opcode error: Addresses are unsorted");
-		}
-		prev = opcode_lookup[i];
-		printf("Opcode %d (%s) at %08x", _:i, gAMXOpcodeNames[i], _:prev);
+		opcode_lookup[i] = RelocateOpcodeNow(op);
 	}
-#if OPCODE_HAS_O2
-	opcode_lookup[_:OP_SYSREQ_N] = opcode_lookup[_:OP_SYSREQ_D];
-	opcode_lookup[_:OP_SYSREQ_D] = opcode_lookup[_:OP_NOP];
-#endif
-	
 	opcode_table_is_ready = true;
 
 	// Now rewrite the giant switch in `UnsafeUnrelocateOpcode` for speed.  This
@@ -874,16 +914,12 @@ static stock InitOpcodeTable() {
 					//return;
 				} else if (i == OP_CASETBL) {
 					// Found the instruction we want.  Do the complete rewrite.
-					printf("Found the case table at %08x", addr - hdr[AMX_HDR_COD] + hdr[AMX_HDR_DAT]);
+					//printf("Found the case table at %08x", addr - hdr[AMX_HDR_COD] + hdr[AMX_HDR_DAT]);
 					// Loop through all the opcodes in the table and replace them.
 					addr += cellbytes,
-					i = Opcode:ReadAmxMemory(addr);
-					while (i--) {
-						addr += 2 * cellbytes,
-						op = Opcode:ReadAmxMemory(addr),
-						op = opcode_lookup[_:op],
-						WriteAmxMemory(addr, _:op);
-					}
+					i = Opcode:ReadAmxMemory(addr),
+					OpcodeTableWrite(addr + 2 * cellbytes, _:i),
+					OpcodeTableQuickSort(addr + 2 * cellbytes, addr + _:i * (2 * cellbytes));
 					return;
 				} else {
 					addr += gAMXOpcodeBaseSizes[_:i];
