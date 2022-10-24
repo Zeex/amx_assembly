@@ -1106,6 +1106,7 @@ public Opcode:UnsafeUnrelocateOpcode(Opcode:opcode) {
 	case OP_CONST_S: return OP_CONST_S;
 	case OP_SYSREQ_N: return OP_SYSREQ_N;
 #endif
+	case OP_NONE, OP_LAST_: return opcode;
 	}
 	return opcode;
 }
