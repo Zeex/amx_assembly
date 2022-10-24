@@ -464,7 +464,7 @@ static stock bool:CodeScanCheck(Opcode:op, const dctx[DisasmContext], cs[CodeSca
 	#emit STOR.S.pri cs
 	new
 		bool:zero = true,
-		off = cs[CodeScanMatcher_flags],
+		off,
 		cnt = (op == OP_CASETBL) ? (_:ReadAmxMemory(dctx[DisasmContext_cip] + cellbytes)) : (gAMXOpcodeParameterCounts[_:op]),
 		len = cs[CodeScanMatcher_len];
 	for (new idx = 0; idx != CODE_SCAN_MAX_PARALLEL; ++idx) {
@@ -557,32 +557,15 @@ static stock bool:CodeScanStepInternal(dctx[DisasmContext], csState[CodeScanner]
 	// check is also the only other way that "false" can be returned and we pre-
 	// empt that one.
 	static cip, Opcode:op;
-	cip = dctx[DisasmContext_nip];
-	for ( ; ; ) {
-		if (cip >= dctx[DisasmContext_end_ip]) {
-			dctx[DisasmContext_cip] = cip;
-			return false;
-		}
-		// The compiler sometimes inserts extra instructions like "NOP" and
-		// "BREAK" for debugging and padding (as do we) - maybe ignore them.  To
-		// deal with differences in different compilation modes, we just mark
-		// these opcodes as fully ignorable (because they are mostly used for
-		// debugging and not real user code).
-		switch ((op = UnsafeUnrelocateOpcode(Opcode:ReadAmxMemory(cip)))) {
-			case OP_NOP, OP_BREAK: {
-				cip += cellbytes;
-			}
-			case OP_BOUNDS: {
-				cip += 2 * cellbytes;
-			}
-			default: {
-				break;
-			}
-		}
+CodeScanStepInternal_retry:
+	dctx[DisasmContext_cip] = cip = dctx[DisasmContext_nip];
+	if (cip >= dctx[DisasmContext_end_ip]) {
+		return false;
 	}
-	dctx[DisasmContext_cip] = cip,
-	dctx[DisasmContext_opcode] = op;
+	dctx[DisasmContext_opcode] = op = UnsafeUnrelocateOpcode(Opcode:ReadAmxMemory(cip));
 	if (OP_NONE < op < Opcode:NUM_OPCODES) {
+		// The compiler sometimes inserts extra instructions like "NOP" and
+		// "BREAK" for debugging and padding (as do we) - maybe ignore them.
 		new
 			stk = csState[CodeScanMatch_stack],
 			hea = csState[CodeScanMatch_heap];
@@ -594,10 +577,17 @@ static stock bool:CodeScanStepInternal(dctx[DisasmContext], csState[CodeScanner]
 			//
 			// To facilitate this, the jump targets now ignore any addresses
 			// passed by, because we only check a small percentage of them.
-			CodeScanCheckJumpTarget(cip, cip + gBase, stk, hea, csState),
+			CodeScanCheckJumpTarget(cip, cip + gBase, stk, hea, csState);
 			parseState &= ~cellmin;
 		}
 		switch (op) {
+			case OP_BREAK, OP_NOP: {
+				dctx[DisasmContext_nip] = cip + cellbytes,
+				csState[CodeScanMatch_stack] = stk,
+				csState[CodeScanMatch_heap] = hea,
+				parseState |= cellmin;
+				goto CodeScanStepInternal_retry;
+			}
 			case OP_CASETBL: {
 				cip += cellbytes,
 				cip += ReadAmxMemory(cip) * (2 * cellbytes),
@@ -609,8 +599,19 @@ static stock bool:CodeScanStepInternal(dctx[DisasmContext], csState[CodeScanner]
 					csState[CodeScanMatch_func] = cip,
 					stk = hea = 0,
 					CodeScanResetJumpTargets(csState);
+				} else {
+					parseState |= cellmin;
 				}
-				parseState |= cellmin;
+				dctx[DisasmContext_nip] = cip + (2 * cellbytes),
+				csState[CodeScanMatch_stack] = stk,
+				csState[CodeScanMatch_heap] = hea;
+				goto CodeScanStepInternal_retry;
+			}
+			case OP_BOUNDS: {
+				dctx[DisasmContext_nip] = cip + (2 * cellbytes),
+				csState[CodeScanMatch_stack] = stk,
+				csState[CodeScanMatch_heap] = hea;
+				goto CodeScanStepInternal_retry;
 			}
 			case OP_PROC: {
 				// This is the start of a new function.  The only functions
