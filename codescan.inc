@@ -318,7 +318,6 @@ static stock CodeScanAddSwitchTarget(cip, stk, hea, jumpTargets[CodeScanner], nu
 			highest = codepos;
 		}
 	}
-	printf("Highest address: %08x", highest - gBase);
 	while (num--) {
 		// Multiple jumps to the same place?
 		if (jumpTargets[CodeScanner_jump_target][num] < cip) {
@@ -602,9 +601,9 @@ static stock bool:CodeScanStepInternal(dctx[DisasmContext], csState[CodeScanner]
 			// The compiler sometimes inserts extra instructions like "NOP" and
 			// "BREAK" for debugging and padding (as do we) - maybe ignore them.
 			if (parseState & cellmin) {
-				parseState &= ~cellmin;
+				parseState &= ~cellmin,
+				CodeScanCheckJumpTarget(cip, cip + gBase, stk, hea, csState);
 			}
-			CodeScanCheckJumpTarget(cip, cip + gBase, stk, hea, csState);
 			switch (op) {
 				case OP_CASETBL: {
 					cip += cellbytes,
