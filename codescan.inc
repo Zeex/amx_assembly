@@ -161,7 +161,7 @@ stock MyFunc(a, b[], ...) {
 
 #define DISASM_GET_OPERAND_INLINE(%0,%1) ReadAmxMemory((%0) + (%1 + 1) * cellbytes)
 
-#define CODE_SCAN_NOT_IN_RANGE(%0,%1,%2) (((%0)-((%1)+cellmin))>=((%2)-((%1)+cellmin)))
+#define CODE_SCAN_NOT_IN_RANGE(%0,%1,%2) ((_:(%0)-(_:(%1)+cellmin))>=(_:(%2)-(_:(%1)+cellmin)))
 
 /// <p/>
 
@@ -570,7 +570,7 @@ static stock bool:CodeScanStepInternal(dctx[DisasmContext], csState[CodeScanner]
 				false;
 		}
 		dctx[DisasmContext_opcode] = op = UnsafeUnrelocateOpcode(Opcode:ReadAmxMemory(cip));
-		if (CODE_SCAN_NOT_IN_RANGE(op, OP_NONE + Opcode:1, Opcode:NUM_OPCODES)) {
+		if (CODE_SCAN_NOT_IN_RANGE(op, _:OP_NONE + 1, NUM_OPCODES)) {
 			return
 				dctx[DisasmContext_cip] = cip,
 				parseState = 0,
@@ -965,7 +965,7 @@ static stock CodeScanRunFastPrescanLocated(&proc, &nextaddr, const searchFuncAdd
 				addr += 2 * cellbytes;
 			}
 			default: {
-				addr += CODE_SCAN_NOT_IN_RANGE(_:o, 0, sizeof (gAMXOpcodeBaseSizes)) ? (cellbytes) : (gAMXOpcodeBaseSizes[_:o]);
+				addr += CODE_SCAN_NOT_IN_RANGE(o, 0, sizeof (gAMXOpcodeBaseSizes)) ? (cellbytes) : (gAMXOpcodeBaseSizes[_:o]);
 			}
 		}
 	}
@@ -995,7 +995,7 @@ static stock CodeScanRunFastPrescanRelocate(&proc, &nextaddr, const searchFuncAd
 				addr += 2 * cellbytes;
 			}
 			default: {
-				addr += CODE_SCAN_NOT_IN_RANGE(_:o, 0, sizeof (gAMXOpcodeBaseSizes)) ? (cellbytes) : (gAMXOpcodeBaseSizes[_:o]);
+				addr += CODE_SCAN_NOT_IN_RANGE(o, 0, sizeof (gAMXOpcodeBaseSizes)) ? (cellbytes) : (gAMXOpcodeBaseSizes[_:o]);
 			}
 		}
 	}
