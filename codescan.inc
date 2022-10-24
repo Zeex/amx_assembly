@@ -691,13 +691,17 @@ static stock bool:CodeScanStepInternal(dctx[DisasmContext], csState[CodeScanner]
 				if (stk != cellmin) {
 					stk -= DISASM_GET_OPERAND_INLINE(cip, 0);
 				}
+				// I don't know why this needs `cellmin` instead of `0`.  It
+				// should handle the stack just fine.  It is literally an opcode
+				// for managing the stack, so why do we need to check the status
+				// right after it?
 				parseState = cellmin;
 			}
 			case OP_HEAP: {
 				if (hea != cellmin) {
 					hea += DISASM_GET_OPERAND_INLINE(cip, 0);
 				}
-				parseState = cellmin;
+				parseState = 0;
 			}
 			case OP_POP_PRI, OP_POP_ALT: {
 				if (stk != cellmin) {
@@ -772,7 +776,7 @@ static stock bool:CodeScanStepInternal(dctx[DisasmContext], csState[CodeScanner]
 						stk = cellmin;
 					}
 				}
-				parseState = cellmin;
+				parseState = 0;
 			}
 			case OP_JUMP: {
 				parseParam = DISASM_GET_OPERAND_INLINE(cip, 0) - gBase,
