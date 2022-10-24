@@ -256,8 +256,10 @@ static stock bool:CodeScanCheckJumpTarget(cip, deloc, &stk, &hea, jumpTargets[Co
 			if ((sip = jumpTargets[CodeScanner_jump_switch][num])) {
 				for (new count = ReadAmxMemory(sip + cellbytes) + 1; count; --count) {
 					if (ReadAmxMemory(sip + count * (2 * cellbytes)) == deloc) {
+						if (--jumpTargets[CodeScanner_jump_target][num] == 0) {
+							jumpTargets[CodeScanner_jump_target][num] = cellmin;
+						}
 						return
-							--jumpTargets[CodeScanner_jump_target][num],
 							stk = jumpTargets[CodeScanner_jump_stack][num],
 							hea = jumpTargets[CodeScanner_jump_heap][num],
 							true;
@@ -265,7 +267,7 @@ static stock bool:CodeScanCheckJumpTarget(cip, deloc, &stk, &hea, jumpTargets[Co
 				}
 			} else if (jumpTargets[CodeScanner_jump_target][num] == cip) {
 				return
-					jumpTargets[CodeScanner_jump_target][num] = 0,
+					jumpTargets[CodeScanner_jump_target][num] = cellmin,
 					stk = jumpTargets[CodeScanner_jump_stack][num],
 					hea = jumpTargets[CodeScanner_jump_heap][num],
 					true;
@@ -279,19 +281,20 @@ static stock bool:CodeScanCheckJumpTarget(cip, deloc, &stk, &hea, jumpTargets[Co
 static stock CodeScanResetJumpTargets(jumpTargets[CodeScanner], num = CODE_SCAN_MAX_JUMP_TARGETS) {
 	jumpTargets[CodeScanner_minn] = num;
 	while (num--) {
-		jumpTargets[CodeScanner_jump_target][num] = 0;
+		jumpTargets[CodeScanner_jump_target][num] = cellmin;
 	}
 }
 
 /// <library>amx_assembly codescan</library>
-static stock CodeScanAddJumpTarget(cip, stk, hea, jumpTargets[CodeScanner], num = CODE_SCAN_MAX_JUMP_TARGETS) {
+static stock CodeScanAddJumpTarget(cip, target, stk, hea, jumpTargets[CodeScanner], num = CODE_SCAN_MAX_JUMP_TARGETS) {
 	while (num--) {
 		// Multiple jumps to the same place?
-		if (jumpTargets[CodeScanner_jump_target][num] == cip) {
+		if (jumpTargets[CodeScanner_jump_target][num] == target) {
 			return;
-		} else if (!jumpTargets[CodeScanner_jump_target][num]) {
+		} else if (jumpTargets[CodeScanner_jump_target][num] < cip) {
+			printf("Adding for %08x", cip);
 			jumpTargets[CodeScanner_jump_switch][num] = 0;
-			jumpTargets[CodeScanner_jump_target][num] = cip;
+			jumpTargets[CodeScanner_jump_target][num] = target;
 			jumpTargets[CodeScanner_jump_stack][num] = stk;
 			jumpTargets[CodeScanner_jump_heap][num] = hea;
 			jumpTargets[CodeScanner_minn] = min(jumpTargets[CodeScanner_minn], num);
@@ -312,7 +315,7 @@ static stock CodeScanAddSwitchTarget(const dctx[DisasmContext], stk, hea, jumpTa
 	}
 	while (num--) {
 		// Multiple jumps to the same place?
-		if (!jumpTargets[CodeScanner_jump_target][num]) {
+		if (jumpTargets[CodeScanner_jump_target][num] == cellmin) {
 			jumpTargets[CodeScanner_jump_switch][num] = sip,
 			jumpTargets[CodeScanner_jump_target][num] = ReadAmxMemory(sip + cellbytes) + 1,
 			jumpTargets[CodeScanner_jump_stack][num] = stk,
@@ -772,7 +775,7 @@ static stock bool:CodeScanStepInternal(dctx[DisasmContext], csState[CodeScanner]
 					parseParam = DISASM_GET_OPERAND_INLINE(cip, 0) - gBase,
 					parseState = 0;
 					if (parseParam > cip) {
-						CodeScanAddJumpTarget(parseParam, stk, hea, csState);
+						CodeScanAddJumpTarget(cip, parseParam, stk, hea, csState);
 					}
 				}
 				case OP_JREL: {
@@ -780,7 +783,7 @@ static stock bool:CodeScanStepInternal(dctx[DisasmContext], csState[CodeScanner]
 					parseParam = DISASM_GET_OPERAND_INLINE(cip, 0) + cip,
 					parseState = 0;
 					if (parseParam > cip) {
-						CodeScanAddJumpTarget(parseParam, stk, hea, csState);
+						CodeScanAddJumpTarget(cip, parseParam, stk, hea, csState);
 					}
 				}
 				case OP_SWITCH: {
