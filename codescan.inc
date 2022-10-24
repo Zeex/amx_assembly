@@ -356,6 +356,10 @@ static stock bool:gRelocateRequired;
 
 /// <library>amx_assembly codescan</library>
 stock CodeScanMatcherInit_(searcher[CodeScanMatcher], address, flags = SCANNER_IGNORE_NOP | SCANNER_IGNORE_BOUNDS | SCANNER_IGNORE_BREAK | SCANNER_IGNORE_HALT) {
+	if (flags != SCANNER_IGNORE_NOP | SCANNER_IGNORE_BOUNDS | SCANNER_IGNORE_BREAK | SCANNER_IGNORE_HALT) {
+		printf("Warning: Flags are no longer used.");
+		printf("    NOP, BREAK, BOUNDS, and HALT are always ignored.");
+	}
 	static
 		lReset[CODE_SCAN_MAX_PARALLEL];
 	// This used to look the function up by name from the public functions
@@ -460,43 +464,7 @@ static stock bool:CodeScanCheck(Opcode:op, const dctx[DisasmContext], cs[CodeSca
 	#emit STOR.S.pri cs
 	new
 		bool:zero = true,
-		off = cs[CodeScanMatcher_flags];
-	if (off) {
-		// To deal with differences in different compilation modes, we just mark
-		// these opcodes as fully ignorable (because they are mostly used for
-		// debugging and not real user code).
-		switch (op) {
-			case OP_NOP: {
-				if (off & SCANNER_IGNORE_NOP) {
-					return
-						next = cs[CodeScanMatcher_next],
-						false;
-				}
-			}
-			case OP_BOUNDS: {
-				if (off & SCANNER_IGNORE_BOUNDS) {
-					return
-						next = cs[CodeScanMatcher_next],
-						false;
-				}
-			}
-			case OP_BREAK: {
-				if (off & SCANNER_IGNORE_BREAK) {
-					return
-						next = cs[CodeScanMatcher_next],
-						false;
-				}
-			}
-			case OP_HALT: {
-				if (off & SCANNER_IGNORE_HALT) {
-					return
-						next = cs[CodeScanMatcher_next],
-						false;
-				}
-			}
-		}
-	}
-	new
+		off = cs[CodeScanMatcher_flags],
 		cnt = (op == OP_CASETBL) ? (_:ReadAmxMemory(dctx[DisasmContext_cip] + cellbytes)) : (gAMXOpcodeParameterCounts[_:op]),
 		len = cs[CodeScanMatcher_len];
 	for (new idx = 0; idx != CODE_SCAN_MAX_PARALLEL; ++idx) {
@@ -589,28 +557,44 @@ static stock bool:CodeScanStepInternal(dctx[DisasmContext], csState[CodeScanner]
 	// check is also the only other way that "false" can be returned and we pre-
 	// empt that one.
 	static cip, Opcode:op;
-	dctx[DisasmContext_cip] = cip = dctx[DisasmContext_nip];
-	if (cip >= dctx[DisasmContext_end_ip]) {
-		return false;
+	cip = dctx[DisasmContext_nip];
+	for ( ; ; ) {
+		if (cip >= dctx[DisasmContext_end_ip]) {
+			dctx[DisasmContext_cip] = cip;
+			return false;
+		}
+		// The compiler sometimes inserts extra instructions like "NOP" and
+		// "BREAK" for debugging and padding (as do we) - maybe ignore them.  To
+		// deal with differences in different compilation modes, we just mark
+		// these opcodes as fully ignorable (because they are mostly used for
+		// debugging and not real user code).
+		switch ((op = UnsafeUnrelocateOpcode(Opcode:ReadAmxMemory(cip)))) {
+			case OP_NOP, OP_BREAK: {
+				cip += cellbytes;
+			}
+			case OP_BOUNDS: {
+				cip += 2 * cellbytes;
+			}
+			default: {
+				break;
+			}
+		}
 	}
-	dctx[DisasmContext_opcode] = op = UnsafeUnrelocateOpcode(Opcode:ReadAmxMemory(cip));
+	dctx[DisasmContext_cip] = cip,
+	dctx[DisasmContext_opcode] = op;
 	if (OP_NONE < op < Opcode:NUM_OPCODES) {
 		new
 			stk = csState[CodeScanMatch_stack],
 			hea = csState[CodeScanMatch_heap];
-		// The compiler sometimes inserts extra instructions like "NOP" and
-		// "BREAK" for debugging and padding (as do we) - maybe ignore them.
 		if (parseState & cellmin) {
-			CodeScanCheckJumpTarget(cip, cip + gBase, stk, hea, csState);
-			switch (op) {
-				case OP_BREAK, OP_NOP: {
-					return
-						dctx[DisasmContext_nip] = cip + cellbytes,
-						csState[CodeScanMatch_stack] = stk,
-						csState[CodeScanMatch_heap] = hea,
-						true;
-				}
-			}
+			// Only check the jump target if this point can't be reached
+			// naturally.  If the code can fall through from the previous
+			// instruction the stack and heap must be the same as if we had
+			// jumped here, thus there's no point doing the complex jump checks.
+			//
+			// To facilitate this, the jump targets now ignore any addresses
+			// passed by, because we only check a small percentage of them.
+			CodeScanCheckJumpTarget(cip, cip + gBase, stk, hea, csState),
 			parseState &= ~cellmin;
 		}
 		switch (op) {
