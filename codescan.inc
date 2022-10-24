@@ -550,6 +550,8 @@ static stock bool:CodeScanGetFuncName(addr, name[]) {
 		true;
 }
 
+#define CODE_SCAN_NOT_IN_RANGE(%0,%1,%2) (((%0)-((%1)+cellmin))>=((%2)-((%1)+cellmin)))
+
 /// <library>amx_assembly codescan</library>
 static stock bool:CodeScanStepInternal(dctx[DisasmContext], csState[CodeScanner], &parseState, &parseParam) {
 	// Loop over the data.  Since our end condition is "out of data", we know
@@ -561,13 +563,18 @@ static stock bool:CodeScanStepInternal(dctx[DisasmContext], csState[CodeScanner]
 		Opcode:op,
 		stk,
 		hea;
-for ( ; ; ) {
-	dctx[DisasmContext_cip] = cip = dctx[DisasmContext_nip];
-	if (cip >= dctx[DisasmContext_end_ip]) {
-		return false;
-	}
-	dctx[DisasmContext_opcode] = op = UnsafeUnrelocateOpcode(Opcode:ReadAmxMemory(cip));
-	if (OP_NONE < op < Opcode:NUM_OPCODES) {
+	for ( ; ; ) {
+		dctx[DisasmContext_cip] = cip = dctx[DisasmContext_nip];
+		if (cip >= dctx[DisasmContext_end_ip]) {
+			return false;
+		}
+		dctx[DisasmContext_opcode] = op = UnsafeUnrelocateOpcode(Opcode:ReadAmxMemory(cip));
+		if (CODE_SCAN_NOT_IN_RANGE(op, OP_NONE + Opcode:1, Opcode:NUM_OPCODES)) {
+			return
+				parseState = 0,
+				true;
+		}
+	//if (OP_NONE < op < Opcode:NUM_OPCODES) {
 		// The compiler sometimes inserts extra instructions like "NOP" and
 		// "BREAK" for debugging and padding (as do we) - maybe ignore them.
 		stk = csState[CodeScanMatch_stack],
@@ -838,10 +845,7 @@ for ( ; ; ) {
 				break;
 			}
 		}
-	}
-	return
-		parseState = 0,
-		true;
+	//}
 }
 		return
 			dctx[DisasmContext_nip] = cip + gAMXOpcodeBaseSizes[_:op],
