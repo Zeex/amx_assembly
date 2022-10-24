@@ -161,6 +161,8 @@ stock MyFunc(a, b[], ...) {
 
 #define DISASM_GET_OPERAND_INLINE(%0,%1) ReadAmxMemory((%0) + (%1 + 1) * cellbytes)
 
+#define CODE_SCAN_NOT_IN_RANGE(%0,%1,%2) (((%0)-((%1)+cellmin))>=((%2)-((%1)+cellmin)))
+
 /// <p/>
 
 /// <library>amx_assembly codescan</library>
@@ -550,8 +552,6 @@ static stock bool:CodeScanGetFuncName(addr, name[]) {
 		true;
 }
 
-#define CODE_SCAN_NOT_IN_RANGE(%0,%1,%2) (((%0)-((%1)+cellmin))>=((%2)-((%1)+cellmin)))
-
 /// <library>amx_assembly codescan</library>
 static stock bool:CodeScanStepInternal(dctx[DisasmContext], csState[CodeScanner], &parseState, &parseParam) {
 	// Loop over the data.  Since our end condition is "out of data", we know
@@ -564,17 +564,18 @@ static stock bool:CodeScanStepInternal(dctx[DisasmContext], csState[CodeScanner]
 		stk,
 		hea;
 	for ( ; ; ) {
-		dctx[DisasmContext_cip] = cip = dctx[DisasmContext_nip];
-		if (cip >= dctx[DisasmContext_end_ip]) {
-			return false;
+		if ((cip = dctx[DisasmContext_nip]) >= dctx[DisasmContext_end_ip]) {
+			return
+				dctx[DisasmContext_cip] = cip,
+				false;
 		}
 		dctx[DisasmContext_opcode] = op = UnsafeUnrelocateOpcode(Opcode:ReadAmxMemory(cip));
 		if (CODE_SCAN_NOT_IN_RANGE(op, OP_NONE + Opcode:1, Opcode:NUM_OPCODES)) {
 			return
+				dctx[DisasmContext_cip] = cip,
 				parseState = 0,
 				true;
 		}
-	//if (OP_NONE < op < Opcode:NUM_OPCODES) {
 		// The compiler sometimes inserts extra instructions like "NOP" and
 		// "BREAK" for debugging and padding (as do we) - maybe ignore them.
 		stk = csState[CodeScanMatch_stack],
@@ -845,13 +846,13 @@ static stock bool:CodeScanStepInternal(dctx[DisasmContext], csState[CodeScanner]
 				break;
 			}
 		}
-	//}
-}
-		return
-			dctx[DisasmContext_nip] = cip + gAMXOpcodeBaseSizes[_:op],
-			csState[CodeScanMatch_stack] = stk,
-			csState[CodeScanMatch_heap] = hea,
-			true;
+	}
+	return
+		dctx[DisasmContext_cip] = cip,
+		dctx[DisasmContext_nip] = cip + gAMXOpcodeBaseSizes[_:op],
+		csState[CodeScanMatch_stack] = stk,
+		csState[CodeScanMatch_heap] = hea,
+		true;
 }
 
 /// <library>amx_assembly codescan</library>
@@ -964,7 +965,7 @@ static stock CodeScanRunFastPrescanLocated(&proc, &nextaddr, const searchFuncAdd
 				addr += 2 * cellbytes;
 			}
 			default: {
-				addr += (0 <= _:o < sizeof (gAMXOpcodeBaseSizes)) ? (gAMXOpcodeBaseSizes[_:o]) : (cellbytes);
+				addr += CODE_SCAN_NOT_IN_RANGE(_:o, 0, sizeof (gAMXOpcodeBaseSizes)) ? (cellbytes) : (gAMXOpcodeBaseSizes[_:o]);
 			}
 		}
 	}
@@ -994,7 +995,7 @@ static stock CodeScanRunFastPrescanRelocate(&proc, &nextaddr, const searchFuncAd
 				addr += 2 * cellbytes;
 			}
 			default: {
-				addr += (0 <= _:o < sizeof (gAMXOpcodeBaseSizes)) ? (gAMXOpcodeBaseSizes[_:o]) : (cellbytes);
+				addr += CODE_SCAN_NOT_IN_RANGE(_:o, 0, sizeof (gAMXOpcodeBaseSizes)) ? (cellbytes) : (gAMXOpcodeBaseSizes[_:o]);
 			}
 		}
 	}
