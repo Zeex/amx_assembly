@@ -559,12 +559,12 @@ static stock bool:CodeScanStepInternal(dctx[DisasmContext], csState[CodeScanner]
 	// check is also the only other way that "false" can be returned and we pre-
 	// empt that one.
 	new
-		cip,
+		cip = dctx[DisasmContext_nip],
 		Opcode:op,
 		stk = csState[CodeScanMatch_stack],
 		hea = csState[CodeScanMatch_heap];
 	for ( ; ; ) {
-		if ((cip = dctx[DisasmContext_nip]) >= dctx[DisasmContext_end_ip]) {
+		if (cip >= dctx[DisasmContext_end_ip]) {
 			return
 				dctx[DisasmContext_cip] = cip,
 				false;
@@ -594,7 +594,7 @@ static stock bool:CodeScanStepInternal(dctx[DisasmContext], csState[CodeScanner]
 		}
 		switch (op) {
 			case OP_BREAK, OP_NOP: {
-				dctx[DisasmContext_nip] = cip + cellbytes,
+				cip += cellbytes,
 				parseState |= cellmin;
 				continue;
 			}
@@ -613,11 +613,11 @@ static stock bool:CodeScanStepInternal(dctx[DisasmContext], csState[CodeScanner]
 				} else {
 					parseState |= cellmin;
 				}
-				dctx[DisasmContext_nip] = cip + (2 * cellbytes);
+				cip += 2 * cellbytes;
 				continue;
 			}
 			case OP_BOUNDS: {
-				dctx[DisasmContext_nip] = cip + (2 * cellbytes);
+				cip += 2 * cellbytes;
 				continue;
 			}
 			case OP_PROC: {
