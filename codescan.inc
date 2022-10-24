@@ -1010,7 +1010,6 @@ stock bool:CodeScanRunFast(csState[CodeScanner], searchFuncAddr = 0) {
 				// do the actual comparisons to various defined scanners.
 				for (cur = csState[CodeScanner_first], op = DisasmGetOpcode(dctx); cur != -1; ) {
 					if (CodeScanCheck(op, dctx, CodeScanDeref(cur), csState, cur)) {
-						parseState |= cellmin;
 						switch (CodeScanCall(CodeScanDeref(cur), csState)) {
 							case cellmin: {
 								// End right now.
@@ -1032,6 +1031,7 @@ stock bool:CodeScanRunFast(csState[CodeScanner], searchFuncAddr = 0) {
 						}
 						// Reset to the start of the function, to reparse.
 						for (cur = csState[CodeScanner_first]; cur != -1; CodeScanReset(CodeScanDeref(cur), cur)) { }
+						parseState |= cellmin;
 						break;
 					}
 				}
@@ -1070,7 +1070,6 @@ stock bool:CodeScanRun(csState[CodeScanner]) {
 		// do the actual comparisons to various defined scanners.
 		for (cur = csState[CodeScanner_first], op = dctx[DisasmContext_opcode]; cur != -1; ) {
 			if (CodeScanCheck(op, dctx, CodeScanDeref(cur), csState, cur)) {
-				parseState |= cellmin;
 				switch (CodeScanCall(CodeScanDeref(cur), csState)) {
 					case cellmin: {
 						// End right now.
@@ -1092,6 +1091,7 @@ stock bool:CodeScanRun(csState[CodeScanner]) {
 				}
 				// Reset to the start of the function, to reparse.
 				for (cur = csState[CodeScanner_first]; cur != -1; CodeScanReset(CodeScanDeref(cur), cur)) { }
+				parseState |= cellmin;
 				break;
 			}
 		}
