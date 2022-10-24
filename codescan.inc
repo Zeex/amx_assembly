@@ -601,6 +601,9 @@ static stock bool:CodeScanStepInternal(dctx[DisasmContext], csState[CodeScanner]
 				hea = csState[CodeScanMatch_heap];
 			// The compiler sometimes inserts extra instructions like "NOP" and
 			// "BREAK" for debugging and padding (as do we) - maybe ignore them.
+			if (parseState & cellmin) {
+				parseState &= ~cellmin;
+			}
 			CodeScanCheckJumpTarget(cip, cip + gBase, stk, hea, csState);
 			switch (op) {
 				case OP_CASETBL: {
@@ -615,6 +618,7 @@ static stock bool:CodeScanStepInternal(dctx[DisasmContext], csState[CodeScanner]
 						stk = hea = 0,
 						CodeScanResetJumpTargets(csState);
 					}
+					parseState |= cellmin;
 				}
 				case OP_PROC: {
 					// This is the start of a new function.  The only functions
@@ -762,7 +766,14 @@ static stock bool:CodeScanStepInternal(dctx[DisasmContext], csState[CodeScanner]
 					}
 					parseState = 0;
 				}
-				case OP_JUMP, OP_JZER, OP_JNZ, OP_JEQ, OP_JNEQ, OP_JLESS, OP_JLEQ, OP_JGRTR, OP_JGEQ, OP_JSLESS, OP_JSLEQ, OP_JSGRTR, OP_JSGEQ: {
+				case OP_JUMP: {
+					parseParam = DISASM_GET_OPERAND_INLINE(cip, 0) - gBase,
+					parseState = cellmin;
+					if (parseParam > cip) {
+						CodeScanAddJumpTarget(cip, parseParam, stk, hea, csState);
+					}
+				}
+				case OP_JZER, OP_JNZ, OP_JEQ, OP_JNEQ, OP_JLESS, OP_JLEQ, OP_JGRTR, OP_JGEQ, OP_JSLESS, OP_JSLEQ, OP_JSGRTR, OP_JSGEQ: {
 					// Add a jump target.  These require relocation as they are
 					// translated to absolute RAM locations.  "DisasmNeedReloc"
 					// will return "true", but we don't need to call it.
@@ -796,6 +807,9 @@ static stock bool:CodeScanStepInternal(dctx[DisasmContext], csState[CodeScanner]
 					// Add a jump target.  These are always forwards.
 					CodeScanAddSwitchTarget(cip, stk, hea, csState),
 					parseState = 0;
+				}
+				case OP_RETN: {
+					parseState = cellmin;
 				}
 				default: {
 					parseState = 0;
