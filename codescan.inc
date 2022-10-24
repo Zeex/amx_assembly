@@ -561,8 +561,8 @@ static stock bool:CodeScanStepInternal(dctx[DisasmContext], csState[CodeScanner]
 	new
 		cip,
 		Opcode:op,
-		stk,
-		hea;
+		stk = csState[CodeScanMatch_stack],
+		hea = csState[CodeScanMatch_heap];
 	for ( ; ; ) {
 		if ((cip = dctx[DisasmContext_nip]) >= dctx[DisasmContext_end_ip]) {
 			return
@@ -579,8 +579,6 @@ static stock bool:CodeScanStepInternal(dctx[DisasmContext], csState[CodeScanner]
 		}
 		// The compiler sometimes inserts extra instructions like "NOP" and
 		// "BREAK" for debugging and padding (as do we) - maybe ignore them.
-		stk = csState[CodeScanMatch_stack],
-		hea = csState[CodeScanMatch_heap];
 		if (parseState & cellmin) {
 			// Only check the jump target if this point can't be reached
 			// naturally.  If the code can fall through from the previous
