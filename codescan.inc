@@ -576,7 +576,7 @@ static stock bool:CodeScanStepInternal(dctx[DisasmContext], csState[CodeScanner]
 				dctx[DisasmContext_cip] = cip,
 				csState[CodeScanMatch_stack] = stk,
 				csState[CodeScanMatch_heap] = hea,
-				parseState = 0,
+				parseState = cellmin,
 				true;
 		}
 		// The compiler sometimes inserts extra instructions like "NOP" and
