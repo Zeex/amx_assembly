@@ -608,7 +608,7 @@ static stock bool:CodeScanStepInternal(dctx[DisasmContext], csState[CodeScanner]
 				case OP_CASETBL: {
 					cip += cellbytes,
 					cip += ReadAmxMemory(cip) * (2 * cellbytes),
-					parseState = cellmin | 0;
+					parseState = cellmin;
 				}
 				case OP_HALT: {
 					if (parseState == 4) {
@@ -625,8 +625,7 @@ static stock bool:CodeScanStepInternal(dctx[DisasmContext], csState[CodeScanner]
 					csState[CodeScanMatch_type] = SCANNER_FUNC_UNKNOWN,
 					csState[CodeScanMatch_func] = cip,
 					CodeScanResetJumpTargets(csState),
-					stk = hea = 0,
-					parseState = cellmin | 0;
+					stk = hea = parseState = 0;
 				}
 				case OP_LOAD_PRI: {
 					// If we are not in the main functions yet and this is the
@@ -643,39 +642,39 @@ static stock bool:CodeScanStepInternal(dctx[DisasmContext], csState[CodeScanner]
 					if (stk != cellmin) {
 						stk += cellbytes;
 					}
-					parseState = cellmin | 0;
+					parseState = 0;
 				}
 #if OPCODE_HAS_O2
 				case OP_PUSH2_C, OP_PUSH2, OP_PUSH2_S, OP_PUSH2_ADR: {
 					if (stk != cellmin) {
 						stk += cellbytes * 2;
 					}
-					parseState = cellmin | 0;
+					parseState = 0;
 				}
 				case OP_PUSH3_C, OP_PUSH3, OP_PUSH3_S, OP_PUSH3_ADR: {
 					if (stk != cellmin) {
 						stk += cellbytes * 3;
 					}
-					parseState = cellmin | 0;
+					parseState = 0;
 				}
 				case OP_PUSH4_C, OP_PUSH4, OP_PUSH4_S, OP_PUSH4_ADR: {
 					if (stk != cellmin) {
 						stk += cellbytes * 4;
 					}
-					parseState = cellmin | 0;
+					parseState = 0;
 				}
 				case OP_PUSH5_C, OP_PUSH5, OP_PUSH5_S, OP_PUSH5_ADR: {
 					if (stk != cellmin) {
 						stk += cellbytes * 5;
 					}
-					parseState = cellmin | 0;
+					parseState = 0;
 				}
 				case OP_SYSREQ_N: {
 					// sysreq.n cleans itself up, it isn't followed by `stack`.
 					if (stk != cellmin) {
 						stk -= DISASM_GET_OPERAND_INLINE(cip, 1);
 					}
-					parseState = cellmin | 0;
+					parseState = 0;
 				}
 #endif
 				case OP_STACK: {
@@ -683,26 +682,26 @@ static stock bool:CodeScanStepInternal(dctx[DisasmContext], csState[CodeScanner]
 					if (stk != cellmin) {
 						stk -= DISASM_GET_OPERAND_INLINE(cip, 0);
 					}
-					parseState = cellmin | 0;
+					parseState = cellmin;
 				}
 				case OP_HEAP: {
 					if (hea != cellmin) {
 						hea += DISASM_GET_OPERAND_INLINE(cip, 0);
 					}
-					parseState = cellmin | 0;
+					parseState = cellmin;
 				}
 				case OP_POP_PRI, OP_POP_ALT: {
 					if (stk != cellmin) {
 						stk -= cellbytes;
 					}
-					parseState = cellmin | 0;
+					parseState = 0;
 				}
 				case OP_CALL, OP_CALL_PRI: {
 					// Remove all the function parameters.
 					if (parseState == 3) {
 						stk -= parseParam;
 					}
-					parseState = cellmin | 0;
+					parseState = 0;
 				}
 				case OP_PUSH_C: {
 					// The "+ cellbytes" is because when calling a function, the
@@ -711,7 +710,7 @@ static stock bool:CodeScanStepInternal(dctx[DisasmContext], csState[CodeScanner]
 					parseParam = DISASM_GET_OPERAND_INLINE(cip, 0) + cellbytes;
 					if (stk != cellmin) {
 						stk += cellbytes,
-						parseState = cellmin | 3;
+						parseState = 3;
 					}
 				}
 				// There is a code-get pattern of:
@@ -726,17 +725,17 @@ static stock bool:CodeScanStepInternal(dctx[DisasmContext], csState[CodeScanner]
 				case OP_LCTRL: {
 					if (DISASM_GET_OPERAND_INLINE(cip, 0) == 5) {
 						parseParam = 0;
-						parseState = cellmin | 1;
+						parseState = 1;
 					} else {
-						parseState = cellmin | 0;
+						parseState = 0;
 					}
 				}
 				case OP_ADD_C: {
 					if (parseState == 1) {
 						parseParam = -DISASM_GET_OPERAND_INLINE(cip, 0),
-						parseState = cellmin | 2;
+						parseState = 2;
 					} else {
-						parseState = cellmin | 0;
+						parseState = 0;
 					}
 				}
 				case OP_SCTRL: {
@@ -764,7 +763,7 @@ static stock bool:CodeScanStepInternal(dctx[DisasmContext], csState[CodeScanner]
 							stk = cellmin;
 						}
 					}
-					parseState = cellmin | 0;
+					parseState = cellmin;
 				}
 				case OP_JUMP: {
 					parseParam = DISASM_GET_OPERAND_INLINE(cip, 0) - gBase,
@@ -790,7 +789,7 @@ static stock bool:CodeScanStepInternal(dctx[DisasmContext], csState[CodeScanner]
 					//   
 					// Only jumps that go forwards.
 					parseParam = DISASM_GET_OPERAND_INLINE(cip, 0) - gBase,
-					parseState = cellmin;
+					parseState = 0;
 					if (parseParam > cip) {
 						CodeScanAddJumpTarget(cip, parseParam, stk, hea, csState);
 					}
@@ -798,7 +797,7 @@ static stock bool:CodeScanStepInternal(dctx[DisasmContext], csState[CodeScanner]
 				case OP_JREL: {
 					// Add a jump target.  Only jumps that go forwards.
 					parseParam = DISASM_GET_OPERAND_INLINE(cip, 0) + cip,
-					parseState = cellmin;
+					parseState = 0;
 					if (parseParam > cip) {
 						CodeScanAddJumpTarget(cip, parseParam, stk, hea, csState);
 					}
@@ -813,16 +812,17 @@ static stock bool:CodeScanStepInternal(dctx[DisasmContext], csState[CodeScanner]
 				}
 				case OP_BREAK, OP_NOP: {
 					// Don't change any parse state.
+					parseState &= ~cellmin;
 				}
 				default: {
-					parseState = cellmin;
+					parseState = 0;
 				}
 			}
 			dctx[DisasmContext_nip] = cip + gAMXOpcodeBaseSizes[_:op],
 			csState[CodeScanMatch_stack] = stk,
 			csState[CodeScanMatch_heap] = hea;
 		} else {
-			parseState = cellmin;
+			parseState = 0;
 		}
 	}
 	return true;
