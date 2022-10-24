@@ -574,6 +574,8 @@ static stock bool:CodeScanStepInternal(dctx[DisasmContext], csState[CodeScanner]
 			return
 				dctx[DisasmContext_opcode] = op,
 				dctx[DisasmContext_cip] = cip,
+				csState[CodeScanMatch_stack] = stk,
+				csState[CodeScanMatch_heap] = hea,
 				parseState = 0,
 				true;
 		}
@@ -593,8 +595,6 @@ static stock bool:CodeScanStepInternal(dctx[DisasmContext], csState[CodeScanner]
 		switch (op) {
 			case OP_BREAK, OP_NOP: {
 				dctx[DisasmContext_nip] = cip + cellbytes,
-				csState[CodeScanMatch_stack] = stk,
-				csState[CodeScanMatch_heap] = hea,
 				parseState |= cellmin;
 				continue;
 			}
@@ -613,15 +613,11 @@ static stock bool:CodeScanStepInternal(dctx[DisasmContext], csState[CodeScanner]
 				} else {
 					parseState |= cellmin;
 				}
-				dctx[DisasmContext_nip] = cip + (2 * cellbytes),
-				csState[CodeScanMatch_stack] = stk,
-				csState[CodeScanMatch_heap] = hea;
+				dctx[DisasmContext_nip] = cip + (2 * cellbytes);
 				continue;
 			}
 			case OP_BOUNDS: {
-				dctx[DisasmContext_nip] = cip + (2 * cellbytes),
-				csState[CodeScanMatch_stack] = stk,
-				csState[CodeScanMatch_heap] = hea;
+				dctx[DisasmContext_nip] = cip + (2 * cellbytes);
 				continue;
 			}
 			case OP_PROC: {
