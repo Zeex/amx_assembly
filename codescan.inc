@@ -556,8 +556,12 @@ static stock bool:CodeScanStepInternal(dctx[DisasmContext], csState[CodeScanner]
 	// that any "false" returns are because of invalid data since the "< 0"
 	// check is also the only other way that "false" can be returned and we pre-
 	// empt that one.
-	static cip, Opcode:op;
-CodeScanStepInternal_retry:
+	new
+		cip,
+		Opcode:op,
+		stk,
+		hea;
+for ( ; ; ) {
 	dctx[DisasmContext_cip] = cip = dctx[DisasmContext_nip];
 	if (cip >= dctx[DisasmContext_end_ip]) {
 		return false;
@@ -566,9 +570,8 @@ CodeScanStepInternal_retry:
 	if (OP_NONE < op < Opcode:NUM_OPCODES) {
 		// The compiler sometimes inserts extra instructions like "NOP" and
 		// "BREAK" for debugging and padding (as do we) - maybe ignore them.
-		new
-			stk = csState[CodeScanMatch_stack],
-			hea = csState[CodeScanMatch_heap];
+		stk = csState[CodeScanMatch_stack],
+		hea = csState[CodeScanMatch_heap];
 		if (parseState & cellmin) {
 			// Only check the jump target if this point can't be reached
 			// naturally.  If the code can fall through from the previous
@@ -586,12 +589,13 @@ CodeScanStepInternal_retry:
 				csState[CodeScanMatch_stack] = stk,
 				csState[CodeScanMatch_heap] = hea,
 				parseState |= cellmin;
-				goto CodeScanStepInternal_retry;
+				continue;
 			}
 			case OP_CASETBL: {
 				cip += cellbytes,
 				cip += ReadAmxMemory(cip) * (2 * cellbytes),
 				parseState = cellmin;
+				break;
 			}
 			case OP_HALT: {
 				if (parseState == 4) {
@@ -605,13 +609,13 @@ CodeScanStepInternal_retry:
 				dctx[DisasmContext_nip] = cip + (2 * cellbytes),
 				csState[CodeScanMatch_stack] = stk,
 				csState[CodeScanMatch_heap] = hea;
-				goto CodeScanStepInternal_retry;
+				continue;
 			}
 			case OP_BOUNDS: {
 				dctx[DisasmContext_nip] = cip + (2 * cellbytes),
 				csState[CodeScanMatch_stack] = stk,
 				csState[CodeScanMatch_heap] = hea;
-				goto CodeScanStepInternal_retry;
+				continue;
 			}
 			case OP_PROC: {
 				// This is the start of a new function.  The only functions
@@ -620,6 +624,7 @@ CodeScanStepInternal_retry:
 				csState[CodeScanMatch_func] = cip,
 				CodeScanResetJumpTargets(csState),
 				stk = hea = parseState = 0;
+				break;
 			}
 			case OP_LOAD_PRI: {
 				// If we are not in the main functions yet and this is the
@@ -631,12 +636,14 @@ CodeScanStepInternal_retry:
 					stk = hea = 0,
 					CodeScanResetJumpTargets(csState);
 				}
+				break;
 			}
 			case OP_PUSH_PRI, OP_PUSH_ALT, OP_PUSH_R, OP_PUSH_S, OP_PUSH, OP_PUSH_ADR: {
 				if (stk != cellmin) {
 					stk += cellbytes;
 				}
 				parseState = 0;
+				break;
 			}
 #if OPCODE_HAS_O2
 			case OP_PUSH2_C, OP_PUSH2, OP_PUSH2_S, OP_PUSH2_ADR: {
@@ -644,24 +651,28 @@ CodeScanStepInternal_retry:
 					stk += cellbytes * 2;
 				}
 				parseState = 0;
+				break;
 			}
 			case OP_PUSH3_C, OP_PUSH3, OP_PUSH3_S, OP_PUSH3_ADR: {
 				if (stk != cellmin) {
 					stk += cellbytes * 3;
 				}
 				parseState = 0;
+				break;
 			}
 			case OP_PUSH4_C, OP_PUSH4, OP_PUSH4_S, OP_PUSH4_ADR: {
 				if (stk != cellmin) {
 					stk += cellbytes * 4;
 				}
 				parseState = 0;
+				break;
 			}
 			case OP_PUSH5_C, OP_PUSH5, OP_PUSH5_S, OP_PUSH5_ADR: {
 				if (stk != cellmin) {
 					stk += cellbytes * 5;
 				}
 				parseState = 0;
+				break;
 			}
 			case OP_SYSREQ_N: {
 				// sysreq.n cleans itself up, it isn't followed by `stack`.
@@ -669,6 +680,7 @@ CodeScanStepInternal_retry:
 					stk -= DISASM_GET_OPERAND_INLINE(cip, 1);
 				}
 				parseState = 0;
+				break;
 			}
 #endif
 			case OP_STACK: {
@@ -681,18 +693,21 @@ CodeScanStepInternal_retry:
 				// for managing the stack, so why do we need to check the status
 				// right after it?
 				parseState = cellmin;
+				break;
 			}
 			case OP_HEAP: {
 				if (hea != cellmin) {
 					hea += DISASM_GET_OPERAND_INLINE(cip, 0);
 				}
 				parseState = 0;
+				break;
 			}
 			case OP_POP_PRI, OP_POP_ALT: {
 				if (stk != cellmin) {
 					stk -= cellbytes;
 				}
 				parseState = 0;
+				break;
 			}
 			case OP_CALL, OP_CALL_PRI: {
 				// Remove all the function parameters.
@@ -700,6 +715,7 @@ CodeScanStepInternal_retry:
 					stk -= parseParam;
 				}
 				parseState = 0;
+				break;
 			}
 			case OP_PUSH_C: {
 				// The "+ cellbytes" is because when calling a function, the
@@ -710,6 +726,7 @@ CodeScanStepInternal_retry:
 					stk += cellbytes,
 					parseState = 3;
 				}
+				break;
 			}
 			// There is a code-get pattern of:
 			// 
@@ -727,6 +744,7 @@ CodeScanStepInternal_retry:
 				} else {
 					parseState = 0;
 				}
+				break;
 			}
 			case OP_ADD_C: {
 				if (parseState == 1) {
@@ -735,6 +753,7 @@ CodeScanStepInternal_retry:
 				} else {
 					parseState = 0;
 				}
+				break;
 			}
 			case OP_SCTRL: {
 				// This is the tricky one, since it can mess up the stack in
@@ -762,6 +781,7 @@ CodeScanStepInternal_retry:
 					}
 				}
 				parseState = 0;
+				break;
 			}
 			case OP_JUMP: {
 				parseParam = DISASM_GET_OPERAND_INLINE(cip, 0) - gBase,
@@ -769,6 +789,7 @@ CodeScanStepInternal_retry:
 				if (parseParam > cip) {
 					CodeScanAddJumpTarget(cip, parseParam, stk, hea, csState);
 				}
+				break;
 			}
 			case OP_JZER, OP_JNZ, OP_JEQ, OP_JNEQ, OP_JLESS, OP_JLEQ, OP_JGRTR, OP_JGEQ, OP_JSLESS, OP_JSLEQ, OP_JSGRTR, OP_JSGEQ: {
 				// Add a jump target.  These require relocation as they are
@@ -791,6 +812,7 @@ CodeScanStepInternal_retry:
 				if (parseParam > cip) {
 					CodeScanAddJumpTarget(cip, parseParam, stk, hea, csState);
 				}
+				break;
 			}
 			case OP_JREL: {
 				// Add a jump target.  Only jumps that go forwards.
@@ -799,28 +821,33 @@ CodeScanStepInternal_retry:
 				if (parseParam > cip) {
 					CodeScanAddJumpTarget(cip, parseParam, stk, hea, csState);
 				}
+				break;
 			}
 			case OP_SWITCH: {
 				// Add a jump target.  These are always forwards.
 				CodeScanAddSwitchTarget(cip, stk, hea, csState),
 				parseState = cellmin;
+				break;
 			}
 			case OP_RETN: {
 				parseState = cellmin;
+				break;
 			}
 			default: {
 				parseState = 0;
+				break;
 			}
 		}
+	}
+	return
+		parseState = 0,
+		true;
+}
 		return
 			dctx[DisasmContext_nip] = cip + gAMXOpcodeBaseSizes[_:op],
 			csState[CodeScanMatch_stack] = stk,
 			csState[CodeScanMatch_heap] = hea,
 			true;
-	}
-	return
-		parseState = 0,
-		true;
 }
 
 /// <library>amx_assembly codescan</library>
