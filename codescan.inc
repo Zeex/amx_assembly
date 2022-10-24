@@ -605,7 +605,7 @@ static stock bool:CodeScanStepInternal(dctx[DisasmContext], csState[CodeScanner]
 			switch (op) {
 				case OP_BREAK, OP_NOP: {
 					return
-						dctx[DisasmContext_nip] = cip + gAMXOpcodeBaseSizes[_:op],
+						dctx[DisasmContext_nip] = cip + cellbytes,
 						csState[CodeScanMatch_stack] = stk,
 						csState[CodeScanMatch_heap] = hea,
 						true;
