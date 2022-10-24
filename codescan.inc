@@ -252,25 +252,20 @@ static stock bool:CodeScanCheckJumpTarget(cip, deloc, &stk, &hea, jumpTargets[Co
 		minn = jumpTargets[CodeScanner_minn],
 		sip = 0;
 	while (num-- > minn) {
-		if (jumpTargets[CodeScanner_jump_target][num]) {
-			if ((sip = jumpTargets[CodeScanner_jump_switch][num])) {
-				for (new count = ReadAmxMemory(sip + cellbytes) + 1; count; --count) {
-					if (ReadAmxMemory(sip + count * (2 * cellbytes)) == deloc) {
-						if (--jumpTargets[CodeScanner_jump_target][num] == 0) {
-							jumpTargets[CodeScanner_jump_target][num] = cellmin;
-						}
-						return
-							stk = jumpTargets[CodeScanner_jump_stack][num],
-							hea = jumpTargets[CodeScanner_jump_heap][num],
-							true;
-					}
+		if (jumpTargets[CodeScanner_jump_target][num] == cip) {
+			return
+				jumpTargets[CodeScanner_jump_target][num] = cellmin,
+				stk = jumpTargets[CodeScanner_jump_stack][num],
+				hea = jumpTargets[CodeScanner_jump_heap][num],
+				true;
+		} else if ((sip = jumpTargets[CodeScanner_jump_switch][num]) && jumpTargets[CodeScanner_jump_target][num] > cip) {
+			for (new count = ReadAmxMemory(sip + cellbytes) + 1; count; --count) {
+				if (ReadAmxMemory(sip + count * (2 * cellbytes)) == deloc) {
+					return
+						stk = jumpTargets[CodeScanner_jump_stack][num],
+						hea = jumpTargets[CodeScanner_jump_heap][num],
+						true;
 				}
-			} else if (jumpTargets[CodeScanner_jump_target][num] == cip) {
-				return
-					jumpTargets[CodeScanner_jump_target][num] = cellmin,
-					stk = jumpTargets[CodeScanner_jump_stack][num],
-					hea = jumpTargets[CodeScanner_jump_heap][num],
-					true;
 			}
 		}
 	}
@@ -328,7 +323,7 @@ static stock CodeScanAddSwitchTarget(cip, stk, hea, jumpTargets[CodeScanner], nu
 		// Multiple jumps to the same place?
 		if (jumpTargets[CodeScanner_jump_target][num] < cip) {
 			jumpTargets[CodeScanner_jump_switch][num] = sip,
-			jumpTargets[CodeScanner_jump_target][num] = count,
+			jumpTargets[CodeScanner_jump_target][num] = highest,
 			jumpTargets[CodeScanner_jump_stack][num] = stk,
 			jumpTargets[CodeScanner_jump_heap][num] = hea,
 			jumpTargets[CodeScanner_minn] = min(jumpTargets[CodeScanner_minn], num);
