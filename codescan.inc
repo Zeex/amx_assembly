@@ -569,9 +569,10 @@ static stock bool:CodeScanStepInternal(dctx[DisasmContext], csState[CodeScanner]
 				dctx[DisasmContext_cip] = cip,
 				false;
 		}
-		dctx[DisasmContext_opcode] = op = UnsafeUnrelocateOpcode(Opcode:ReadAmxMemory(cip));
+		op = UnsafeUnrelocateOpcode(Opcode:ReadAmxMemory(cip));
 		if (CODE_SCAN_NOT_IN_RANGE(op, _:OP_NONE + 1, NUM_OPCODES)) {
 			return
+				dctx[DisasmContext_opcode] = op,
 				dctx[DisasmContext_cip] = cip,
 				parseState = 0,
 				true;
@@ -848,6 +849,7 @@ static stock bool:CodeScanStepInternal(dctx[DisasmContext], csState[CodeScanner]
 		}
 	}
 	return
+		dctx[DisasmContext_opcode] = op,
 		dctx[DisasmContext_cip] = cip,
 		dctx[DisasmContext_nip] = cip + gAMXOpcodeBaseSizes[_:op],
 		csState[CodeScanMatch_stack] = stk,
