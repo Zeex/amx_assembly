@@ -570,15 +570,6 @@ static stock bool:CodeScanStepInternal(dctx[DisasmContext], csState[CodeScanner]
 				false;
 		}
 		op = UnsafeUnrelocateOpcode(Opcode:ReadAmxMemory(cip));
-		if (CODE_SCAN_NOT_IN_RANGE(op, _:OP_NONE + 1, NUM_OPCODES)) {
-			return
-				dctx[DisasmContext_opcode] = op,
-				dctx[DisasmContext_cip] = cip,
-				csState[CodeScanMatch_stack] = stk,
-				csState[CodeScanMatch_heap] = hea,
-				parseState = cellmin,
-				true;
-		}
 		// The compiler sometimes inserts extra instructions like "NOP" and
 		// "BREAK" for debugging and padding (as do we) - maybe ignore them.
 		if (parseState & cellmin) {
@@ -591,6 +582,11 @@ static stock bool:CodeScanStepInternal(dctx[DisasmContext], csState[CodeScanner]
 			// passed by, because we only check a small percentage of them.
 			CodeScanCheckJumpTarget(cip, cip + gBase, stk, hea, csState);
 			parseState &= ~cellmin;
+		}
+		if (CODE_SCAN_NOT_IN_RANGE(op, _:OP_NONE + 1, NUM_OPCODES)) {
+			cip += cellbytes,
+			parseState |= cellmin;
+			continue;
 		}
 		switch (op) {
 			case OP_BREAK, OP_NOP: {
