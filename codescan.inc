@@ -292,7 +292,6 @@ static stock CodeScanAddJumpTarget(cip, target, stk, hea, jumpTargets[CodeScanne
 		if (jumpTargets[CodeScanner_jump_target][num] == target) {
 			return;
 		} else if (jumpTargets[CodeScanner_jump_target][num] < cip) {
-			printf("Adding for %08x", cip);
 			jumpTargets[CodeScanner_jump_switch][num] = 0;
 			jumpTargets[CodeScanner_jump_target][num] = target;
 			jumpTargets[CodeScanner_jump_stack][num] = stk;
@@ -304,20 +303,32 @@ static stock CodeScanAddJumpTarget(cip, target, stk, hea, jumpTargets[CodeScanne
 }
 
 /// <library>amx_assembly codescan</library>
-static stock CodeScanAddSwitchTarget(const dctx[DisasmContext], stk, hea, jumpTargets[CodeScanner], num = CODE_SCAN_MAX_JUMP_TARGETS) {
+static stock CodeScanAddSwitchTarget(cip, stk, hea, jumpTargets[CodeScanner], num = CODE_SCAN_MAX_JUMP_TARGETS) {
+	// Get the case table for this switch.
 	new
-		sip = DISASM_GET_OPERAND_INLINE(dctx[DisasmContext_cip], 0) - gBase,
+		sip = DISASM_GET_OPERAND_INLINE(cip, 0) - gBase,
 		codepos = sip + gHdr[AMX_HDR_DAT] - gHdr[AMX_HDR_COD];
 	if ((codepos < 0) || (codepos > gHdr[AMX_HDR_DAT]) || (_:ReadAmxMemory(sip) != _:gOP_CASETBL)) {
 		// Can happen when we parse "RelocateOpcodeNow" because it has an
 		// explicit "#emit switch 0" in.
 		return;
 	}
+	// Find the highest address in this case table.  Add 1 because the count
+	// doesn't include the default.
+	new highest = cellmin;
+	new count = ReadAmxMemory(sip + cellbytes) + 1;
+	for (new i = 1; i <= count; ++i) {
+		// Not an OBOE, all relative to the start.
+		if ((codepos = ReadAmxMemory(sip + i * (2 * cellbytes))) > highest) {
+			highest = codepos;
+		}
+	}
+	printf("Highest address: %08x", highest - gBase);
 	while (num--) {
 		// Multiple jumps to the same place?
-		if (jumpTargets[CodeScanner_jump_target][num] == cellmin) {
+		if (jumpTargets[CodeScanner_jump_target][num] < cip) {
 			jumpTargets[CodeScanner_jump_switch][num] = sip,
-			jumpTargets[CodeScanner_jump_target][num] = ReadAmxMemory(sip + cellbytes) + 1,
+			jumpTargets[CodeScanner_jump_target][num] = count,
 			jumpTargets[CodeScanner_jump_stack][num] = stk,
 			jumpTargets[CodeScanner_jump_heap][num] = hea,
 			jumpTargets[CodeScanner_minn] = min(jumpTargets[CodeScanner_minn], num);
@@ -788,7 +799,7 @@ static stock bool:CodeScanStepInternal(dctx[DisasmContext], csState[CodeScanner]
 				}
 				case OP_SWITCH: {
 					// Add a jump target.  These are always forwards.
-					CodeScanAddSwitchTarget(dctx, stk, hea, csState),
+					CodeScanAddSwitchTarget(cip, stk, hea, csState),
 					parseState = 0;
 				}
 				default: {
