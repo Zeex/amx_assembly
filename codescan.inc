@@ -826,7 +826,9 @@ static stock bool:CodeScanStepInternal(dctx[DisasmContext], csState[CodeScanner]
 
 /// <library>amx_assembly codescan</library>
 stock bool:CodeScanStep(dctx[DisasmContext], csState[CodeScanner]) {
-	return CodeScanStepInternal(dctx, csState, csState[CodeScanner_state], csState[CodeScanner_param]);
+	new bool:ret = CodeScanStepInternal(dctx, csState, csState[CodeScanner_state], csState[CodeScanner_param]);
+	csState[CodeScanner_state] |= cellmin;
+	return ret;
 }
 
 /// <library>amx_assembly codescan</library>
@@ -1008,6 +1010,7 @@ stock bool:CodeScanRunFast(csState[CodeScanner], searchFuncAddr = 0) {
 				// do the actual comparisons to various defined scanners.
 				for (cur = csState[CodeScanner_first], op = DisasmGetOpcode(dctx); cur != -1; ) {
 					if (CodeScanCheck(op, dctx, CodeScanDeref(cur), csState, cur)) {
+						parseState |= cellmin;
 						switch (CodeScanCall(CodeScanDeref(cur), csState)) {
 							case cellmin: {
 								// End right now.
@@ -1067,6 +1070,7 @@ stock bool:CodeScanRun(csState[CodeScanner]) {
 		// do the actual comparisons to various defined scanners.
 		for (cur = csState[CodeScanner_first], op = dctx[DisasmContext_opcode]; cur != -1; ) {
 			if (CodeScanCheck(op, dctx, CodeScanDeref(cur), csState, cur)) {
+				parseState |= cellmin;
 				switch (CodeScanCall(CodeScanDeref(cur), csState)) {
 					case cellmin: {
 						// End right now.
@@ -1148,9 +1152,12 @@ stock CodeScanGetMatchScanner(const csm[CodeScanner], ret[CodeScanner], ctx[Disa
 	if (accurate) {
 		// To be accurate in terms of jump targets, we re-run the scanner over
 		// the function back up to this point.
+		new parseState = ret[CodeScanner_state];
 		while (ctx[DisasmContext_nip] < csm[CodeScanMatch_cip]) {
-			CodeScanStepInternal(ctx, ret, ret[CodeScanner_state], ret[CodeScanner_param]);
+			parseState |= cellmin;
+			CodeScanStepInternal(ctx, ret, parseState, ret[CodeScanner_param]);
 		}
+		ret[CodeScanner_state] = parseState;
 	} else {
 		// For speed, we just change the current instruction pointers.
 		ctx[DisasmContext_start_ip] = ctx[DisasmContext_nip] = ctx[DisasmContext_cip] = csm[CodeScanMatch_cip];
