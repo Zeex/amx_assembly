@@ -876,7 +876,6 @@ static stock OpcodeTableQuickSort(low, high) {
 /// <library>amx_assembly opcode</library>
 static stock OpcodeTableWrite(addr, i) {
 	// Loop through all the opcodes in the table and replace them.
-	printf("addr: %08x, count: %d", addr, i);
 	new Opcode:op;
 	while (i--) {
 		op = Opcode:ReadAmxMemory(addr),
