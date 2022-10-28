@@ -175,7 +175,7 @@ static stock AsmHashLabel(const label[]) {
 	new hash = -1;
 	new i = -1;
 	new ch = 0;
-	while ((ch = label[++i]) >= ' ') {
+	while ((ch = label[++i])) {
 		hash = hash * 33 + ch;
 	}
 	return hash;
