@@ -408,6 +408,8 @@ static stock NtCopy(src, dest[], size = sizeof(dest)) {
 
 /// <library>amx_assembly amx_header</library>
 stock GetNumPublics(const amxhdr[AMX_HDR]) {
+	InitStaticAmxHeader();
+
 	new num_publics = (amxhdr[AMX_HDR_NATIVES] - amxhdr[AMX_HDR_PUBLICS]) / amxhdr[AMX_HDR_DEFSIZE];
 	return num_publics;
 }
@@ -493,6 +495,8 @@ stock HookPublic(index, address) {
 
 /// <library>amx_assembly amx_header</library>
 stock GetNumNatives(const amxhdr[AMX_HDR]) {
+	InitStaticAmxHeader();
+
 	return (amxhdr[AMX_HDR_LIBRARIES] - amxhdr[AMX_HDR_NATIVES]) / amxhdr[AMX_HDR_DEFSIZE];
 }
 
@@ -602,6 +606,8 @@ stock HookNative(index, address) {
 
 /// <library>amx_assembly amx_header</library>
 stock GetNumPubVars(const amxhdr[AMX_HDR]) {
+	InitStaticAmxHeader();
+
 	return (amxhdr[AMX_HDR_TAGS] - amxhdr[AMX_HDR_PUBVARS]) / amxhdr[AMX_HDR_DEFSIZE];
 }
 
@@ -725,6 +731,8 @@ stock bool:GetPubVarNameFromAddress(address, name[], size = sizeof(name)) {
 
 /// <library>amx_assembly amx_header</library>
 stock GetNumTags(const amxhdr[AMX_HDR]) {
+	InitStaticAmxHeader();
+
 	return (amxhdr[AMX_HDR_NAMETABLE] - amxhdr[AMX_HDR_TAGS]) / amxhdr[AMX_HDR_DEFSIZE];
 }
 
