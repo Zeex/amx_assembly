@@ -541,7 +541,7 @@ stock bool:GetNativeInfo(index, info[AMX_FUNCSTUBNT]) {
 /// <library>amx_assembly amx_header</library>
 static stock GetSomeIndexFromName(const name[], offset, count) {
 	new first = 0;
-	new defsize = gHdr[AMX_HDR_DAT];
+	new defsize = gHdr[AMX_HDR_DEFSIZE];
 	new mid = 0;
 	--count;
 
@@ -676,23 +676,24 @@ stock GetPubVarAddressFromName(const name[]) {
 stock bool:GetPubVar(const name[], &value) {
 	InitStaticAmxHeader();
 
+	new first = 0;
 	new defsize = gHdr[AMX_HDR_DEFSIZE];
-	new first = gHdr[AMX_HDR_PUBVARS] - gHdr[AMX_HDR_DAT];
-	new last = gHdr[AMX_HDR_TAGS] - gHdr[AMX_HDR_DAT] - defsize;
+	new last = ((gHdr[AMX_HDR_TAGS] - gHdr[AMX_HDR_PUBVARS]) / defsize) - 1;
 	new mid = 0;
+	new off = gHdr[AMX_HDR_PUBVARS] - gHdr[AMX_HDR_DAT];
 
 	// Binary search
 	while (first <= last) {
 		mid = (first + last) / 2;
-		new nameofs = mid + cellbytes;
+		new nameofs = off + (mid * defsize) + cellbytes;
 		nameofs = AMX_HEADER_MAYBE_MASK(ReadAmxMemory(nameofs)) - gHdr[AMX_HDR_DAT];
 		nameofs = NtCompare(nameofs, name);
 		if (nameofs < 0) {
-			first = mid + defsize;
+			first = mid + 1;
 		} else if (nameofs > 0) {
-			last = mid - defsize;
+			last = mid - 1;
 		} else {
-			nameofs = ReadAmxMemory(mid);
+			nameofs = ReadAmxMemory(off + (mid * defsize));
 			value = ReadAmxMemory(nameofs);
 			return true;
 		}
@@ -704,23 +705,24 @@ stock bool:GetPubVar(const name[], &value) {
 stock bool:SetPubVar(const name[], value) {
 	InitStaticAmxHeader();
 
+	new first = 0;
 	new defsize = gHdr[AMX_HDR_DEFSIZE];
-	new first = gHdr[AMX_HDR_PUBVARS] - gHdr[AMX_HDR_DAT];
-	new last = gHdr[AMX_HDR_TAGS] - gHdr[AMX_HDR_DAT] - defsize;
+	new last = ((gHdr[AMX_HDR_TAGS] - gHdr[AMX_HDR_PUBVARS]) / defsize) - 1;
 	new mid = 0;
+	new off = gHdr[AMX_HDR_PUBVARS] - gHdr[AMX_HDR_DAT];
 
 	// Binary search
 	while (first <= last) {
 		mid = (first + last) / 2;
-		new nameofs = mid + cellbytes;
+		new nameofs = off + (mid * defsize) + cellbytes;
 		nameofs = AMX_HEADER_MAYBE_MASK(ReadAmxMemory(nameofs)) - gHdr[AMX_HDR_DAT];
 		nameofs = NtCompare(nameofs, name);
 		if (nameofs < 0) {
-			first = mid + defsize;
+			first = mid + 1;
 		} else if (nameofs > 0) {
-			last = mid - defsize;
+			last = mid - 1;
 		} else {
-			nameofs = ReadAmxMemory(mid);
+			nameofs = ReadAmxMemory(off + (mid * defsize));
 			WriteAmxMemory(nameofs, value);
 			return true;
 		}
