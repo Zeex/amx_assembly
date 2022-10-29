@@ -676,24 +676,23 @@ stock GetPubVarAddressFromName(const name[]) {
 stock bool:GetPubVar(const name[], &value) {
 	InitStaticAmxHeader();
 
-	new first = 0;
 	new defsize = gHdr[AMX_HDR_DEFSIZE];
-	new last = ((gHdr[AMX_HDR_TAGS] - gHdr[AMX_HDR_PUBVARS]) / defsize) - 1;
+	new first = gHdr[AMX_HDR_PUBVARS] - gHdr[AMX_HDR_DAT];
+	new last = gHdr[AMX_HDR_TAGS] - gHdr[AMX_HDR_DAT] - defsize;
 	new mid = 0;
-	new off = gHdr[AMX_HDR_PUBVARS] - gHdr[AMX_HDR_DAT];
 
 	// Binary search
 	while (first <= last) {
 		mid = (first + last) / 2;
-		new nameofs = off + (mid * defsize) + cellbytes;
+		new nameofs = mid + cellbytes;
 		nameofs = AMX_HEADER_MAYBE_MASK(ReadAmxMemory(nameofs)) - gHdr[AMX_HDR_DAT];
 		nameofs = NtCompare(nameofs, name);
 		if (nameofs < 0) {
-			first = mid + 1;
+			first = mid + defsize;
 		} else if (nameofs > 0) {
-			last = mid - 1;
+			last = mid - defsize;
 		} else {
-			nameofs = ReadAmxMemory(off + (mid * defsize));
+			nameofs = ReadAmxMemory(mid);
 			value = ReadAmxMemory(nameofs);
 			return true;
 		}
@@ -705,24 +704,23 @@ stock bool:GetPubVar(const name[], &value) {
 stock bool:SetPubVar(const name[], value) {
 	InitStaticAmxHeader();
 
-	new first = 0;
 	new defsize = gHdr[AMX_HDR_DEFSIZE];
-	new last = ((gHdr[AMX_HDR_TAGS] - gHdr[AMX_HDR_PUBVARS]) / defsize) - 1;
+	new first = gHdr[AMX_HDR_PUBVARS] - gHdr[AMX_HDR_DAT];
+	new last = gHdr[AMX_HDR_TAGS] - gHdr[AMX_HDR_DAT] - defsize;
 	new mid = 0;
-	new off = gHdr[AMX_HDR_PUBVARS] - gHdr[AMX_HDR_DAT];
 
 	// Binary search
 	while (first <= last) {
 		mid = (first + last) / 2;
-		new nameofs = off + (mid * defsize) + cellbytes;
+		new nameofs = mid + cellbytes;
 		nameofs = AMX_HEADER_MAYBE_MASK(ReadAmxMemory(nameofs)) - gHdr[AMX_HDR_DAT];
 		nameofs = NtCompare(nameofs, name);
 		if (nameofs < 0) {
-			first = mid + 1;
+			first = mid + defsize;
 		} else if (nameofs > 0) {
-			last = mid - 1;
+			last = mid - defsize;
 		} else {
-			nameofs = ReadAmxMemory(off + (mid * defsize));
+			nameofs = ReadAmxMemory(mid);
 			WriteAmxMemory(nameofs, value);
 			return true;
 		}
