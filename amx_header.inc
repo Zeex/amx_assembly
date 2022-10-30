@@ -245,7 +245,7 @@ static stock AmxHeaderTableSwap(addr0, addr1) {
 			addr0 += cellbytes,
 			addr1 += cellbytes,
 			// Swap the names.  These pointers are always 32-bit, at least in
-			// the AMX versions we deal with.
+			// the AMX versions we deal with.  Thus we mask the upper bits.
 			v0 = ReadAmxMemory(addr0),
 			v1 = ReadAmxMemory(addr1),
 			WriteAmxMemory(addr1, (v0 & 0x00000000FFFFFFFF) | (v1 & 0xFFFFFFFF00000000)),
@@ -270,28 +270,28 @@ static stock AmxHeaderTableSwap(addr0, addr1) {
 }
 
 /// <library>amx_assembly amx_header</library>
-static stock AmxHeaderTablePartition(low, high) {
-	new pivot = ReadAmxMemory(high);
+static stock AmxHeaderTablePartition(low, high, dat, defsize) {
+	new pivot = AMX_HEADER_MAYBE_MASK(ReadAmxMemory(high + cellbytes)) - dat;
 	new j = low;
-	for (low -= 2 * cellbytes; j != high; j += 2 * cellbytes) {
-		if (ReadAmxMemory(j) < pivot) {
+	for (low -= defsize; j != high; j += defsize) {
+		if (NtPivot(AMX_HEADER_MAYBE_MASK(ReadAmxMemory(j + cellbytes)) - dat, pivot) < 0) {
 			// Swap.
-			low += 2 * cellbytes,
+			low += defsize,
 			AmxHeaderTableSwap(low, j);
 		}
 	}
 	return
-		low += 2 * cellbytes,
+		low += defsize,
 		AmxHeaderTableSwap(low, high),
 		low;
 }
 
 /// <library>amx_assembly amx_header</library>
-static stock AmxHeaderTableQuickSort(low, high) {
+static stock AmxHeaderTableQuickSort(low, high, dat, defsize) {
 	if (low < high) {
-		new partition = AmxHeaderTablePartition(low, high);
-		AmxHeaderTableQuickSort(low, partition - (2 * cellbytes));
-		AmxHeaderTableQuickSort(partition + (2 * cellbytes), high);
+		new partition = AmxHeaderTablePartition(low - dat, high - dat, dat, defsize) + dat;
+		AmxHeaderTableQuickSort(low, partition - defsize, dat, defsize);
+		AmxHeaderTableQuickSort(partition + defsize, high, dat, defsize);
 	}
 }
 
@@ -317,16 +317,18 @@ stock GetAmxHeaderNow(amxhdr[AMX_HDR]) {
 	copy_4(amxhdr[AMX_HDR_PUBVARS], plain_amxhdr, AMX_HDR_OFFSET_PUBVARS);
 	copy_4(amxhdr[AMX_HDR_TAGS], plain_amxhdr, AMX_HDR_OFFSET_TAGS);
 	copy_4(amxhdr[AMX_HDR_NAMETABLE], plain_amxhdr, AMX_HDR_OFFSET_NAMETABLE);
-
+	
 	// Sort the tags list.  They aren't sorted, so make them so.  YSI uses tag
 	// lookup a lot, so making it faster is good.  The VM searches linearly,
 	// because it doesn't think they are sorted, so this won't break anything.
+	AmxHeaderTableQuickSort(amxhdr[AMX_HDR_TAGS], amxhdr[AMX_HDR_NAMETABLE] - amxhdr[AMX_HDR_DEFSIZE], amxhdr[AMX_HDR_DAT], amxhdr[AMX_HDR_DEFSIZE]);
 	
 	// We can also sort the libraries table while we're at it.  We already have
 	// the code, using it again is no hardship (which makes me question why only
 	// some of the tables are sorted by the compiler, not all of them, in the
 	// first place - that has the code, so surely using it is no hardship there
 	// either).
+	AmxHeaderTableQuickSort(amxhdr[AMX_HDR_LIBRARIES], amxhdr[AMX_HDR_PUBVARS] - amxhdr[AMX_HDR_DEFSIZE], amxhdr[AMX_HDR_DAT], amxhdr[AMX_HDR_DEFSIZE]);
 	
 	// Sadly we can't sort the natives table after-the-fact in this way because
 	// their indexes are spread throughout the AMX.  We *could* replace all the
@@ -463,7 +465,30 @@ static stock NtCompare(s1, const s2[]) {
 		if (diff != 0) {
 			break;
 		}
-	} while ((c1 & c2) != 0);
+	} while ((c1 & c2));
+
+	return diff;
+}
+
+/// <library>amx_assembly amx_header</library>
+/// <summary>
+///   Compares a string stored in the name table starting at "s1" (packed) with
+///   another string in the name table starting at "s2" (packed).
+/// </summary>
+static stock NtPivot(s1, s2) {
+	new c1 = 0, c2 = 0;
+	new diff = 0;
+
+	do {
+		c1 = ReadAmxMemory(s1) & 0xFF;
+		++s1;
+		c2 = ReadAmxMemory(s2) & 0xFF;
+		++s2;
+		diff = c1 - c2;
+		if (diff != 0) {
+			break;
+		}
+	} while ((c1 & c2));
 
 	return diff;
 }
@@ -873,21 +898,26 @@ stock bool:GetTagInfo(index, info[AMX_FUNCSTUBNT]) {
 stock GetTagIndexFromName(const name[]) {
 	InitStaticAmxHeader();
 
-	new num_tags = GetNumTags(gHdr);
+	new first = 0;
+	new defsize = gHdr[AMX_HDR_DEFSIZE];
+	new last = ((gHdr[AMX_HDR_NAMETABLE] - gHdr[AMX_HDR_TAGS]) / defsize) - 1;
+	new mid = 0;
 	new off = gHdr[AMX_HDR_TAGS] - gHdr[AMX_HDR_DAT];
 
-	// Linear search
-	for (new i = 0; i < num_tags; i++) {
-		new nameofs = AMX_HEADER_MAYBE_MASK(ReadAmxMemory(off + cellbytes)) - gHdr[AMX_HDR_DAT];
-
-		new diff = NtCompare(nameofs, name);
-		if (diff == 0) {
-			return i;
+	// Binary search
+	while (first <= last) {
+		mid = (first + last) / 2;
+		new nameofs = off + (mid * defsize) + cellbytes;
+		nameofs = AMX_HEADER_MAYBE_MASK(ReadAmxMemory(nameofs)) - gHdr[AMX_HDR_DAT];
+		nameofs = NtCompare(nameofs, name);
+		if (nameofs < 0) {
+			first = mid + 1;
+		} else if (nameofs > 0) {
+			last = mid - 1;
+		} else {
+			return mid;
 		}
-
-		off += gHdr[AMX_HDR_DEFSIZE];
 	}
-
 	return -1;
 }
 
