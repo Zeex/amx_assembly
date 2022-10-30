@@ -43,7 +43,7 @@
 #include "amx_memory"
 
 #define AMX_HDR_BYTES (56)
-#define AMX_HDR_CELLS (AMX_HDR_BYTES / 4)
+#define AMX_HDR_CELLS (AMX_HDR_BYTES / cellbytes)
 
 // Always 32-bit.
 #define AMX_TAG_LOCAL (0x80000000)
@@ -185,7 +185,7 @@ forward GetAmxHeader(amxhdr[AMX_HDR]);
 forward GetAmxHeaderComponent(AMX_HDR:comp);
 forward PrintAmxHeader();
 
-#if cellbytes == 8
+#if cellbits == 64
 	#define AMX_HEADER_MAYBE_MASK(%0) ((%0) & 0xFFFFFFFF)
 #else
 	#define AMX_HEADER_MAYBE_MASK(%0) ((%0))
@@ -231,6 +231,70 @@ static stock copy_4(&dest, const source[], start) {
 	#emit movs 4
 }
 
+/// <library>amx_assembly opcode</library>
+static stock AmxHeaderTableSwap(addr0, addr1) {
+	#if cellbits == 64
+		new v0, v1, v3;
+		return
+			// Swap the pointers.
+			v0 = ReadAmxMemory(addr0),
+			v1 = ReadAmxMemory(addr1),
+			WriteAmxMemory(addr1, v0),
+			WriteAmxMemory(addr0, v1),
+			// Move on.
+			addr0 += cellbytes,
+			addr1 += cellbytes,
+			// Swap the names.  These pointers are always 32-bit, at least in
+			// the AMX versions we deal with.
+			v0 = ReadAmxMemory(addr0),
+			v1 = ReadAmxMemory(addr1),
+			WriteAmxMemory(addr1, (v0 & 0x00000000FFFFFFFF) | (v1 & 0xFFFFFFFF00000000)),
+			WriteAmxMemory(addr0, (v1 & 0x00000000FFFFFFFF) | (v0 & 0xFFFFFFFF00000000));
+	#else
+		new v0, v1;
+		return
+			// Swap the pointers.
+			v0 = ReadAmxMemory(addr0),
+			v1 = ReadAmxMemory(addr1),
+			WriteAmxMemory(addr1, v0),
+			WriteAmxMemory(addr0, v1),
+			// Move on.
+			addr0 += cellbytes,
+			addr1 += cellbytes,
+			// Swap the names.
+			v0 = ReadAmxMemory(addr0),
+			v1 = ReadAmxMemory(addr1),
+			WriteAmxMemory(addr1, v0),
+			WriteAmxMemory(addr0, v1);
+	#endif
+}
+
+/// <library>amx_assembly amx_header</library>
+static stock AmxHeaderTablePartition(low, high) {
+	new pivot = ReadAmxMemory(high);
+	new j = low;
+	for (low -= 2 * cellbytes; j != high; j += 2 * cellbytes) {
+		if (ReadAmxMemory(j) < pivot) {
+			// Swap.
+			low += 2 * cellbytes,
+			AmxHeaderTableSwap(low, j);
+		}
+	}
+	return
+		low += 2 * cellbytes,
+		AmxHeaderTableSwap(low, high),
+		low;
+}
+
+/// <library>amx_assembly amx_header</library>
+static stock AmxHeaderTableQuickSort(low, high) {
+	if (low < high) {
+		new partition = AmxHeaderTablePartition(low, high);
+		AmxHeaderTableQuickSort(low, partition - (2 * cellbytes));
+		AmxHeaderTableQuickSort(partition + (2 * cellbytes), high);
+	}
+}
+
 /// <library>amx_assembly amx_header</library>
 stock GetAmxHeaderNow(amxhdr[AMX_HDR]) {
 	new plain_amxhdr[AMX_HDR_CELLS];
@@ -253,6 +317,24 @@ stock GetAmxHeaderNow(amxhdr[AMX_HDR]) {
 	copy_4(amxhdr[AMX_HDR_PUBVARS], plain_amxhdr, AMX_HDR_OFFSET_PUBVARS);
 	copy_4(amxhdr[AMX_HDR_TAGS], plain_amxhdr, AMX_HDR_OFFSET_TAGS);
 	copy_4(amxhdr[AMX_HDR_NAMETABLE], plain_amxhdr, AMX_HDR_OFFSET_NAMETABLE);
+
+	// Sort the tags list.  They aren't sorted, so make them so.  YSI uses tag
+	// lookup a lot, so making it faster is good.  The VM searches linearly,
+	// because it doesn't think they are sorted, so this won't break anything.
+	
+	// We can also sort the libraries table while we're at it.  We already have
+	// the code, using it again is no hardship (which makes me question why only
+	// some of the tables are sorted by the compiler, not all of them, in the
+	// first place - that has the code, so surely using it is no hardship there
+	// either).
+	
+	// Sadly we can't sort the natives table after-the-fact in this way because
+	// their indexes are spread throughout the AMX.  We *could* replace all the
+	// `SYSREQ.D` instances with the new indexes as well, but: a. that's hard
+	// without `disasm`, which shouldn't be a dependency of this file; b. it is
+	// slow; and c. it is pointless in open.mp anyway because the name pointers
+	// get clobbered so you can't search the table by name after init anyway,
+	// regardless of sorting.
 }
 
 /// <library>amx_assembly amx_header</library>
