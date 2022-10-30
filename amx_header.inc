@@ -381,7 +381,7 @@ static stock NtCompare(s1, const s2[]) {
 		if (diff != 0) {
 			break;
 		}
-	} while (c1 && c2);
+	} while ((c1 & c2) != 0);
 
 	return diff;
 }
@@ -539,68 +539,24 @@ stock bool:GetNativeInfo(index, info[AMX_FUNCSTUBNT]) {
 }
 
 /// <library>amx_assembly amx_header</library>
-static stock GetSomeIndexFromName(const name[], first, last) {
-	new defsize = gHdr[AMX_HDR_DEFSIZE];
-	new offset = first - gHdr[AMX_HDR_DAT];
-	new mid = 0;
-	last = (last - first) / defsize - 1;
-	first = 0;
-	new str[32];
-	printf("Searching for: %s", name);
-
-	// Binary search
-	while (first <= last) {
-		mid = (first + last) / 2;
-		new nameofs = offset + (mid * defsize) + cellbytes;
-		nameofs = AMX_HEADER_MAYBE_MASK(ReadAmxMemory(nameofs)) - gHdr[AMX_HDR_DAT];
-		NtCopy(nameofs, str);
-		printf("Comparing index %d (%s)", mid, str);
-		nameofs = NtCompare(nameofs, name);
-		if (nameofs < 0) {
-			printf("Going right");
-			first = mid + 1;
-		} else if (nameofs > 0) {
-			printf("Going left");
-			last = mid - 1;
-		} else {
-			printf("Found");
-			return mid;
-		}
-	}
-	return -1;
-}
-
-/// <library>amx_assembly amx_header</library>
 stock GetNativeIndexFromName(const name[]) {
 	InitStaticAmxHeader();
-	new defsize = gHdr[AMX_HDR_DEFSIZE];
-	new offset = gHdr[AMX_HDR_NATIVES] - gHdr[AMX_HDR_DAT];
-	new mid = 0;
-	new last = (gHdr[AMX_HDR_LIBRARIES] - gHdr[AMX_HDR_NATIVES]) / defsize - 1;
-	new first = 0;
-	new str[32];
-	printf("Searching for: %s", name);
 
-	// Binary search
-	while (first <= last) {
-		mid = (first + last) / 2;
-		new nameofs = offset + (mid * defsize) + cellbytes;
-		nameofs = AMX_HEADER_MAYBE_MASK(ReadAmxMemory(nameofs)) - gHdr[AMX_HDR_DAT];
-		NtCopy(nameofs, str);
-		printf("Comparing index %d (%s)", mid, str);
-		nameofs = NtCompare(nameofs, name);
-		if (nameofs < 0) {
-			printf("Going right");
-			first = mid + 1;
-		} else if (nameofs > 0) {
-			printf("Going left");
-			last = mid - 1;
-		} else {
-			printf("Found");
-			return mid;
+	new num_natives = GetNumNatives(gHdr);
+	new off = gHdr[AMX_HDR_NATIVES] - gHdr[AMX_HDR_DAT];
+
+	// Linear search
+	for (new i = 0; i < num_natives; i++) {
+		new nameofs = AMX_HEADER_MAYBE_MASK(ReadAmxMemory(off + cellbytes)) - gHdr[AMX_HDR_DAT];
+
+		new diff = NtCompare(nameofs, name);
+		if (diff == 0) {
+			return i;
 		}
+
+		off += gHdr[AMX_HDR_DEFSIZE];
 	}
-	//return GetSomeIndexFromName(name, gHdr[AMX_HDR_NATIVES], gHdr[AMX_HDR_LIBRARIES]);
+
 	return -1;
 }
 
@@ -675,7 +631,28 @@ stock bool:GetPubVarInfo(index, info[AMX_FUNCSTUBNT]) {
 /// <library>amx_assembly amx_header</library>
 stock GetPubVarIndexFromName(const name[]) {
 	InitStaticAmxHeader();
-	return GetSomeIndexFromName(name, gHdr[AMX_HDR_PUBVARS], gHdr[AMX_HDR_TAGS]);
+
+	new first = 0;
+	new defsize = gHdr[AMX_HDR_DEFSIZE];
+	new last = ((gHdr[AMX_HDR_TAGS] - gHdr[AMX_HDR_PUBVARS]) / defsize) - 1;
+	new mid = 0;
+	new off = gHdr[AMX_HDR_PUBVARS] - gHdr[AMX_HDR_DAT];
+
+	// Binary search
+	while (first <= last) {
+		mid = (first + last) / 2;
+		new nameofs = off + (mid * defsize) + cellbytes;
+		nameofs = AMX_HEADER_MAYBE_MASK(ReadAmxMemory(nameofs)) - gHdr[AMX_HDR_DAT];
+		nameofs = NtCompare(nameofs, name);
+		if (nameofs < 0) {
+			first = mid + 1;
+		} else if (nameofs > 0) {
+			last = mid - 1;
+		} else {
+			return mid;
+		}
+	}
+	return -1;
 }
 
 /// <library>amx_assembly amx_header</library>
@@ -813,7 +790,23 @@ stock bool:GetTagInfo(index, info[AMX_FUNCSTUBNT]) {
 /// <library>amx_assembly amx_header</library>
 stock GetTagIndexFromName(const name[]) {
 	InitStaticAmxHeader();
-	return GetSomeIndexFromName(name, gHdr[AMX_HDR_TAGS], gHdr[AMX_HDR_NAMETABLE]);
+
+	new num_tags = GetNumTags(gHdr);
+	new off = gHdr[AMX_HDR_TAGS] - gHdr[AMX_HDR_DAT];
+
+	// Linear search
+	for (new i = 0; i < num_tags; i++) {
+		new nameofs = AMX_HEADER_MAYBE_MASK(ReadAmxMemory(off + cellbytes)) - gHdr[AMX_HDR_DAT];
+
+		new diff = NtCompare(nameofs, name);
+		if (diff == 0) {
+			return i;
+		}
+
+		off += gHdr[AMX_HDR_DEFSIZE];
+	}
+
+	return -1;
 }
 
 /// <library>amx_assembly amx_header</library>
