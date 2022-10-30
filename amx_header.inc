@@ -381,7 +381,7 @@ static stock NtCompare(s1, const s2[]) {
 		if (diff != 0) {
 			break;
 		}
-	} while (!(c1 & c2 == 0));
+	} while (c1 && c2);
 
 	return diff;
 }
@@ -539,23 +539,31 @@ stock bool:GetNativeInfo(index, info[AMX_FUNCSTUBNT]) {
 }
 
 /// <library>amx_assembly amx_header</library>
-static stock GetSomeIndexFromName(const name[], offset, count) {
-	new first = 0;
+static stock GetSomeIndexFromName(const name[], first, last) {
 	new defsize = gHdr[AMX_HDR_DEFSIZE];
+	new offset = first - gHdr[AMX_HDR_DAT];
 	new mid = 0;
-	--count;
+	last = (last - first) / defsize - 1;
+	first = 0;
+	new str[32];
+	printf("Searching for: %s", name);
 
 	// Binary search
-	while (first <= count) {
-		mid = (first + count) / 2;
+	while (first <= last) {
+		mid = (first + last) / 2;
 		new nameofs = offset + (mid * defsize) + cellbytes;
 		nameofs = AMX_HEADER_MAYBE_MASK(ReadAmxMemory(nameofs)) - gHdr[AMX_HDR_DAT];
+		NtCopy(nameofs, str);
+		printf("Comparing index %d (%s)", mid, str);
 		nameofs = NtCompare(nameofs, name);
 		if (nameofs < 0) {
+			printf("Going right");
 			first = mid + 1;
 		} else if (nameofs > 0) {
-			count = mid - 1;
+			printf("Going left");
+			last = mid - 1;
 		} else {
+			printf("Found");
 			return mid;
 		}
 	}
@@ -565,7 +573,35 @@ static stock GetSomeIndexFromName(const name[], offset, count) {
 /// <library>amx_assembly amx_header</library>
 stock GetNativeIndexFromName(const name[]) {
 	InitStaticAmxHeader();
-	return GetSomeIndexFromName(name, gHdr[AMX_HDR_NATIVES] - gHdr[AMX_HDR_DAT], (gHdr[AMX_HDR_LIBRARIES] - gHdr[AMX_HDR_NATIVES]) / gHdr[AMX_HDR_DEFSIZE]);
+	new defsize = gHdr[AMX_HDR_DEFSIZE];
+	new offset = gHdr[AMX_HDR_NATIVES] - gHdr[AMX_HDR_DAT];
+	new mid = 0;
+	new last = (gHdr[AMX_HDR_LIBRARIES] - gHdr[AMX_HDR_NATIVES]) / defsize - 1;
+	new first = 0;
+	new str[32];
+	printf("Searching for: %s", name);
+
+	// Binary search
+	while (first <= last) {
+		mid = (first + last) / 2;
+		new nameofs = offset + (mid * defsize) + cellbytes;
+		nameofs = AMX_HEADER_MAYBE_MASK(ReadAmxMemory(nameofs)) - gHdr[AMX_HDR_DAT];
+		NtCopy(nameofs, str);
+		printf("Comparing index %d (%s)", mid, str);
+		nameofs = NtCompare(nameofs, name);
+		if (nameofs < 0) {
+			printf("Going right");
+			first = mid + 1;
+		} else if (nameofs > 0) {
+			printf("Going left");
+			last = mid - 1;
+		} else {
+			printf("Found");
+			return mid;
+		}
+	}
+	//return GetSomeIndexFromName(name, gHdr[AMX_HDR_NATIVES], gHdr[AMX_HDR_LIBRARIES]);
+	return -1;
 }
 
 /// <library>amx_assembly amx_header</library>
@@ -639,7 +675,7 @@ stock bool:GetPubVarInfo(index, info[AMX_FUNCSTUBNT]) {
 /// <library>amx_assembly amx_header</library>
 stock GetPubVarIndexFromName(const name[]) {
 	InitStaticAmxHeader();
-	return GetSomeIndexFromName(name, gHdr[AMX_HDR_PUBVARS] - gHdr[AMX_HDR_DAT], (gHdr[AMX_HDR_TAGS] - gHdr[AMX_HDR_PUBVARS]) / gHdr[AMX_HDR_DEFSIZE]);
+	return GetSomeIndexFromName(name, gHdr[AMX_HDR_PUBVARS], gHdr[AMX_HDR_TAGS]);
 }
 
 /// <library>amx_assembly amx_header</library>
@@ -777,7 +813,7 @@ stock bool:GetTagInfo(index, info[AMX_FUNCSTUBNT]) {
 /// <library>amx_assembly amx_header</library>
 stock GetTagIndexFromName(const name[]) {
 	InitStaticAmxHeader();
-	return GetSomeIndexFromName(name, gHdr[AMX_HDR_TAGS] - gHdr[AMX_HDR_DAT], (gHdr[AMX_HDR_NAMETABLE] - gHdr[AMX_HDR_TAGS]) / gHdr[AMX_HDR_DEFSIZE]);
+	return GetSomeIndexFromName(name, gHdr[AMX_HDR_TAGS], gHdr[AMX_HDR_NAMETABLE]);
 }
 
 /// <library>amx_assembly amx_header</library>
