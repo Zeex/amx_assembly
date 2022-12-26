@@ -39,15 +39,19 @@
 #include "frame_info"
 #include "disasm"
 
-// Check if any version of YSI is included.  This macro name is ancient.
-#if defined __COMPILER_PASS
+// This is a horrible hack, I'm sorry for ruining your nice clean
+// library with references to YSI Zeex!  It was (probably not) the only
+// way to detect some issues people were having and alert them to it,
+// plus it is completely optional.
+#if defined __YSI_CALL_UPGRADED
 	// Check if YSI is updated to the new `CALL@` syntax.
-	#if !defined __YSI_CALL_UPGRADED
-		// This is a horrible hack, I'm sorry for ruining your nice clean
-		// library with references to YSI Zeex!  It was (probably not) the only
-		// way to detect some issues people were having and alert them to it,
-		// plus it is completely optional.
-		#error amx_assembly and YSI are mismatched.  Update YSI or downgrade amx_assembly.
+	#if defined AMX_OLD_CALL
+			#error amx_assembly and YSI are correctly matched; don't use `#define AMX_OLD_CALL`.
+	#endif
+#elseif defined __COMPILER_PASS
+	// Check if any version of YSI is included.  This macro name is ancient.
+	#if !defined AMX_OLD_CALL
+		#error amx_assembly and YSI are mismatched.  Update YSI, downgrade amx_assembly, or use `#define AMX_OLD_CALL`.
 	#endif
 #endif
 
@@ -64,31 +68,28 @@
 // condition, which the compiler rightly complains about.  Of course, because
 // "O@A_()" always returns "false", the entire other block of code
 // is jumped over.
-#define CALL@%0\32; CALL@
-#define gAddressOfReturnVar_ O@V_
+#if defined AMX_OLD_CALL
+	#define addressof(%1) (O@A_()?(((CALL@%1),O@V_)?1:2):(O@V_))
+	#define CALL@%0\32; CALL@
 
-#define addressof(%1) ((O@D_:O@A_())?(((CALL@%1()),O@V_)?1:2):(O@V_))
+	#define gAddressOfReturnVar_ O@V_
+	#define AddressOfGetNextCall_ O@A_
+	#define CALL@AddressOfGetNextCall_ CALL@O@A_
+	#define CALL@O@A_ O@A_()
 
-#define AddressOfGetNextCall_ O@A_
-#define CALL@AddressOfGetNextCall_%8() CALL@O@A_%8()
-#define CALL@O@A_%8() O@A_%8()
-#define CALL@O@A@%8() O@A@%8("")
+	#define O@A_()?(((CALL@%1<%2>),O@V_)?1:2):(O@V_) (O@A_()?(((_ADDR@$%1()<%2>),O@V_)?(F@_@:1):(F@_@:2)):(F@_@:O@V_))
+#else
+	#define addressof(%1) ((O@D_:O@A_())?(((CALL@%1()),O@V_)?1:2):(O@V_))
+	#define CALL@%0\32; CALL@
 
-#define O@A_())?(((CALL@%1<%2>()),O@V_)?1:2):(O@V_) O@A_())?(((_ADDR@$%1()<%2>),O@V_)?(F@_@:1):(F@_@:2)):(F@_@:O@V_)
+	#define gAddressOfReturnVar_ O@V_
+	#define AddressOfGetNextCall_ O@A_
+	#define CALL@AddressOfGetNextCall_%8() CALL@O@A_%8()
+	#define CALL@O@A_%8() O@A_%8()
+	#define CALL@O@A@%8() O@A@%8("")
 
-#define nativeidxof(%1) (_:((O@D_:O@B_())?(((CALL@%1()),O@V_)?1:2):(O@V_)))
-
-#define NativeIdxOfGetNextCall_ O@B_
-//#define NativeIdxOfCallback_ O@B@
-#define CALL@NativeIdxOfGetNextCall_%8() CALL@O@B_%8()
-//#define CALL@NativeIdxOfCallback_%8() CALL@O@B@%8()
-#define CALL@O@B_%8() O@B_%8()
-#define CALL@O@B@%8() O@B@%8("")
-
-/// <library>amx_assembly addressof</library>
-native O@B@(const callback[]) = funcidx;
-
-#define O@B_())?(((CALL@%1<%2>()),O@V_)?1:2):(O@V_) O@B_())?(((_ADDR@$%1()<%2>),O@V_)?(F@_@:1):(F@_@:2)):(F@_@:O@V_)
+	#define O@A_())?(((CALL@%1<%2>()),O@V_)?1:2):(O@V_) O@A_())?(((_ADDR@$%1()<%2>),O@V_)?(F@_@:1):(F@_@:2)):(F@_@:O@V_)
+#endif
 
 // Enable parameter checks for `Func<xxx>` types.
 #define _ADDR@ _ADDR@i:_ADDR@t:_ADDR@f:_ADDR@v:_ADDR@s:_ADDR@a:_ADDR@x:_ADDR@z
@@ -103,6 +104,51 @@ native O@B@(const callback[]) = funcidx;
 #define _ADDR@s:%8$%0(%1)<s%2>),O@V_)?(%9:1):(%9:2)):(%9:O@V_)) _ADDR@$%0(%1,__ARR)<%2>),O@V_)?(%9s:1):(%9s:2)):(%9s:O@V_))
 #define _ADDR@a:%8$%0(%1)<a%2>),O@V_)?(%9:1):(%9:2)):(%9:O@V_)) _ADDR@$%0(%1,__ARR)<%2>),O@V_)?(%9a:1):(%9a:2)):(%9a:O@V_))
 #define _ADDR@x:%8$%0(%1)<x%2>),O@V_)?(%9:1):(%9:2)):(%9:O@V_)) _ADDR@z$%0(%1)<>),O@V_)?(%9x:1):(%9x:2)):(%9x:O@V_))
+
+/// <library>amx_assembly addressof</library>
+stock __ARR[1] = {};
+
+/// <library>amx_assembly addressof</library>
+stock __REF = 0;
+
+/// <library>amx_assembly addressof</library>
+stock gAddressOfReturnVar_ = 0;
+
+/// <library>amx_assembly addressof</library>
+stock bool:AddressOfGetNextCall_() {
+	// Start reading code from the point to which this function returns, looking
+	// for the next "CALL" op to signal the function call from the macro.
+	new ctx[DisasmContext];
+	DisasmInit(ctx, GetCurrentFrameReturn());
+	while (DisasmNext(ctx)) {
+		if (ctx[DisasmContext_opcode] == OP_CALL) {
+			// Return the data in a global, to be repassed from the conditional.
+			gAddressOfReturnVar_ = DisasmGetOperandReloc(ctx);
+			return false;
+		}
+	}
+	// ALWAYS returns false so that the function call within "OP(&func)" will
+	// never be called thanks to the conditional.
+	return false;
+}
+
+#if defined AMX_OLD_CALL
+	#endinput
+#endif
+
+#define nativeidxof(%1) (_:((O@D_:O@B_())?(((CALL@%1()),O@V_)?1:2):(O@V_)))
+
+#define NativeIdxOfGetNextCall_ O@B_
+//#define NativeIdxOfCallback_ O@B@
+#define CALL@NativeIdxOfGetNextCall_%8() CALL@O@B_%8()
+//#define CALL@NativeIdxOfCallback_%8() CALL@O@B@%8()
+#define CALL@O@B_%8() O@B_%8()
+#define CALL@O@B@%8() O@B@%8("")
+
+/// <library>amx_assembly addressof</library>
+native O@B@(const callback[]) = funcidx;
+
+#define O@B_())?(((CALL@%1<%2>()),O@V_)?1:2):(O@V_) O@B_())?(((_ADDR@$%1()<%2>),O@V_)?(F@_@:1):(F@_@:2)):(F@_@:O@V_)
 
 // Convert `On` tests to string-based.
 #define O@D_:%0_())?(((CALL@On%1()),O@V_)?1:2):(O@V_)) O@G_:%0@("On"#%1)))
@@ -143,33 +189,6 @@ native O@B@(const callback[]) = funcidx;
 
 // For internal tag creation.
 stock A@ = 0;
-
-/// <library>amx_assembly addressof</library>
-stock __ARR[1] = {};
-
-/// <library>amx_assembly addressof</library>
-stock __REF = 0;
-
-/// <library>amx_assembly addressof</library>
-stock gAddressOfReturnVar_ = 0;
-
-/// <library>amx_assembly addressof</library>
-stock bool:AddressOfGetNextCall_() {
-	// Start reading code from the point to which this function returns, looking
-	// for the next "CALL" op to signal the function call from the macro.
-	new ctx[DisasmContext];
-	DisasmInit(ctx, GetCurrentFrameReturn());
-	while (DisasmNext(ctx)) {
-		if (ctx[DisasmContext_opcode] == OP_CALL) {
-			// Return the data in a global, to be repassed from the conditional.
-			gAddressOfReturnVar_ = DisasmGetOperandReloc(ctx);
-			return false;
-		}
-	}
-	// ALWAYS returns false so that the function call within "OP(&func)" will
-	// never be called thanks to the conditional.
-	return false;
-}
 
 /// <library>amx_assembly addressof</library>
 stock bool:NativeIdxOfGetNextCall_() {
