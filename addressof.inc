@@ -39,6 +39,20 @@
 #include "frame_info"
 #include "disasm"
 
+// Check if any version of YSI is included.  This macro name is ancient.
+#if defined __COMPILER_PASS
+	// Check if YSI is updated to the new `CALL@` syntax.
+	#if !defined __YSI_CALL_UPGRADED
+		// This is a horrible hack, I'm sorry for ruining your nice clean
+		// library with references to YSI Zeex!  It was (probably not) the only
+		// way to detect some issues people were having and alert them to it,
+		// plus it is completely optional.
+		#error amx_assembly and YSI are mismatched.  Update YSI or downgrade amx_assembly.
+	#endif
+#endif
+
+#define __AMX_CALL_UPGRADED
+
 // This code uses two nested conditionals because of:
 // https://github.com/Zeex/pawn/issues/96 (this doesn't work):
 //   
