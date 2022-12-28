@@ -139,14 +139,8 @@ stock bool:AddressOfGetNextCall_() {
 #define nativeidxof(%1) (_:((O@D_:O@B_())?(((CALL@%1()),O@V_)?1:2):(O@V_)))
 
 #define NativeIdxOfGetNextCall_ O@B_
-//#define NativeIdxOfCallback_ O@B@
 #define CALL@NativeIdxOfGetNextCall_%8() CALL@O@B_%8()
-//#define CALL@NativeIdxOfCallback_%8() CALL@O@B@%8()
 #define CALL@O@B_%8() O@B_%8()
-#define CALL@O@B@%8() O@B@%8("")
-
-/// <library>amx_assembly addressof</library>
-native O@B@(const callback[]) = funcidx;
 
 #define O@B_())?(((CALL@%1<%2>()),O@V_)?1:2):(O@V_) O@B_())?(((_ADDR@$%1()<%2>),O@V_)?(F@_@:1):(F@_@:2)):(F@_@:O@V_)
 

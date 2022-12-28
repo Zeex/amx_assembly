@@ -142,7 +142,7 @@ const AMX_FUNCSTUBNT:AMX_FUNCSTUBNT__ = AMX_FUNCSTUBNT;
 // Publics
 forward bool:GetPublicInfo(index, info[AMX_FUNCSTUBNT]);
 forward GetPublicIndexFromAddress(address);
-native GetPublicIndexFromName(const name[]) = funcidx;
+#define GetPublicIndexFromName funcidx
 #define GetPublicAddressFromName O@A@
 forward GetPublicAddressFromName(const name[]);
 forward GetPublicAddressFromIndex(index);
