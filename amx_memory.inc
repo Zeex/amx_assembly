@@ -38,6 +38,10 @@
 
 #include <core>
 
+#if !defined __PawnBuild
+	#define __PawnBuild 0
+#endif
+
 #if !defined cellbytes
 	const cellbytes = cellbits / charbits;
 #endif
@@ -110,15 +114,10 @@ stock argderef(n) {
 	return gFake; // make compiler happy
 }
 
-#if ((__Pawn & 0x0F) >= 0x0A) || ((__Pawn & 0xF0) >= 0xA0)
-	#if !defined __PawnBuild
-		#define __PawnBuild 0
-	#endif
-	#if __PawnBuild >= 10
-		stock gAmxAssemblyAddress_;
-		#define ReadAmxMemory(%0) __emit(load.u.pri %0, stor.pri gAmxAssemblyAddress_, lref.pri gAmxAssemblyAddress_)
-		#define WriteAmxMemory(%0,%1) __emit(push.u %1, load.u.alt %0, stor.alt gAmxAssemblyAddress_, pop.pri, sref.pri gAmxAssemblyAddress_)
-	#endif
+#if __PawnBuild >= 10
+	stock gAmxAssemblyAddress_;
+	#define ReadAmxMemory(%0) __emit(load.u.pri %0, stor.pri gAmxAssemblyAddress_, lref.pri gAmxAssemblyAddress_)
+	#define WriteAmxMemory(%0,%1) __emit(push.u %1, load.u.alt %0, stor.alt gAmxAssemblyAddress_, pop.pri, sref.pri gAmxAssemblyAddress_)
 #endif
 
 /// <library>amx_assembly amx_memory</library>
@@ -260,10 +259,8 @@ stock SetAmxNextInstructionPointer(ptr) {
 	#emit sctrl 6
 }
 
-#if ((__Pawn & 0x0F) >= 0x0A) || ((__Pawn & 0xF0) >= 0xA0)
-	#if __PawnBuild >= 10
-		#endinput
-	#endif
+#if __PawnBuild >= 10
+	#endinput
 #endif
 
 // After `#endif` because `#if` doesn't elide `#emit`.
