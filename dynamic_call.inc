@@ -40,6 +40,7 @@
 #include "amx_header"
 #include "amx_memory"
 #include "opcode"
+#include "addressof"
 
 #if !defined DYNAMIC_CALL_MAX_ARGS
 	#define DYNAMIC_CALL_MAX_ARGS 256
@@ -57,6 +58,27 @@ forward SysreqDN(address, args_to_push, bool:auto_pop = true);
 forward CallFunction(address, {Float,_}:...);
 forward CallNative(index, {Float,_}:...);
 forward CallNativeByAddress(address, {Float,_}:...);
+
+// When you declare an alternative version of a function like this you end up
+// with two copies in the header.  As long as we never actually use this
+// function we can keep changing the pointer to whatever we want and call the
+// native via `SYSREQ.C`.  Note that if we do this we need to check if
+// `SYSREQ.D` is still in the server because the `SYSREQ.C` will be replaced.
+native AmxSysreqDStub() = heapspace;
+
+static stock GetSysreqDStubIndex()
+{
+	// This function handily ensures that the function is in the header on old
+	// compilers which don't insert it when used via `SYSREQ.C`.
+	static ret = -1;
+	if (ret == -1)
+	{
+		// `nativeidxof` is a bypass for the fact that the header may be
+		// clobbered, which this new `SYSREQ.D` bypass is also for.
+		ret = nativeidxof(AmxSysreqDStub<>);
+	}
+	return ret;
+}
 
 /// <library>amx_assembly dynamic_call</library>
 static stock g_nargs = 0;
