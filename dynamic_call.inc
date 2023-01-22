@@ -215,6 +215,10 @@ stock CallFunction(address, {Float,_}:...) {
 
 /// <library>amx_assembly dynamic_call</library>
 stock SysreqC(index, bool:auto_pop = true) {
+	if (GetJITGeneratorVersion()) {
+		return cellmin;
+	}
+
 	const cells0 = 23 * cellbytes;
 	const cells1 = 1 * cellbytes;
 	const cells2 = 1 * cellbytes;
@@ -224,10 +228,6 @@ stock SysreqC(index, bool:auto_pop = true) {
 	new tmp = 0;
 	new Opcode:sysreq_c = RelocateOpcode(OP_SYSREQ_C);
 	new retval = 0;
-
-	if (GetJITGeneratorVersion()) {
-		return cellmin;
-	}
 
 	while (--i >= 0) {
 		arg = g_args[i];
@@ -283,6 +283,14 @@ stock SysreqC(index, bool:auto_pop = true) {
 
 /// <library>amx_assembly dynamic_call</library>
 stock SysreqD(address, bool:auto_pop = true) {
+	if (GetJITGeneratorVersion()) {
+		return cellmin;
+	}
+
+	if (!HasSysreqD()) {
+		return cellmin;
+	}
+
 	const cells0 = 23 * cellbytes;
 	const cells1 = 1 * cellbytes;
 	const cells2 = 1 * cellbytes;
@@ -292,10 +300,6 @@ stock SysreqD(address, bool:auto_pop = true) {
 	new tmp = 0;
 	new Opcode:sysreq_d = RelocateOpcode(OP_SYSREQ_D);
 	new retval = 0;
-
-	if (GetJITGeneratorVersion()) {
-		return cellmin;
-	}
 
 	while (--i >= 0) {
 		arg = g_args[i];
@@ -350,6 +354,10 @@ stock SysreqD(address, bool:auto_pop = true) {
 
 /// <library>amx_assembly dynamic_call</library>
 stock SysreqCN(index, args_to_push, bool:auto_pop = true) {
+	if (GetJITGeneratorVersion()) {
+		return cellmin;
+	}
+
 	const cells0 = 23 * cellbytes;
 	const cells1 = 1 * cellbytes;
 	const cells2 = 1 * cellbytes;
@@ -360,10 +368,6 @@ stock SysreqCN(index, args_to_push, bool:auto_pop = true) {
 	new Opcode:sysreq_c = RelocateOpcode(OP_SYSREQ_C);
 	new end = g_nargs - args_to_push;
 	new retval = 0;
-
-	if (GetJITGeneratorVersion()) {
-		return cellmin;
-	}
 
 	if (end < 0) {
 		return cellmin;
@@ -421,6 +425,14 @@ stock SysreqCN(index, args_to_push, bool:auto_pop = true) {
 
 /// <library>amx_assembly dynamic_call</library>
 stock SysreqDN(address, args_to_push, bool:auto_pop = true) {
+	if (GetJITGeneratorVersion()) {
+		return cellmin;
+	}
+
+	if (!HasSysreqD()) {
+		return cellmin;
+	}
+
 	const cells0 = 23 * cellbytes;
 	const cells1 = 1 * cellbytes;
 	const cells2 = 1 * cellbytes;
@@ -431,10 +443,6 @@ stock SysreqDN(address, args_to_push, bool:auto_pop = true) {
 	new Opcode:sysreq_d = RelocateOpcode(OP_SYSREQ_D);
 	new end = g_nargs - args_to_push;
 	new retval = 0;
-
-	if (GetJITGeneratorVersion()) {
-		return cellmin;
-	}
 
 	if (end < 0) {
 		return cellmin;
@@ -493,6 +501,10 @@ stock SysreqDN(address, args_to_push, bool:auto_pop = true) {
 
 /// <library>amx_assembly dynamic_call</library>
 stock CallNative(index, {Float,_}:...) {
+	if (GetJITGeneratorVersion()) {
+		return cellmin;
+	}
+
 	const cells0 = -1 * cellbytes;
 	const cells1 = 3 * cellbytes;
 	const cells2 = 4 * cellbytes;
@@ -501,10 +513,6 @@ stock CallNative(index, {Float,_}:...) {
 	const cells5 = 1 * cellbytes;
 	new arg_bytes = 0, arg_begin = 0, arg_end = 0;
 	new Opcode:sysreq_c = RelocateOpcode(OP_SYSREQ_C);
-
-	if (GetJITGeneratorVersion()) {
-		return cellmin;
-	}
 
 	// Get number of bytes passed.
 	#emit load.s.pri 0x8
@@ -581,6 +589,14 @@ stock CallNative(index, {Float,_}:...) {
 ///   Unlike CallNative(), this function calls natives directly via SYSREQ.D.
 /// </remarks>
 stock CallNativeByAddress(address, {Float,_}:...) {
+	if (GetJITGeneratorVersion()) {
+		return cellmin;
+	}
+
+	if (!HasSysreqD()) {
+		return cellmin;
+	}
+
 	const cells0 = -1 * cellbytes;
 	const cells1 = 3 * cellbytes;
 	const cells2 = 4 * cellbytes;
@@ -589,10 +605,6 @@ stock CallNativeByAddress(address, {Float,_}:...) {
 	const cells5 = 1 * cellbytes;
 	new arg_bytes = 0, arg_begin = 0, arg_end = 0;
 	new Opcode:sysreq_d = RelocateOpcode(OP_SYSREQ_D);
-
-	if (GetJITGeneratorVersion()) {
-		return cellmin;
-	}
 
 	// Get number of bytes passed.
 	#emit load.s.pri 0x8
