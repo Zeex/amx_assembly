@@ -132,6 +132,7 @@ const AMX_HDR_OFFSET_NAMETABLE = 52;
 /// <library>amx_assembly amx_header</library>
 enum AMX_FUNCSTUBNT {
 	AMX_FUNCSTUBNT_ADDRESS,
+	AMX_FUNCSTUBNT_WIDE,
 	AMX_FUNCSTUBNT_NAMEOFS
 }
 #define AMX_FUNCSTUBNT_ID AMX_FUNCSTUBNT_ADDRESS
@@ -373,31 +374,57 @@ stock GetAmxHeaderComponent(AMX_HDR:comp) {
 }
 
 /// <library>amx_assembly amx_header</library>
-static stock PrintAmxNameTable(start, end, decode = false, dereference = false) {
-	new info[AMX_FUNCSTUBNT];
+static stock PrintAmxNameTable(start, end, defsize, decode = false, dereference = false) {
+	new addr;
+	new ofs;
 	new name[64];
 	while (start != end) {
-		info[AMX_FUNCSTUBNT_ADDRESS] = ReadAmxMemory(start);
-		info[AMX_FUNCSTUBNT_NAMEOFS] = ReadAmxMemory(start + cellbytes);
-		if (info[AMX_FUNCSTUBNT_NAMEOFS] == 0) {
+		addr = ReadAmxMemory(start);
+		ofs = AMX_HEADER_MAYBE_MASK(ReadAmxMemory(start + cellbytes));
+		if (ofs == 0) {
 			name = "????";
 		} else {
-			NtCopy(info[AMX_FUNCSTUBNT_NAMEOFS] - GetAmxHeaderComponent(AMX_HDR_DAT), name);
+			NtCopy(ofs - GetAmxHeaderComponent(AMX_HDR_DAT), name);
 		}
 		if (decode) {
-			printf("    %32s: 0x%08x%s%s", name, info[AMX_FUNCSTUBNT_ADDRESS], (info[AMX_FUNCSTUBNT_ADDRESS] & AMX_TAG_STRONG) ? (" (strong)") : (""), (info[AMX_FUNCSTUBNT_ADDRESS] & AMX_TAG_LOCAL) ? (" (local)") : (""));
+			printf("    %32s: 0x%08x%s%s", name, addr, (addr & AMX_TAG_STRONG) ? (" (strong)") : (""), (addr & AMX_TAG_LOCAL) ? (" (local)") : (""));
 		} else if (dereference) {
-			printf("    %32s: 0x%08x (%d)", name, info[AMX_FUNCSTUBNT_ADDRESS], ReadAmxMemory(info[AMX_FUNCSTUBNT_ADDRESS]));
+			printf("    %32s: 0x%08x (%d)", name, addr, ReadAmxMemory(addr));
 		} else {
-			printf("    %32s: 0x%08x", name, info[AMX_FUNCSTUBNT_ADDRESS]);
+			printf("    %32s: 0x%08x", name, addr);
 		}
-		start += 2 * cellbytes;
+		start += defsize;
+	}
+}
+
+/// <library>amx_assembly amx_header</library>
+static stock PrintAmxNativesTable(start, end, defsize) {
+	new addr;
+	new ofs = GetFirstNativeStringOffset();
+	new wide;
+	new name[64];
+	while (start != end) {
+		addr = ReadAmxMemory(start);
+		wide = AMX_HEADER_MAYBE_MASK(ReadAmxMemory(start + cellbytes));
+		if (HasReloc()) {
+			if (wide == 0) {
+				name = "????";
+			} else {
+				NtCopy(wide - GetAmxHeaderComponent(AMX_HDR_DAT), name);
+			}
+			printf("    %32s: 0x%08x", name, addr);
+		} else {
+			ofs += NtCopy(ofs, name);
+			printf("    %32s: 0x%08x%08x", name, wide, addr);
+		}
+		start += defsize;
 	}
 }
 
 /// <library>amx_assembly amx_header</library>
 stock PrintAmxHeader() {
 	InitStaticAmxHeader();
+	new defsize = gHdr[AMX_HDR_DEFSIZE];
 	print("---------------------------");
 	print("AMX Header:");
 	print("---------------------------");
@@ -419,36 +446,35 @@ stock PrintAmxHeader() {
 	printf("    tags         0x%08x", gHdr[AMX_HDR_TAGS]);
 	printf("    nametable    0x%08x", gHdr[AMX_HDR_NAMETABLE]);
 	print("---------------------------");
-	new
-		start = gHdr[AMX_HDR_PUBLICS] - gHdr[AMX_HDR_DAT],
-		end = gHdr[AMX_HDR_NATIVES] - gHdr[AMX_HDR_DAT];
+	new start = gHdr[AMX_HDR_PUBLICS] - gHdr[AMX_HDR_DAT];
+	new end = gHdr[AMX_HDR_NATIVES] - gHdr[AMX_HDR_DAT];
 	print("Publics:");
 	print("----------------------------------------------------------------");
-	PrintAmxNameTable(start, end);
+	PrintAmxNameTable(start, end, defsize);
 	print("----------------------------------------------------------------");
 	start = end;
 	end = gHdr[AMX_HDR_LIBRARIES] - gHdr[AMX_HDR_DAT];
 	print("Natives:");
 	print("----------------------------------------------------------------");
-	PrintAmxNameTable(start, end);
+	PrintAmxNativesTable(start, end, defsize);
 	print("----------------------------------------------------------------");
 	start = end;
 	end = gHdr[AMX_HDR_PUBVARS] - gHdr[AMX_HDR_DAT];
 	print("Libraries:");
 	print("----------------------------------------------------------------");
-	PrintAmxNameTable(start, end);
+	PrintAmxNameTable(start, end, defsize);
 	print("----------------------------------------------------------------");
 	start = end;
 	end = gHdr[AMX_HDR_TAGS] - gHdr[AMX_HDR_DAT];
 	print("Pubvars:");
 	print("----------------------------------------------------------------");
-	PrintAmxNameTable(start, end, .dereference = true);
+	PrintAmxNameTable(start, end, defsize, .dereference = true);
 	print("----------------------------------------------------------------");
 	start = end;
 	end = gHdr[AMX_HDR_NAMETABLE] - gHdr[AMX_HDR_DAT];
 	print("Tags:");
 	print("----------------------------------------------------------------");
-	PrintAmxNameTable(start, end, .decode = true);
+	PrintAmxNameTable(start, end, defsize, .decode = true);
 	print("----------------------------------------------------------------");
 }
 
@@ -573,6 +599,7 @@ stock bool:GetPublicInfo(index, info[AMX_FUNCSTUBNT]) {
 
 	new off = gHdr[AMX_HDR_PUBLICS] - gHdr[AMX_HDR_DAT] + index * gHdr[AMX_HDR_DEFSIZE];
 	info[AMX_FUNCSTUBNT_ADDRESS] = ReadAmxMemory(off);
+	info[AMX_FUNCSTUBNT_WIDE] = 0;
 	info[AMX_FUNCSTUBNT_NAMEOFS] = AMX_HEADER_MAYBE_MASK(ReadAmxMemory(off + cellbytes));
 
 	return true;
@@ -667,6 +694,7 @@ stock bool:GetNativeInfo(index, info[AMX_FUNCSTUBNT]) {
 
 	// For when "index" is not valid
 	info[AMX_FUNCSTUBNT_ADDRESS] = -1;
+	info[AMX_FUNCSTUBNT_WIDE] = 0;
 
 	new num_natives = GetNumNatives(gHdr);
 
@@ -676,6 +704,7 @@ stock bool:GetNativeInfo(index, info[AMX_FUNCSTUBNT]) {
 
 	new off = gHdr[AMX_HDR_NATIVES] - gHdr[AMX_HDR_DAT] + index * gHdr[AMX_HDR_DEFSIZE];
 	info[AMX_FUNCSTUBNT_ADDRESS] = ReadAmxMemory(off);
+	info[AMX_FUNCSTUBNT_WIDE] = 0;
 
 	if (HasReloc()) {
 		info[AMX_FUNCSTUBNT_NAMEOFS] = AMX_HEADER_MAYBE_MASK(ReadAmxMemory(off + cellbytes));
@@ -793,6 +822,7 @@ stock bool:GetPubVarInfo(index, info[AMX_FUNCSTUBNT]) {
 
 	new off = gHdr[AMX_HDR_PUBVARS] - gHdr[AMX_HDR_DAT] + index * gHdr[AMX_HDR_DEFSIZE];
 	info[AMX_FUNCSTUBNT_ADDRESS] = ReadAmxMemory(off);
+	info[AMX_FUNCSTUBNT_WIDE] = 0;
 	info[AMX_FUNCSTUBNT_NAMEOFS] = AMX_HEADER_MAYBE_MASK(ReadAmxMemory(off + cellbytes));
 
 	return true;
