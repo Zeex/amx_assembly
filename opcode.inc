@@ -263,6 +263,13 @@ static stock bool:HaveToRelocateOpcodes() {
 /// </remarks>
 stock Opcode:RelocateOpcodeNow(Opcode:opcode) {
 	if (!HaveToRelocateOpcodes()) {
+		#if OPCODE_HAS_O2
+			if (opcode == OP_SYSREQ_N) {
+				return OP_SYSREQ_D;
+			} else if (opcode == OP_SYSREQ_D) {
+				return OP_LAST_;
+			}
+		#endif
 		return opcode;
 	}
 	switch (opcode) {
