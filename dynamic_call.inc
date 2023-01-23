@@ -59,13 +59,17 @@ forward CallFunction(address, {Float,_}:...);
 forward CallNative(index, {Float,_}:...);
 forward CallNativeByAddress(address, {Float,_}:...);
 
-// When you declare an alternative version of a function like this you end up
-// with two copies in the header.  As long as we never actually use this
-// function we can keep changing the pointer to whatever we want and call the
-// native via `SYSREQ.C`.  Note that if we do this we need to check if
-// `SYSREQ.D` is still in the server because the `SYSREQ.C` will be replaced.
+/// <library>amx_assembly dynamic_call</library>
+/// <remarks>
+/// When you declare an alternative version of a function like this you end up
+/// with two copies in the header.  As long as we never actually use this
+/// function we can keep changing the pointer to whatever we want and call the
+/// native via `SYSREQ.C`.  Note that if we do this we need to check if
+/// `SYSREQ.D` is still in the server because the `SYSREQ.C` will be replaced.
+/// </remarks>
 native AmxSysreqDStub() = heapspace;
 
+/// <library>amx_assembly dynamic_call</library>
 static stock Opcode:UpdateSysreqDAndGetIndex(&address) {
 	// This function handily ensures that the function is in the header on old
 	// compilers which don't insert it when used via `SYSREQ.C`.
@@ -563,6 +567,7 @@ stock CallNative(index, {Float,_}:...) {
 
 	new arg = arg_end;
 	new tmp = 0;
+	new retval = 0;
 
 	while (arg >= arg_begin) {
 		#emit lref.s.pri arg
@@ -601,7 +606,6 @@ stock CallNative(index, {Float,_}:...) {
 	#emit nop
 	#emit nop
 
-	new retval = 0;
 	#emit stor.s.pri retval
 
 	// Pop native arguments.
@@ -651,6 +655,7 @@ stock CallNativeByAddress(address, {Float,_}:...) {
 
 	new arg = arg_end;
 	new tmp = 0;
+	new retval = 0;
 
 	while (arg >= arg_begin) {
 		#emit lref.s.pri arg
@@ -689,7 +694,6 @@ stock CallNativeByAddress(address, {Float,_}:...) {
 	#emit nop
 	#emit nop
 
-	new retval = 0;
 	#emit stor.s.pri retval
 
 	// Pop native arguments.
