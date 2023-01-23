@@ -36,6 +36,14 @@
 
 /// <p/>
 
+#if !defined __PawnBuild
+	#define __PawnBuild 0
+#endif
+
+#if !defined cellbytes
+	const cellbytes = cellbits / charbits;
+#endif
+
 /// <library>amx_assembly amx_base</library>
 static stock GetAmxBaseAddress_helper() {
 	return 0;
