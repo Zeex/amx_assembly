@@ -191,7 +191,11 @@ stock bool:NativeIdxOfGetNextCall_() {
 	new ctx[DisasmContext];
 	DisasmInit(ctx, GetCurrentFrameReturn());
 	while (DisasmNext(ctx)) {
+#if OPCODE_HAS_O2
+		if (ctx[DisasmContext_opcode] == OP_SYSREQ_C || ctx[DisasmContext_opcode] == OP_SYSREQ_N) {
+#else
 		if (ctx[DisasmContext_opcode] == OP_SYSREQ_C) {
+#endif
 			// Return the data in a global, to be repassed from the conditional.
 			gAddressOfReturnVar_ = DisasmGetOperand(ctx);
 			return false;
