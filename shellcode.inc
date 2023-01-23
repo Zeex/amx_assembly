@@ -42,9 +42,11 @@
 
 /// <library>amx_assembly shellcode</library>
 stock RunShellcode(code_ptr, bool:align = true) {
+	printf("code_ptr = %08x", code_ptr);
 	if (align) {
 		code_ptr = ((code_ptr + 15) >>> 4) << 4;
 	}
+	printf("code_ptr = %08x", code_ptr);
 	return SysreqD(code_ptr);
 }
 

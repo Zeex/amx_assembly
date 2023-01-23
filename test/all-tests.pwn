@@ -1,3 +1,5 @@
+//#pragma option -a
+
 #define main main_amx
 #include "amx-test.pwn"
 #undef main
@@ -21,13 +23,23 @@
 #undef main
 
 main() {
-	main_amx();
-	main_asm();
+	//PrintAmxHeader();
+	//printf("0: %d", GetAmxBaseAddress());
+	/*main_amx();
+	printf("1");*/
+	GetAmxAddress();
+	//ReadAmxCell(AMX_OFFSET_BASE);
+	/*main_asm();
+	printf("2");
 	main_disasm();
+	printf("3");
 	main_dynamic_call();
+	printf("4");
 	main_jit();
+	printf("5");
 	main_phys_memory();
+	printf("6");
 	main_stack_trace();
+	printf("7");*/
 }
-
 
