@@ -649,6 +649,7 @@ stock bool:GetNativeInfo(index, info[AMX_FUNCSTUBNT]) {
 stock GetNativeIndexFromName(const name[]) {
 	InitStaticAmxHeader();
 
+	//printf("Find name: %s", name);
 	new num_natives = GetNumNatives(gHdr);
 	new off = gHdr[AMX_HDR_NATIVES] - gHdr[AMX_HDR_DAT];
 
@@ -657,6 +658,9 @@ stock GetNativeIndexFromName(const name[]) {
 		new nameofs = AMX_HEADER_MAYBE_MASK(ReadAmxMemory(off + cellbytes)) - gHdr[AMX_HDR_DAT];
 
 		new diff = NtCompare(nameofs, name);
+		//new str[32];
+		//NtCopy(nameofs, str);
+		//printf("Compare: %s, %d", str, diff);
 		if (diff == 0) {
 			return i;
 		}

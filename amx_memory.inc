@@ -117,20 +117,22 @@ stock argderef(n) {
 #if __PawnBuild >= 10
 	stock gAmxAssemblyAddress_;
 	#define ReadAmxMemory(%0) __emit(load.u.pri %0, stor.pri gAmxAssemblyAddress_, lref.pri gAmxAssemblyAddress_)
-	#define WriteAmxMemory(%0,%1) __emit(push.u %1, load.u.alt %0, stor.alt gAmxAssemblyAddress_, pop.pri, sref.pri gAmxAssemblyAddress_)
+	#define WriteAmxMemory(%0,%1) __emit(push.u %1, load.u.pri %0, stor.pri gAmxAssemblyAddress_, pop.pri, sref.pri gAmxAssemblyAddress_)
 #endif
 
 /// <library>amx_assembly amx_memory</library>
 stock ReadAmxMemoryArray(address, values[], size = sizeof(values)) {
 	for (new i = 0; i < size; i++) {
-		values[i] = ReadAmxMemory(address + i * cellbytes);
+		values[i] = ReadAmxMemory(address);
+		address += cellbytes;
 	}
 }
 
 /// <library>amx_assembly amx_memory</library>
 stock WriteAmxMemoryArray(address, const values[], size = sizeof(values)) {
 	for (new i = 0; i < size; i++) {
-		WriteAmxMemory(address + i * cellbytes, values[i]);
+		WriteAmxMemory(address, values[i]);
+		address += cellbytes;
 	}
 }
 
