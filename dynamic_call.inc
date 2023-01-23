@@ -89,13 +89,10 @@ static stock Opcode:UpdateSysreqDAndGetIndex(&address, wide) {
 		// `nativeidxof` is a bypass for the fact that the header may be
 		// clobbered, which this new `SYSREQ.D` bypass is also for.
 		index = nativeidxof(AmxSysreqDStub<>);
-		printf("index = %d", index);
 		sysreq = RelocateOpcode(OP_SYSREQ_C);
-		printf("sysreq = %d", sysreq);
 		new amxhdr[AMX_HDR];
 		GetAmxHeader(amxhdr);
 		off = amxhdr[AMX_HDR_NATIVES] - amxhdr[AMX_HDR_DAT] + index * amxhdr[AMX_HDR_DEFSIZE];
-		printf("off = %d", off);
 	}
 	// Change where the native points.
 	WriteAmxMemory(off, address);
@@ -342,9 +339,7 @@ stock SysreqD(address, bool:auto_pop = true) {
 	new i = g_nargs;
 	new bytes = g_nargs * cellbytes;
 	new tmp = 0;
-	printf("address = %08x", address);
 	new Opcode:sysreq = UpdateSysreqDAndGetIndex(address, 0);
-	printf("address = %08x", address);
 	new retval = 0;
 
 	while (--i >= 0) {

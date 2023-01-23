@@ -115,7 +115,6 @@ stock bool:DisasmDecodeInsn(ctx[DisasmContext]) {
 	}
 
 	new Opcode:opcode = UnsafeUnrelocateOpcode(Opcode:ReadAmxMemory(ip));
-	printf("opcode: %d, %s", opcode, GetOpcodeInstructionName(opcode));
 	if (opcode <= OP_NONE || _:opcode >= NUM_OPCODES) {
 		return false;
 	}
@@ -146,13 +145,6 @@ stock DisasmResult:DisasmNext(ctx[DisasmContext]) {
 	} else if (DisasmDecodeInsn(ctx)) {
 		return DISASM_OK;
 	} else {
-		new hdr[AMX_HDR];
-		GetAmxHeader(hdr);
-		RelocateOpcode(OP_NOP);
-		new dat = hdr[AMX_HDR_DAT];
-		new cod = hdr[AMX_HDR_COD];
-		new code_base = cod - dat;
-		printf("bad insn %08x", ctx[DisasmContext_cip] - code_base);
 		ctx[DisasmContext_cip] = ctx[DisasmContext_nip],
 		ctx[DisasmContext_nip] += cellbytes,
 		ctx[DisasmContext_opcode] = Opcode:NUM_OPCODES;

@@ -198,15 +198,6 @@ stock bool:NativeIdxOfGetNextCall_() {
 #endif
 			// Return the data in a global, to be repassed from the conditional.
 			gAddressOfReturnVar_ = DisasmGetOperand(ctx);
-			new hdr[AMX_HDR];
-			GetAmxHeader(hdr);
-			RelocateOpcode(OP_NOP);
-			new dat = hdr[AMX_HDR_DAT];
-			new cod = hdr[AMX_HDR_COD];
-			new code_base = cod - dat;
-			printf("Found SYSREQ.C: %d", ctx[DisasmContext_opcode]);
-			printf("Found SYSREQ.C: %d", ctx[DisasmContext_cip] - code_base);
-			printf("Found SYSREQ.C: %d", gAddressOfReturnVar_);
 			return false;
 		}
 	}

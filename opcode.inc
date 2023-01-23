@@ -885,11 +885,7 @@ static stock OpcodeTableWrite(addr, i) {
 	// Loop through all the opcodes in the table and replace them.
 	new Opcode:op;
 	while (i--) {
-		op = Opcode:ReadAmxMemory(addr);
-		//#if OPCODE_HAS_O2
-		//	if (op == )
-		//#endif
-		printf("writing %d as %d", op, opcode_lookup[_:op]);
+		op = Opcode:ReadAmxMemory(addr),
 		op = opcode_lookup[_:op],
 		WriteAmxMemory(addr, _:op),
 		addr += 2 * cellbytes;
@@ -901,7 +897,6 @@ static stock InitOpcodeTable() {
 	new Opcode:op;
 	for (new i = 0; i < NUM_OPCODES; i++) {
 		op = Opcode:i;
-		printf("relocate %d", i);
 		opcode_lookup[i] = RelocateOpcodeNow(op);
 	}
 	opcode_table_is_ready = true;
@@ -1255,7 +1250,6 @@ stock Opcode:RelocateMacroOpcodeNow(Opcode:opcode) {
 			#emit const.s 0 0
 		}
 		case OP_SYSREQ_N: {
-			printf("sysreq.n");
 			return ReadOpcodeNearThis(cellbytes);
 			#emit sysreq.n 0 0
 		}
