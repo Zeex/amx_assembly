@@ -66,24 +66,34 @@ forward CallNativeByAddress(address, {Float,_}:...);
 // `SYSREQ.D` is still in the server because the `SYSREQ.C` will be replaced.
 native AmxSysreqDStub() = heapspace;
 
-static stock UpdateSysreqDAndGetIndex(address)
-{
+static stock Opcode:UpdateSysreqDAndGetIndex(&address) {
 	// This function handily ensures that the function is in the header on old
 	// compilers which don't insert it when used via `SYSREQ.C`.
-	static inde = -1;
-	static amxhdr[AMX_HDR];
+	static index = -1;
+	static Opcode:sysreq;
+	if (index == -2) {
+		// Cached the fact that we can use normal `SYSREQ.D`.
+		return sysreq;
+	}
 	static off;
-	if (index == -1)
-	{
+	if (index == -1) {
+		if (HasSysreqD()) {
+			index = -2;
+			sysreq = RelocateOpcode(OP_SYSREQ_D);
+			return sysreq;
+		}
 		// `nativeidxof` is a bypass for the fact that the header may be
 		// clobbered, which this new `SYSREQ.D` bypass is also for.
 		index = nativeidxof(AmxSysreqDStub<>);
+		sysreq = RelocateOpcode(OP_SYSREQ_C);
+		new amxhdr[AMX_HDR];
 		GetAmxHeader(amxhdr);
 		off = amxhdr[AMX_HDR_NATIVES] - amxhdr[AMX_HDR_DAT] + index * amxhdr[AMX_HDR_DEFSIZE];
 	}
 	// Change where the native points.
 	WriteAmxMemory(off, address);
-	return index;
+	address = index;
+	return sysreq;
 }
 
 /// <library>amx_assembly dynamic_call</library>
@@ -322,15 +332,8 @@ stock SysreqD(address, bool:auto_pop = true) {
 	new i = g_nargs;
 	new bytes = g_nargs * cellbytes;
 	new tmp = 0;
-	new Opcode:sysreq;
+	new Opcode:sysreq = UpdateSysreqDAndGetIndex(address);
 	new retval = 0;
-
-	if (HasSysreqD()) {
-		sysreq = RelocateOpcode(OP_SYSREQ_D);
-	} else {
-		sysreq = RelocateOpcode(OP_SYSREQ_C);
-		address = UpdateSysreqDAndGetIndex(address);
-	}
 
 	while (--i >= 0) {
 		arg = g_args[i];
@@ -467,7 +470,7 @@ stock SysreqDN(address, args_to_push, bool:auto_pop = true) {
 	new i = g_nargs;
 	new bytes = args_to_push * cellbytes;
 	new tmp = 0;
-	new Opcode:sysreq;
+	new Opcode:sysreq = UpdateSysreqDAndGetIndex(address);
 	new end = g_nargs - args_to_push;
 	new retval = 0;
 
@@ -475,14 +478,6 @@ stock SysreqDN(address, args_to_push, bool:auto_pop = true) {
 		return cellmin;
 	}
 
-	if (HasSysreqD()) {
-		sysreq = RelocateOpcode(OP_SYSREQ_D);
-	} else {
-		sysreq = RelocateOpcode(OP_SYSREQ_C);
-		address = UpdateSysreqDAndGetIndex(address);
-	}
-
-	
 	while (--i >= end) {
 		arg = g_args[i];
 		#emit push.s arg
@@ -635,14 +630,7 @@ stock CallNativeByAddress(address, {Float,_}:...) {
 	const cells4 = 1 * cellbytes;
 	const cells5 = 1 * cellbytes;
 	new arg_bytes = 0, arg_begin = 0, arg_end = 0;
-	new Opcode:sysreq;
-
-	if (HasSysreqD()) {
-		sysreq = RelocateOpcode(OP_SYSREQ_D);
-	} else {
-		sysreq = RelocateOpcode(OP_SYSREQ_C);
-		address = UpdateSysreqDAndGetIndex(address);
-	}
+	new Opcode:sysreq = UpdateSysreqDAndGetIndex(address);
 
 	// Get number of bytes passed.
 	#emit load.s.pri 0x8
