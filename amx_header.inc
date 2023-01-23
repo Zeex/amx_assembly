@@ -191,6 +191,11 @@ forward PrintAmxHeader();
 	#define AMX_HEADER_MAYBE_MASK(%0) ((%0))
 #endif
 
+#if __PawnBuild >= 10
+	#define HasSysreqD() (bool:(__emit(zero.pri, lctrl 9, eq.c.pri 0)))
+	#define HasReloc() (bool:(__emit(zero.pri, lctrl 9, const.alt 512, and, eq.c.pri 0)))
+#endif
+
 /// <library>amx_assembly amx_header</library>
 stock GetRawAmxHeader(plain_amxhdr[AMX_HDR_CELLS]) {
 	new address = 0;
@@ -514,6 +519,23 @@ static stock NtCopy(src, dest[], size = sizeof(dest)) {
 }
 
 /// <library>amx_assembly amx_header</library>
+/// <summary>
+///   Returns the number of characters <b>including null</b>.
+/// </summary>
+static stock NtLength(src) {
+	new i = 0;
+	new c = 0;
+
+	do {
+		c = ReadAmxMemory(src) & 0xFF;
+		++src;
+		++i;
+	} while (c != '\0');
+
+	return i;
+}
+
+/// <library>amx_assembly amx_header</library>
 stock GetNumPublics(const amxhdr[AMX_HDR]) {
 	InitStaticAmxHeader();
 
@@ -608,6 +630,20 @@ stock GetNumNatives(const amxhdr[AMX_HDR]) {
 }
 
 /// <library>amx_assembly amx_header</library>
+static stock GetFirstNativeStringOffset() {
+	new num_publics = GetNumPublics(gHdr);
+
+	if (num_publics == 0) {
+		return gHdr[AMX_HDR_NAMETABLE] - gHdr[AMX_HDR_DAT];
+	} else {
+		// Get the string after the last public.
+		new nameofs = (gHdr[AMX_HDR_PUBLICS] - gHdr[AMX_HDR_DAT]) + ((num_publics - 1) * gHdr[AMX_HDR_DEFSIZE]);
+		nameofs = AMX_HEADER_MAYBE_MASK(ReadAmxMemory(nameofs + cellbytes)) - gHdr[AMX_HDR_DAT];
+		return nameofs + NtLength(nameofs);
+	}
+}
+
+/// <library>amx_assembly amx_header</library>
 stock GetNativeIndexFromAddress(address) {
 	InitStaticAmxHeader();
 
@@ -640,7 +676,16 @@ stock bool:GetNativeInfo(index, info[AMX_FUNCSTUBNT]) {
 
 	new off = gHdr[AMX_HDR_NATIVES] - gHdr[AMX_HDR_DAT] + index * gHdr[AMX_HDR_DEFSIZE];
 	info[AMX_FUNCSTUBNT_ADDRESS] = ReadAmxMemory(off);
-	info[AMX_FUNCSTUBNT_NAMEOFS] = AMX_HEADER_MAYBE_MASK(ReadAmxMemory(off + cellbytes));
+
+	if (HasReloc()) {
+		info[AMX_FUNCSTUBNT_NAMEOFS] = AMX_HEADER_MAYBE_MASK(ReadAmxMemory(off + cellbytes));
+	} else {
+		new nameofs = GetFirstNativeStringOffset();
+		while (index--) {
+			nameofs += NtLength(nameofs);
+		}
+		info[AMX_FUNCSTUBNT_NAMEOFS] = nameofs;
+	}
 
 	return true;
 }
@@ -649,23 +694,37 @@ stock bool:GetNativeInfo(index, info[AMX_FUNCSTUBNT]) {
 stock GetNativeIndexFromName(const name[]) {
 	InitStaticAmxHeader();
 
-	//printf("Find name: %s", name);
 	new num_natives = GetNumNatives(gHdr);
 	new off = gHdr[AMX_HDR_NATIVES] - gHdr[AMX_HDR_DAT];
 
-	// Linear search
-	for (new i = 0; i < num_natives; i++) {
-		new nameofs = AMX_HEADER_MAYBE_MASK(ReadAmxMemory(off + cellbytes)) - gHdr[AMX_HDR_DAT];
+	if (HasReloc()) {
+		// Linear search
+		for (new i = 0; i < num_natives; i++) {
+			new nameofs = AMX_HEADER_MAYBE_MASK(ReadAmxMemory(off + cellbytes)) - gHdr[AMX_HDR_DAT];
 
-		new diff = NtCompare(nameofs, name);
-		//new str[32];
-		//NtCopy(nameofs, str);
-		//printf("Compare: %s, %d", str, diff);
-		if (diff == 0) {
-			return i;
+			new diff = NtCompare(nameofs, name);
+			if (diff == 0) {
+				return i;
+			}
+
+			off += gHdr[AMX_HDR_DEFSIZE];
 		}
+	} else {
+		new nameofs = GetFirstNativeStringOffset();
 
-		off += gHdr[AMX_HDR_DEFSIZE];
+		// Linear search
+		for (new i = 0; i < num_natives; i++) {
+
+			new diff = NtCompare(nameofs, name);
+			if (diff == 0) {
+				return i;
+			}
+
+			off += gHdr[AMX_HDR_DEFSIZE];
+
+			// Skip this string instead of using pointers.
+			nameofs += NtLength(nameofs);
+		}
 	}
 
 	return -1;
@@ -1041,8 +1100,6 @@ stock bool:IsTagIndexEmpty(tag) {
 #undef InitStaticAmxHeader
 
 #if __PawnBuild >= 10
-	#define HasSysreqD() (bool:(__emit(zero.pri, lctrl 9, eq.c.pri 0)))
-	#define HasReloc() (bool:(__emit(zero.pri, lctrl 9, const.alt 1536, neq)))
 	#endinput
 #endif
 
@@ -1064,8 +1121,9 @@ stock bool:HasReloc() {
 	// `pri` is 0 it wasn't set by the control register.
 	#emit zero.pri
 	#emit lctrl 9 // flags
-	#emit const.alt 1536
-	#emit neq
+	#emit const.alt 512
+	#emit and
+	#emit eq.c.pri 0
 	#emit retn
 
 	return false;
