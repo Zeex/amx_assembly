@@ -70,7 +70,7 @@ forward CallNativeByAddress(address, {Float,_}:...);
 native AmxSysreqDStub() = heapspace;
 
 /// <library>amx_assembly dynamic_call</library>
-static stock Opcode:UpdateSysreqDAndGetIndex(&address) {
+static stock Opcode:UpdateSysreqDAndGetIndex(&address, wide) {
 	// This function handily ensures that the function is in the header on old
 	// compilers which don't insert it when used via `SYSREQ.C`.
 	static index = -1;
@@ -96,6 +96,9 @@ static stock Opcode:UpdateSysreqDAndGetIndex(&address) {
 	}
 	// Change where the native points.
 	WriteAmxMemory(off, address);
+	if (!HasReloc()) {
+		WriteAmxMemory(off + cellbytes, wide);
+	}
 	address = index;
 	return sysreq;
 }
@@ -336,7 +339,7 @@ stock SysreqD(address, bool:auto_pop = true) {
 	new i = g_nargs;
 	new bytes = g_nargs * cellbytes;
 	new tmp = 0;
-	new Opcode:sysreq = UpdateSysreqDAndGetIndex(address);
+	new Opcode:sysreq = UpdateSysreqDAndGetIndex(address, 0);
 	new retval = 0;
 
 	while (--i >= 0) {
@@ -474,7 +477,7 @@ stock SysreqDN(address, args_to_push, bool:auto_pop = true) {
 	new i = g_nargs;
 	new bytes = args_to_push * cellbytes;
 	new tmp = 0;
-	new Opcode:sysreq = UpdateSysreqDAndGetIndex(address);
+	new Opcode:sysreq = UpdateSysreqDAndGetIndex(address, 0);
 	new end = g_nargs - args_to_push;
 	new retval = 0;
 
@@ -634,7 +637,7 @@ stock CallNativeByAddress(address, {Float,_}:...) {
 	const cells4 = 1 * cellbytes;
 	const cells5 = 1 * cellbytes;
 	new arg_bytes = 0, arg_begin = 0, arg_end = 0;
-	new Opcode:sysreq = UpdateSysreqDAndGetIndex(address);
+	new Opcode:sysreq = UpdateSysreqDAndGetIndex(address, 0);
 
 	// Get number of bytes passed.
 	#emit load.s.pri 0x8

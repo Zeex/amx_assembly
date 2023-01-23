@@ -162,13 +162,15 @@ forward bool:GetTagNameFromID(id, name[], size = sizeof(name));
 
 // Natives
 forward bool:GetNativeInfo(index, info[AMX_FUNCSTUBNT]);
-forward GetNativeIndexFromAddress(address);
+forward GetNativeIndexFromAddress(address, wide = 0);
+forward GetNativeIndexFromWideAddress(address, wide);
 forward GetNativeIndexFromName(const name[]);
-forward GetNativeAddressFromName(const name[]);
-forward GetNativeAddressFromIndex(index);
+forward GetNativeAddressFromName(const name[], &wide = 0);
+forward GetNativeAddressFromIndex(index, &wide = 0);
 forward bool:GetNativeNameFromIndex(index, name[], size = sizeof(name));
 forward bool:GetNativeNameFromAddress(address, name[], size = sizeof(name));
-forward HookNative(index, address);
+forward bool:GetNativeNameFromWideAddress(address, wide, name[], size = sizeof(name));
+forward HookNative(index, address, wide = 0, &old_wide = 0);
 
 // Public Variables
 forward bool:GetPubVarInfo(index, info[AMX_FUNCSTUBNT]);
@@ -671,7 +673,7 @@ static stock GetFirstNativeStringOffset() {
 }
 
 /// <library>amx_assembly amx_header</library>
-stock GetNativeIndexFromAddress(address) {
+stock GetNativeIndexFromAddress(address, wide = 0) {
 	InitStaticAmxHeader();
 
 	new num_natives = GetNumNatives(gHdr);
@@ -680,13 +682,17 @@ stock GetNativeIndexFromAddress(address) {
 	// Linear search
 	for (new i = 0; i < num_natives; i++) {
 		if (ReadAmxMemory(off) == address) {
-			return i;
+			if (wide == 0 || wide == AMX_HEADER_MAYBE_MASK(ReadAmxMemory(off + cellbytes))) {
+				return i;
+			}
 		}
 		off += gHdr[AMX_HDR_DEFSIZE];
 	}
 
 	return -1;
 }
+
+#define GetNativeIndexFromWideAddress GetNativeIndexFromAddress
 
 /// <library>amx_assembly amx_header</library>
 stock bool:GetNativeInfo(index, info[AMX_FUNCSTUBNT]) {
@@ -709,6 +715,7 @@ stock bool:GetNativeInfo(index, info[AMX_FUNCSTUBNT]) {
 	if (HasReloc()) {
 		info[AMX_FUNCSTUBNT_NAMEOFS] = AMX_HEADER_MAYBE_MASK(ReadAmxMemory(off + cellbytes));
 	} else {
+		info[AMX_FUNCSTUBNT_WIDE] = AMX_HEADER_MAYBE_MASK(ReadAmxMemory(off + cellbytes));
 		new nameofs = GetFirstNativeStringOffset();
 		while (index--) {
 			nameofs += NtLength(nameofs);
@@ -760,15 +767,16 @@ stock GetNativeIndexFromName(const name[]) {
 }
 
 /// <library>amx_assembly amx_header</library>
-stock GetNativeAddressFromIndex(index) {
+stock GetNativeAddressFromIndex(index, &wide = 0) {
 	new info[AMX_FUNCSTUBNT];
 	GetNativeInfo(index, info);
+	wide = info[AMX_FUNCSTUBNT_WIDE];
 	return info[AMX_FUNCSTUBNT_ADDRESS];
 }
 
 /// <library>amx_assembly amx_header</library>
-stock GetNativeAddressFromName(const name[]) {
-	return GetNativeAddressFromIndex(GetNativeIndexFromName(name));
+stock GetNativeAddressFromName(const name[], &wide = 0) {
+	return GetNativeAddressFromIndex(GetNativeIndexFromName(name), wide);
 }
 
 /// <library>amx_assembly amx_header</library>
@@ -787,7 +795,12 @@ stock bool:GetNativeNameFromAddress(address, name[], size = sizeof(name)) {
 }
 
 /// <library>amx_assembly amx_header</library>
-stock HookNative(index, address) {
+stock bool:GetNativeNameFromWideAddress(address, wide, name[], size = sizeof(name)) {
+	return GetNativeNameFromIndex(GetNativeIndexFromWideAddress(address, wide), name, size);
+}
+
+/// <library>amx_assembly amx_header</library>
+stock HookNative(index, address, wide = 0, &old_wide = 0) {
 	InitStaticAmxHeader();
 
 	new num_natives = GetNumNatives(gHdr);
@@ -799,6 +812,12 @@ stock HookNative(index, address) {
 	new off = gHdr[AMX_HDR_NATIVES] - gHdr[AMX_HDR_DAT] + index * gHdr[AMX_HDR_DEFSIZE];
 	new old_address = ReadAmxMemory(off);
 	WriteAmxMemory(off, address);
+	if (HasReloc()) {
+		old_wide = 0;
+	} else {
+		old_wide = AMX_HEADER_MAYBE_MASK(ReadAmxMemory(off + cellbytes));
+		WriteAmxMemory(off + cellbytes, wide);
+	}
 
 	return old_address;
 }
