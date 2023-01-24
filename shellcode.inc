@@ -48,3 +48,10 @@ stock RunShellcode(code_ptr, bool:align = true) {
 	return SysreqD(code_ptr);
 }
 
+stock RunShellcodeWide(code_ptr, wide_ptr, bool:align = true) {
+	if (align) {
+		code_ptr = ((code_ptr + 15) >>> 4) << 4;
+	}
+	return SysreqDWide(code_ptr, wide_ptr);
+}
+

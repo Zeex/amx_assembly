@@ -49,12 +49,29 @@ static stock GetDat() {
 
 /// <library>amx_assembly phys_memory</library>
 static stock AbsToRel(address) {
-	return address - (GetAmxBaseAddress() + GetDat());
+	if (HasReloc()) {
+		return address - (GetAmxBaseAddress() + GetDat());
+	}
+	return 0;
 }
 
 /// <library>amx_assembly phys_memory</library>
 static stock RelToAbs(address) {
-	return address + (GetAmxBaseAddress() + GetDat());
+	if (HasReloc()) {
+		return address + (GetAmxBaseAddress() + GetDat());
+	}
+	return 0;
+}
+
+/// <library>amx_assembly phys_memory</library>
+static stock RelToWide(address, &wide) {
+	// I don't think we can actually write this function, since relocations are
+	// disabled in 64-bit compatibility mode.
+	if (HasReloc()) {
+		wide = 0;
+		return address + (GetAmxBaseAddress() + GetDat());
+	}
+	return 0;
 }
 
 /// <library>amx_assembly phys_memory</library>
@@ -68,6 +85,19 @@ stock refabs(...) {
 	#emit load.s.pri cells0
 	#emit stor.s.pri address
 	return RelToAbs(address);
+}
+
+/// <library>amx_assembly phys_memory</library>
+/// <summary>
+///   Returns the absolute address of a variable/array.
+/// </summary>
+stock refwide(&wide, ...) {
+	const cells0 = 4 * cellbytes;
+	assert(numargs() == 2);
+	new address = 0;
+	#emit load.s.pri cells0
+	#emit stor.s.pri address
+	return RelToWide(address, wide);
 }
 
 /// <library>amx_assembly phys_memory</library>

@@ -41,6 +41,7 @@
 #endif
 
 #include "amx_memory"
+#include "amx_base"
 
 #define AMX_HDR_BYTES (56)
 #define AMX_HDR_CELLS (AMX_HDR_BYTES / cellbytes)
@@ -163,13 +164,13 @@ forward bool:GetTagNameFromID(id, name[], size = sizeof(name));
 // Natives
 forward bool:GetNativeInfo(index, info[AMX_FUNCSTUBNT]);
 forward GetNativeIndexFromAddress(address, wide = 0);
-forward GetNativeIndexFromWideAddress(address, wide);
+forward GetNativeIndexFromAddressWide(address, wide);
 forward GetNativeIndexFromName(const name[]);
 forward GetNativeAddressFromName(const name[], &wide = 0);
 forward GetNativeAddressFromIndex(index, &wide = 0);
 forward bool:GetNativeNameFromIndex(index, name[], size = sizeof(name));
 forward bool:GetNativeNameFromAddress(address, name[], size = sizeof(name));
-forward bool:GetNativeNameFromWideAddress(address, wide, name[], size = sizeof(name));
+forward bool:GetNativeNameFromAddressWide(address, wide, name[], size = sizeof(name));
 forward HookNative(index, address, wide = 0, &old_wide = 0);
 
 // Public Variables
@@ -192,11 +193,6 @@ forward PrintAmxHeader();
 	#define AMX_HEADER_MAYBE_MASK(%0) ((%0) & 0xFFFFFFFF)
 #else
 	#define AMX_HEADER_MAYBE_MASK(%0) ((%0))
-#endif
-
-#if __PawnBuild >= 10
-	#define HasSysreqD() (bool:(__emit(zero.pri, lctrl 9, eq.c.pri 0)))
-	#define HasReloc() (bool:(__emit(zero.pri, lctrl 9, const.alt 512, and, eq.c.pri 0)))
 #endif
 
 /// <library>amx_assembly amx_header</library>
@@ -692,7 +688,7 @@ stock GetNativeIndexFromAddress(address, wide = 0) {
 	return -1;
 }
 
-#define GetNativeIndexFromWideAddress GetNativeIndexFromAddress
+#define GetNativeIndexFromAddressWide GetNativeIndexFromAddress
 
 /// <library>amx_assembly amx_header</library>
 stock bool:GetNativeInfo(index, info[AMX_FUNCSTUBNT]) {
@@ -795,8 +791,8 @@ stock bool:GetNativeNameFromAddress(address, name[], size = sizeof(name)) {
 }
 
 /// <library>amx_assembly amx_header</library>
-stock bool:GetNativeNameFromWideAddress(address, wide, name[], size = sizeof(name)) {
-	return GetNativeNameFromIndex(GetNativeIndexFromWideAddress(address, wide), name, size);
+stock bool:GetNativeNameFromAddressWide(address, wide, name[], size = sizeof(name)) {
+	return GetNativeNameFromIndex(GetNativeIndexFromAddressWide(address, wide), name, size);
 }
 
 /// <library>amx_assembly amx_header</library>
@@ -1147,34 +1143,4 @@ stock bool:IsTagIndexEmpty(tag) {
 }
 
 #undef InitStaticAmxHeader
-
-#if __PawnBuild >= 10
-	#endinput
-#endif
-
-/// <library>amx_assembly amx_header</library>
-stock bool:HasSysreqD() {
-	// SA:MP doesn't have the AMX flags in register 9, open.mp does.  Thus if
-	// `pri` is 0 it wasn't set by the control register.
-	#emit zero.pri
-	#emit lctrl 9 // flags
-	#emit eq.c.pri 0
-	#emit retn
-
-	return false;
-}
-
-/// <library>amx_assembly amx_header</library>
-stock bool:HasReloc() {
-	// SA:MP doesn't have the AMX flags in register 9, open.mp does.  Thus if
-	// `pri` is 0 it wasn't set by the control register.
-	#emit zero.pri
-	#emit lctrl 9 // flags
-	#emit const.alt 512
-	#emit and
-	#emit eq.c.pri 0
-	#emit retn
-
-	return false;
-}
 

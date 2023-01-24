@@ -138,6 +138,8 @@ stock ShellExecute(const Operation[], const File[], const Parameters[], ShowCmd)
 	Push(0);                  // LPCTSTR lpDirectory
 	Push(ShowCmd);            // INT nShowCmd
 
-	return RunShellcode(refabs(asm));
+	new wide;
+	address = refwide(address, wide);
+	return RunShellcodeWide(address, wide);
 }
 

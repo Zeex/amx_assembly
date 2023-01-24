@@ -73,26 +73,22 @@ native AmxSysreqDStub() = heapspace;
 static stock Opcode:UpdateSysreqDAndGetIndex(&address, wide) {
 	// This function handily ensures that the function is in the header on old
 	// compilers which don't insert it when used via `SYSREQ.C`.
-	static index = -1;
-	static Opcode:sysreq;
-	if (index == -2) {
-		// Cached the fact that we can use normal `SYSREQ.D`.
-		return sysreq;
-	}
-	static off;
-	if (index == -1) {
-		if (HasSysreqD()) {
-			index = -2;
-			sysreq = RelocateOpcode(OP_SYSREQ_D);
-			return sysreq;
-		}
+	static index = cellmin;
+	static Opcode:sysreq_c = OP_NONE;
+	static Opcode:sysreq_d = OP_NONE;
+	static off = 0;
+	if (index == cellmin) {
+		sysreq_d = RelocateOpcode(OP_SYSREQ_D);
 		// `nativeidxof` is a bypass for the fact that the header may be
 		// clobbered, which this new `SYSREQ.D` bypass is also for.
 		index = nativeidxof(AmxSysreqDStub<>);
-		sysreq = RelocateOpcode(OP_SYSREQ_C);
+		sysreq_c = RelocateOpcode(OP_SYSREQ_C);
 		new amxhdr[AMX_HDR];
 		GetAmxHeader(amxhdr);
 		off = amxhdr[AMX_HDR_NATIVES] - amxhdr[AMX_HDR_DAT] + index * amxhdr[AMX_HDR_DEFSIZE];
+	}
+	if (wide == 0 && HasSysreqD()) {
+		return sysreq_d;
 	}
 	// Change where the native points.
 	WriteAmxMemory(off, address);
@@ -100,7 +96,7 @@ static stock Opcode:UpdateSysreqDAndGetIndex(&address, wide) {
 		WriteAmxMemory(off + cellbytes, wide);
 	}
 	address = index;
-	return sysreq;
+	return sysreq_c;
 }
 
 /// <library>amx_assembly dynamic_call</library>
@@ -394,6 +390,73 @@ stock SysreqD(address, bool:auto_pop = true) {
 }
 
 /// <library>amx_assembly dynamic_call</library>
+stock SysreqDWide(address, wide, bool:auto_pop = true) {
+	if (GetJITGeneratorVersion()) {
+		return cellmin;
+	}
+
+	const cells0 = 23 * cellbytes;
+	const cells1 = 1 * cellbytes;
+	const cells2 = 1 * cellbytes;
+	new arg = 0;
+	new i = g_nargs;
+	new bytes = g_nargs * cellbytes;
+	new tmp = 0;
+	new Opcode:sysreq = UpdateSysreqDAndGetIndex(address, wide);
+	new retval = 0;
+
+	while (--i >= 0) {
+		arg = g_args[i];
+		#emit push.s arg
+	}
+
+	#emit load.s.pri bytes
+	#emit push.pri
+
+	// tmp = cod + cip - dat + <distance to nop #1>
+	#emit lctrl 0  // COD
+	#emit move.alt
+	#emit lctrl 6  // CIP
+	#emit add
+	#emit move.alt
+	#emit lctrl 1 // DAT
+	#emit sub.alt
+	#emit add.c cells0
+	#emit stor.s.pri tmp
+
+	// nop #1 = sysreq.d
+	#emit load.s.pri sysreq
+	#emit sref.s.pri tmp
+
+	// tmp += 4
+	#emit load.s.pri tmp
+	#emit add.c cells1
+	#emit stor.s.pri tmp
+
+	// nop #2 = address
+	#emit load.s.pri address
+	#emit sref.s.pri tmp
+
+	#emit nop
+	#emit nop
+
+	#emit stor.s.pri retval
+
+	// Pop native arguments.
+	#emit lctrl 4
+	#emit load.s.alt bytes
+	#emit add
+	#emit add.c cells2
+	#emit sctrl 4
+
+	if (auto_pop) {
+		g_nargs = 0;
+	}
+
+	return retval;
+}
+
+/// <library>amx_assembly dynamic_call</library>
 stock SysreqCN(index, args_to_push, bool:auto_pop = true) {
 	if (GetJITGeneratorVersion()) {
 		return cellmin;
@@ -478,6 +541,78 @@ stock SysreqDN(address, args_to_push, bool:auto_pop = true) {
 	new bytes = args_to_push * cellbytes;
 	new tmp = 0;
 	new Opcode:sysreq = UpdateSysreqDAndGetIndex(address, 0);
+	new end = g_nargs - args_to_push;
+	new retval = 0;
+
+	if (end < 0) {
+		return cellmin;
+	}
+
+	while (--i >= end) {
+		arg = g_args[i];
+		#emit push.s arg
+	}
+
+	#emit load.s.pri bytes
+	#emit push.pri
+
+	// tmp = cod + cip - dat + <distance to nop #1>
+	#emit lctrl 0  // COD
+	#emit move.alt
+	#emit lctrl 6  // CIP
+	#emit add
+	#emit move.alt
+	#emit lctrl 1 // DAT
+	#emit sub.alt
+	#emit add.c cells0
+	#emit stor.s.pri tmp
+
+	// nop #1 = sysreq.d
+	#emit load.s.pri sysreq
+	#emit sref.s.pri tmp
+
+	// tmp += 4
+	#emit load.s.pri tmp
+	#emit add.c cells1
+	#emit stor.s.pri tmp
+
+	// nop #2 = address
+	#emit load.s.pri address
+	#emit sref.s.pri tmp
+
+	#emit nop
+	#emit nop
+
+	#emit stor.s.pri retval
+
+	// Pop native arguments.
+	#emit lctrl 4
+	#emit load.s.alt bytes
+	#emit add
+	#emit add.c cells2
+	#emit sctrl 4
+
+	if (auto_pop) {
+		g_nargs = end;
+	}
+
+	return retval;
+}
+
+/// <library>amx_assembly dynamic_call</library>
+stock SysreqDNWide(address, wide, args_to_push, bool:auto_pop = true) {
+	if (GetJITGeneratorVersion()) {
+		return cellmin;
+	}
+
+	const cells0 = 23 * cellbytes;
+	const cells1 = 1 * cellbytes;
+	const cells2 = 1 * cellbytes;
+	new arg = 0;
+	new i = g_nargs;
+	new bytes = args_to_push * cellbytes;
+	new tmp = 0;
+	new Opcode:sysreq = UpdateSysreqDAndGetIndex(address, wide);
 	new end = g_nargs - args_to_push;
 	new retval = 0;
 
@@ -638,6 +773,95 @@ stock CallNativeByAddress(address, {Float,_}:...) {
 	const cells5 = 1 * cellbytes;
 	new arg_bytes = 0, arg_begin = 0, arg_end = 0;
 	new Opcode:sysreq = UpdateSysreqDAndGetIndex(address, 0);
+
+	// Get number of bytes passed.
+	#emit load.s.pri 0x8
+	#emit add.c cells0
+	#emit stor.s.pri arg_bytes
+	#emit move.alt
+
+	// Last argument is at FRM + 0x0C + arg_bytes (which is in ALT).
+	#emit lctrl 5
+	#emit add.c cells1
+	#emit add
+	#emit stor.s.pri arg_end
+
+	// Frist argument is at FRM + 0x10.
+	#emit lctrl 5
+	#emit add.c cells2
+	#emit stor.s.pri arg_begin
+
+	new arg = arg_end;
+	new tmp = 0;
+	new retval = 0;
+
+	while (arg >= arg_begin) {
+		#emit lref.s.pri arg
+		#emit load.i
+		#emit push.pri
+		arg -= cellbytes;
+	}
+
+	// Push number of arguments * 4 (which is params[0]).
+	#emit push.s arg_bytes
+
+	// tmp = cod + cip - dat + <distance to nop #1>
+	#emit lctrl 0  // COD
+	#emit move.alt
+	#emit lctrl 6  // CIP
+	#emit add
+	#emit move.alt
+	#emit lctrl 1 // DAT
+	#emit sub.alt
+	#emit add.c cells3
+	#emit stor.s.pri tmp
+
+	// nop #1 = sysreq.d
+	#emit load.s.pri sysreq
+	#emit sref.s.pri tmp
+
+	// tmp += 4
+	#emit load.s.pri tmp
+	#emit add.c cells4
+	#emit stor.s.pri tmp
+
+	// nop #2 = address
+	#emit load.s.pri address
+	#emit sref.s.pri tmp
+
+	#emit nop
+	#emit nop
+
+	#emit stor.s.pri retval
+
+	// Pop native arguments.
+	#emit lctrl 4
+	#emit load.s.alt arg_bytes
+	#emit add
+	#emit add.c cells5
+	#emit sctrl 4
+
+	return retval;
+}
+
+/// <library>amx_assembly dynamic_call</library>
+/// <remarks>
+///   Unlike CallNative(), this function calls natives directly via SYSREQ.D.
+///   Takes two pointers to replicate 64-bit pointers.
+/// </remarks>
+stock CallNativeByAddressWide(address, wide, {Float,_}:...) {
+	if (GetJITGeneratorVersion()) {
+		return cellmin;
+	}
+
+	const cells0 = -1 * cellbytes;
+	const cells1 = 3 * cellbytes;
+	const cells2 = 4 * cellbytes;
+	const cells3 = 23 * cellbytes;
+	const cells4 = 1 * cellbytes;
+	const cells5 = 1 * cellbytes;
+	new arg_bytes = 0, arg_begin = 0, arg_end = 0;
+	new Opcode:sysreq = UpdateSysreqDAndGetIndex(address, wide);
 
 	// Get number of bytes passed.
 	#emit load.s.pri 0x8

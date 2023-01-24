@@ -40,6 +40,11 @@
 	#define __PawnBuild 0
 #endif
 
+#if __PawnBuild >= 10
+	#define HasSysreqD() (bool:(__emit(zero.pri, lctrl 9, eq.c.pri 0)))
+	#define HasReloc() (bool:(__emit(zero.pri, lctrl 9, const.alt 512, and, eq.c.pri 0)))
+#endif
+
 #if !defined cellbytes
 	const cellbytes = cellbits / charbits;
 #endif
@@ -54,6 +59,9 @@ static stock GetAmxBaseAddress_helper() {
 ///   Returns the AMX base address i.e. <c>amx-&gt;base</c>.
 /// </summary>
 stock GetAmxBaseAddressNow() {
+	// Required for this trick to work.
+	assert(HasReloc());
+
 	new cod = 0, dat = 0;
 	#emit lctrl 0
 	#emit stor.s.pri cod
@@ -93,5 +101,35 @@ stock GetAmxBaseAddress() {
 		amx_base = GetAmxBaseAddressNow();
 	}
 	return amx_base;
+}
+
+#if __PawnBuild >= 10
+	#endinput
+#endif
+
+/// <library>amx_assembly amx_base</library>
+stock bool:HasSysreqD() {
+	// SA:MP doesn't have the AMX flags in register 9, open.mp does.  Thus if
+	// `pri` is 0 it wasn't set by the control register.
+	#emit zero.pri
+	#emit lctrl 9 // flags
+	#emit eq.c.pri 0
+	#emit retn
+
+	return false;
+}
+
+/// <library>amx_assembly amx_base</library>
+stock bool:HasReloc() {
+	// SA:MP doesn't have the AMX flags in register 9, open.mp does.  Thus if
+	// `pri` is 0 it wasn't set by the control register.
+	#emit zero.pri
+	#emit lctrl 9 // flags
+	#emit const.alt 512
+	#emit and
+	#emit eq.c.pri 0
+	#emit retn
+
+	return false;
 }
 
