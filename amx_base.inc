@@ -36,13 +36,18 @@
 
 /// <p/>
 
-#if !defined __PawnBuild
-	#define __PawnBuild 0
+#if defined __PawnBuild
+	#define __pawn_build __PawnBuild
+#else
+	#define __pawn_build 0
 #endif
 
-#if __PawnBuild >= 10
+#if __pawn_build >= 10
 	#define HasSysreqD() (bool:(__emit(zero.pri, lctrl 9, eq.c.pri 0)))
 	#define HasReloc() (bool:(__emit(zero.pri, lctrl 9, const.alt 512, and, eq.c.pri 0)))
+#else
+	forward bool:HasSysreqD();
+	forward bool:HasReloc();
 #endif
 
 #if !defined cellbytes
@@ -103,7 +108,7 @@ stock GetAmxBaseAddress() {
 	return amx_base;
 }
 
-#if __PawnBuild >= 10
+#if __pawn_build >= 10
 	#endinput
 #endif
 

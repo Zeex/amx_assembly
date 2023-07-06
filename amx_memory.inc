@@ -38,8 +38,10 @@
 
 #include <core>
 
-#if !defined __PawnBuild
-	#define __PawnBuild 0
+#if defined __PawnBuild
+	#define __pawn_build __PawnBuild
+#else
+	#define __pawn_build 0
 #endif
 
 #if !defined cellbytes
@@ -114,7 +116,7 @@ stock argderef(n) {
 	return gFake; // make compiler happy
 }
 
-#if __PawnBuild >= 10
+#if __pawn_build >= 10
 	stock gAmxAssemblyAddress_;
 	#define ReadAmxMemory(%0) __emit(load.u.pri %0, stor.pri gAmxAssemblyAddress_, lref.pri gAmxAssemblyAddress_)
 	#define WriteAmxMemory(%0,%1) __emit(push.u %1, load.u.pri %0, stor.pri gAmxAssemblyAddress_, pop.pri, sref.pri gAmxAssemblyAddress_)
@@ -261,7 +263,7 @@ stock SetAmxNextInstructionPointer(ptr) {
 	#emit sctrl 6
 }
 
-#if __PawnBuild >= 10
+#if __pawn_build >= 10
 	#endinput
 #endif
 
