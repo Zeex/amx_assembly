@@ -70,6 +70,8 @@
 //-----------------------------------------------
 
 #include "amx_memory"
+#include "frame_info"
+#include "stack_trace"
 
 /// <library>amx_assembly stack_dump</library>
 stock DumpStack()
@@ -97,5 +99,80 @@ stock DumpStack()
 	}
 
 	print("------------------------");
+}
+
+/// <library>amx_assembly stack_dump</library>
+stock DumpFullStack()
+{
+	new stp = 0, stk = 0;
+
+	#emit lctrl 3
+	#emit stor.s.pri stp
+	#emit lctrl 4
+	#emit stor.s.pri stk
+
+	// Skip locals + FRM + RETN address + paramcount (to this point in this
+	// function, hence "3 + 2").
+	stk += 5 * cellbytes;
+
+	print("----------------------------------------");
+	print("| Stack dump (bottom):                 |");
+	print("----------------------------------------");
+
+	// "next" and "previous" are going to get confusing here!  We are walking UP
+	// the stack, so all the function calls are from that POV.  However, the API
+	// we're using is from the POV of code execution with the stack growing
+	// DOWN, so the names are reversed.
+	new localSize = 0;
+	new parameterSize = 0;
+	new previousFrame = GetCurrentFrame();
+	new currentFrame = GetFramePreviousFrame(previousFrame);
+	new returnAddress = 0;
+	do
+	{
+		previousFrame = currentFrame;
+		currentFrame = GetFramePreviousFrame(previousFrame);
+		returnAddress = GetFrameReturn(previousFrame);
+		// Still the parameter count from the previous function.
+		//localSize = previousFrame - currentFrame + (3 * cellbytes) - parameterSize;
+		parameterSize = GetFrameParameterSize(previousFrame);
+		// Can be done, but slower (re-iterates from the top of the stack).
+		localSize = GetFrameLocalSize(previousFrame);
+		
+		new name[64];
+		new address = GetFunctionFromReturnAddress(returnAddress);
+		if (GetPublicNameFromAddress(address, name)) {
+			printf("|   %32s   |", name);
+		} else {
+			printf("|                 ????                 |");
+		}
+		
+		printf("| Locals (%2d):                         |", localSize / cellbytes);
+		while (localSize)
+		{
+			printf("|     %08x: %08x               |", stk, ReadAmxMemory(stk));
+			stk += cellbytes;
+			localSize -= cellbytes;
+		}
+		
+		printf("| Frame:                               |");
+		printf("|     %08x: %08x               |", stk, ReadAmxMemory(stk));
+		stk += cellbytes;
+		printf("| Return:                              |");
+		printf("|     %08x: %08x               |", stk, ReadAmxMemory(stk));
+		stk += cellbytes;
+		printf("| Count:                               |");
+		printf("|     %08x: %08x               |", stk, ReadAmxMemory(stk));
+		stk += cellbytes;
+		printf("| Parameters (%2d):                     |", parameterSize / cellbytes);
+		while (parameterSize > 0)
+		{
+			printf("|     %08x: %08x               |", stk, ReadAmxMemory(stk));
+			stk += cellbytes;
+			parameterSize -= cellbytes;
+		}
+		print("----------------------------------------");
+	}
+	while (currentFrame);
 }
 
