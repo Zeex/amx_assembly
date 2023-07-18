@@ -157,8 +157,8 @@ stock GetAmxHeapBase() {
 	const cells2 = 1 * cellbytes;
 	// Initial heap pointer.  Not stored in an accessible register so read it
 	// straight from the original header.
-	#emit lctrl 1  // DAT
-	#emit neg      // -DAT
+	#emit lctrl __dat  // DAT
+	#emit neg          // -DAT
 	#emit add.c cells0 // -DAT + 20
 	#emit push.pri
 	#emit lref.s.pri cells1
@@ -171,7 +171,7 @@ stock GetAmxHeapBase() {
 stock GetAmxHeapTop()
 {
 	// Current heap pointer.
-	#emit lctrl 2
+	#emit lctrl __hea
 	#emit retn
 	return 0;
 }
@@ -179,7 +179,7 @@ stock GetAmxHeapTop()
 /// <library>amx_assembly amx_memory</library>
 stock GetAmxStackBase()
 {
-	#emit lctrl 3
+	#emit lctrl __stp
 	#emit retn
 	return 0;
 }
@@ -187,7 +187,7 @@ stock GetAmxStackBase()
 /// <library>amx_assembly amx_memory</library>
 stock GetAmxStackBottom() {
 	const cells0 = 3 * cellbytes;
-	#emit lctrl 4
+	#emit lctrl __stk
 	#emit add.c cells0
 	#emit retn
 	return 0;
@@ -207,14 +207,13 @@ stock GetAmxFrame()
 stock SetAmxHeapTop(ptr)
 {
 	#emit load.s.pri ptr
-	#emit sctrl 2
+	#emit sctrl __hea
 }
 
 /// <library>amx_assembly amx_memory</library>
 stock SetAmxStackBottom(ptr) {
 	const cells0 = 1 * cellbytes;
-	static
-		cip = 0;
+	static cip = 0;
 	// We need to be tricky here, because the return value is on the stack.
 	#emit load.s.alt ptr
 	// Store the return address.
@@ -222,14 +221,14 @@ stock SetAmxStackBottom(ptr) {
 	#emit stor.pri cip
 	// Reset the frame.
 	#emit load.s.pri 0
-	#emit sctrl 5
+	#emit sctrl __frm
 	// Modify the stack.
 	#emit move.pri
-	#emit sctrl 4
+	#emit sctrl __stk
 	// Return.
 	#emit load.pri cip
-	#emit sctrl 8
-	#emit sctrl 6
+	#emit sctrl __jmp
+	#emit sctrl __cip
 }
 
 /// <library>amx_assembly amx_memory</library>
@@ -241,12 +240,12 @@ stock SetAmxFrame(ptr) {
 	#emit load.s.alt cells0
 	// Modify the frame.
 	#emit load.s.pri ptr
-	#emit sctrl 5
+	#emit sctrl __frm
 	// Return.
 	#emit move.pri
 	#emit stack cells1
-	#emit sctrl 8
-	#emit sctrl 6
+	#emit sctrl __jmp
+	#emit sctrl __cip
 }
 
 /// <library>amx_assembly amx_memory</library>
@@ -255,12 +254,12 @@ stock SetAmxNextInstructionPointer(ptr) {
 	#emit load.s.alt ptr
 	// Reset the frame.
 	#emit load.s.pri 0
-	#emit sctrl 5
+	#emit sctrl __frm
 	// Return.
 	#emit move.pri
 	#emit stack cells0
-	#emit sctrl 8
-	#emit sctrl 6
+	#emit sctrl __jmp
+	#emit sctrl __cip
 }
 
 #if __pawn_build >= 10

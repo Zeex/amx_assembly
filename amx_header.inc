@@ -198,7 +198,7 @@ forward PrintAmxHeader();
 /// <library>amx_assembly amx_header</library>
 stock GetRawAmxHeader(plain_amxhdr[AMX_HDR_CELLS]) {
 	new address = 0;
-	#emit lctrl 1  // DAT
+	#emit lctrl __dat  // DAT
 	#emit neg      // -DAT
 	#emit stor.s.pri address
 

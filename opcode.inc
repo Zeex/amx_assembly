@@ -226,10 +226,10 @@ static stock Opcode:ReadOpcodeNearThis(offset = 0) {
 
 	// Get return address + COD - DAT + offset.
 	#emit load.s.alt cells0
-	#emit lctrl 0
+	#emit lctrl __cod
 	#emit add
 	#emit move.alt
-	#emit lctrl 1
+	#emit lctrl __dat
 	#emit xchg
 	#emit sub
 	#emit load.s.alt offset
@@ -395,11 +395,11 @@ stock Opcode:RelocateOpcodeNow(Opcode:opcode) {
 		}
 		case OP_LCTRL: {
 			return ReadOpcodeNearThis(cellbytes);
-			#emit lctrl 0
+			#emit lctrl 0 // Doesn't use `__cod` because the value isn't important.
 		}
 		case OP_SCTRL: {
 			return ReadOpcodeNearThis(cellbytes);
-			#emit sctrl 0
+			#emit sctrl 0 // Doesn't use `__cod` because the value isn't important.
 		}
 		case OP_MOVE_PRI: {
 			return ReadOpcodeNearThis(cellbytes);

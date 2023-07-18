@@ -78,9 +78,9 @@ stock DumpStack()
 {
 	new stp = 0, stk = 0;
 
-	#emit lctrl 3
+	#emit lctrl __stp
 	#emit stor.s.pri stp
-	#emit lctrl 4
+	#emit lctrl __stk
 	#emit stor.s.pri stk
 
 	print("------------------------");
@@ -106,9 +106,9 @@ stock DumpFullStack()
 {
 	new stp = 0, stk = 0;
 
-	#emit lctrl 3
+	#emit lctrl __stp
 	#emit stor.s.pri stp
-	#emit lctrl 4
+	#emit lctrl __stk
 	#emit stor.s.pri stk
 
 	// Skip locals + FRM + RETN address + paramcount (to this point in this

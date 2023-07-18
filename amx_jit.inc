@@ -39,7 +39,7 @@
 /// <library>amx_assembly amx_jit</library>
 stock GetJITGeneratorVersion() {
 	#emit zero.pri
-	#emit lctrl 7
+	#emit lctrl __jit
 	#emit retn
 	return 0;
 }
@@ -50,7 +50,7 @@ stock GetAmxJITBaseAddress() {
 	// so short, checking if it had been done before would have been longer than
 	// just repeating the calculation.
 	#emit zero.pri
-	#emit lctrl 8
+	#emit lctrl __jmp
 	#emit retn
 	return 0;
 }
@@ -61,7 +61,7 @@ stock ResolveJITAddress(addr) {
 	// nothing.  Could make it try detect if this is already JIT resolved, i.e.
 	// is a return address.
 	#emit load.s.pri addr
-	#emit lctrl 8
+	#emit lctrl __jmp
 	#emit retn
 	return 0;
 }

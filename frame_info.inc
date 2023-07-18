@@ -460,7 +460,7 @@ static stock GetCallerFrame() {
 	const cells0 = -1 * cellbytes;
 	const cells1 = -2 * cellbytes;
 	const cells2 = 2 * cellbytes;
-	#emit lctrl 5
+	#emit lctrl __frm
 
 	#emit push.pri
 	#emit lref.s.pri cells0

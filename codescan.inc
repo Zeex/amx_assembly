@@ -875,24 +875,24 @@ static stock CodeScanCall(const cs[CodeScanMatcher], matcher__, csState[CodeScan
 		#emit PUSH.S     param
 		#emit PUSH.S     csState
 		#emit PUSH.C     cells0
-		#emit LCTRL      6
+		#emit LCTRL      __cip
 		#emit ADD.C      cells1
-		#emit LCTRL      8
+		#emit LCTRL      __jmp
 		#emit PUSH.pri
 		#emit LOAD.S.pri func
-		#emit SCTRL      6
+		#emit SCTRL      __cip
 		#emit STOR.S.pri func
 	} else {
 		const cells2 = 1 * cellbytes;
 		const cells3 = 9 * cellbytes;
 		#emit PUSH.S     csState
 		#emit PUSH.C     cells2
-		#emit LCTRL      6
+		#emit LCTRL      __cip
 		#emit ADD.C      cells3
-		#emit LCTRL      8
+		#emit LCTRL      __jmp
 		#emit PUSH.pri
 		#emit LOAD.S.pri func
-		#emit SCTRL      6
+		#emit SCTRL      __cip
 		#emit STOR.S.pri func
 	}
 	return func;

@@ -42,7 +42,7 @@
 
 /// <library>amx_assembly phys_memory</library>
 static stock GetDat() {
-	#emit lctrl 1
+	#emit lctrl __dat
 	#emit retn
 	return 0; // make compiler happy
 }

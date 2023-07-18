@@ -39,7 +39,7 @@
 /// <library>amx_assembly jit</library>
 stock bool:IsJITPresent() {
 	#emit zero.pri
-	#emit lctrl 7
+	#emit lctrl __jit
 	#emit retn
 	return false;
 }

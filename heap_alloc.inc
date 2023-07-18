@@ -36,6 +36,8 @@
 
 /// <p/>
 
+#include "amx_memory"
+
 #define HeapAlloc HeapAllocCells
 
 /// <library>amx_assembly heap_alloc</library>
@@ -44,11 +46,11 @@
 /// </summary>
 stock HeapAllocBytes(nbytes) {
 	new address = 0;
-	#emit lctrl 2
+	#emit lctrl __hea
 	#emit stor.s.pri address
 	#emit load.s.alt nbytes
 	#emit add
-	#emit sctrl 2
+	#emit sctrl __hea
 	return address;
 }
 
@@ -66,7 +68,7 @@ stock HeapAllocCells(ncells) {
 /// </summary>
 stock HeapRelease(address) {
 	#emit load.s.pri address
-	#emit sctrl 2
+	#emit sctrl __hea
 	return address;
 }
 

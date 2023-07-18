@@ -43,8 +43,8 @@
 #endif
 
 #if __pawn_build >= 10
-	#define HasSysreqD() (bool:(__emit(zero.pri, lctrl 9, eq.c.pri 0)))
-	#define HasReloc() (bool:(__emit(zero.pri, lctrl 9, const.alt 512, and, eq.c.pri 0)))
+	#define HasSysreqD() (bool:(__emit(zero.pri, lctrl __flg, eq.c.pri 0)))
+	#define HasReloc() (bool:(__emit(zero.pri, lctrl __flg, const.alt 512, and, eq.c.pri 0)))
 #else
 	forward bool:HasSysreqD();
 	forward bool:HasReloc();
@@ -68,9 +68,9 @@ stock GetAmxBaseAddressNow() {
 	assert(HasReloc());
 
 	new cod = 0, dat = 0;
-	#emit lctrl 0
+	#emit lctrl __cod
 	#emit stor.s.pri cod
-	#emit lctrl 1
+	#emit lctrl __dat
 	#emit stor.s.pri dat
 
 	// Get code section start address relative to data.
@@ -84,7 +84,7 @@ stock GetAmxBaseAddressNow() {
 	// Get absolute address from the CALL instruction.
 	new fn_addr_reloc = 0, call_addr = 0;
 	GetAmxBaseAddress_helper();
-	#emit lctrl 6
+	#emit lctrl __cip
 	#emit stor.s.pri call_addr
 	#if cellbits == 32
 		call_addr = call_addr - 12 + code_start;
@@ -117,7 +117,7 @@ stock bool:HasSysreqD() {
 	// SA:MP doesn't have the AMX flags in register 9, open.mp does.  Thus if
 	// `pri` is 0 it wasn't set by the control register.
 	#emit zero.pri
-	#emit lctrl 9 // flags
+	#emit lctrl __flg // flags
 	#emit eq.c.pri 0
 	#emit retn
 
@@ -129,7 +129,7 @@ stock bool:HasReloc() {
 	// SA:MP doesn't have the AMX flags in register 9, open.mp does.  Thus if
 	// `pri` is 0 it wasn't set by the control register.
 	#emit zero.pri
-	#emit lctrl 9 // flags
+	#emit lctrl __flg // flags
 	#emit const.alt 512
 	#emit and
 	#emit eq.c.pri 0

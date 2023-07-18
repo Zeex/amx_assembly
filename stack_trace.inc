@@ -49,15 +49,15 @@ stock GetFunctionFromReturnAddress(ret_addr) {
 	new addr = ret_addr - cellbytes;
 
 	#emit load.s.alt addr
-	#emit lctrl 0
+	#emit lctrl __cod
 	#emit add
 	#emit move.alt
-	#emit lctrl 1
+	#emit lctrl __dat
 	#emit sub.alt
 
 	#emit stor.s.pri addr
 	#emit lref.s.alt addr
-	#emit lctrl 0
+	#emit lctrl __cod
 	#emit sub.alt
 	#emit stor.s.pri addr
 
@@ -67,7 +67,7 @@ stock GetFunctionFromReturnAddress(ret_addr) {
 /// <library>amx_assembly stack_trace</library>
 stock GetStackTrace(trace[], skip = 0, max = sizeof(trace)) {
 	new frm_addr = 0;
-	#emit lctrl 5
+	#emit lctrl __frm
 	#emit stor.s.pri frm_addr
 
 	new length = 0;

@@ -147,12 +147,12 @@ stock Call(address, bool:auto_pop = true) {
 	#emit load.s.pri bytes
 	#emit push.pri
 
-	#emit lctrl 6
+	#emit lctrl __cip
 	#emit add.c cells0
-	#emit lctrl 8
+	#emit lctrl __jmp
 	#emit push.pri
 	#emit load.s.pri address
-	#emit sctrl 6
+	#emit sctrl __cip
 
 	#emit stor.s.pri retval
 
@@ -185,12 +185,12 @@ stock CallN(address, args_to_push, bool:auto_pop = true) {
 	#emit load.s.pri bytes
 	#emit push.pri
 
-	#emit lctrl 6
+	#emit lctrl __cip
 	#emit add.c cells0
-	#emit lctrl 8
+	#emit lctrl __jmp
 	#emit push.pri
 	#emit load.s.pri address
-	#emit sctrl 6
+	#emit sctrl __cip
 
 	#emit stor.s.pri retval
 
@@ -219,13 +219,13 @@ stock CallFunction(address, {Float,_}:...) {
 	#emit move.alt
 
 	// Last argument is at FRM + 0x0C + arg_bytes (which is in ALT).
-	#emit lctrl 5
+	#emit lctrl __frm
 	#emit add.c cells1
 	#emit add
 	#emit stor.s.pri arg_end
 
 	// Frist argument is at FRM + 0x10.
-	#emit lctrl 5
+	#emit lctrl __frm
 	#emit add.c cells2
 	#emit stor.s.pri arg_begin
 
@@ -239,12 +239,12 @@ stock CallFunction(address, {Float,_}:...) {
 
 	// Call the function
 	#emit push.s arg_bytes
-	#emit lctrl 6
+	#emit lctrl __cip
 	#emit add.c cells3
-	#emit lctrl 8
+	#emit lctrl __jmp
 	#emit push.pri
 	#emit load.s.pri address
-	#emit sctrl 6
+	#emit sctrl __cip
 	// Arguments are popped by callee.
 
 	// Pop locals and return.
@@ -279,12 +279,12 @@ stock SysreqC(index, bool:auto_pop = true) {
 	#emit push.pri
 
 	// tmp = cod + cip - dat + <distance to SYSREQ.C's operand>
-	#emit lctrl 0  // COD
+	#emit lctrl __cod  // COD
 	#emit move.alt
-	#emit lctrl 6  // CIP
+	#emit lctrl __cip  // CIP
 	#emit add
 	#emit move.alt
-	#emit lctrl 1  // DAT
+	#emit lctrl __dat  // DAT
 	#emit sub.alt
 	#emit add.c cells0
 	#emit stor.s.pri tmp
@@ -309,11 +309,11 @@ stock SysreqC(index, bool:auto_pop = true) {
 	#emit stor.s.pri retval
 
 	// Pop native arguments.
-	#emit lctrl 4
+	#emit lctrl __stk
 	#emit load.s.alt bytes
 	#emit add
 	#emit add.c cells2
-	#emit sctrl 4
+	#emit sctrl __stk
 
 	if (auto_pop) {
 		g_nargs = 0;
@@ -347,12 +347,12 @@ stock SysreqD(address, bool:auto_pop = true) {
 	#emit push.pri
 
 	// tmp = cod + cip - dat + <distance to nop #1>
-	#emit lctrl 0  // COD
+	#emit lctrl __cod  // COD
 	#emit move.alt
-	#emit lctrl 6  // CIP
+	#emit lctrl __cip  // CIP
 	#emit add
 	#emit move.alt
-	#emit lctrl 1 // DAT
+	#emit lctrl __dat // DAT
 	#emit sub.alt
 	#emit add.c cells0
 	#emit stor.s.pri tmp
@@ -376,11 +376,11 @@ stock SysreqD(address, bool:auto_pop = true) {
 	#emit stor.s.pri retval
 
 	// Pop native arguments.
-	#emit lctrl 4
+	#emit lctrl __stk
 	#emit load.s.alt bytes
 	#emit add
 	#emit add.c cells2
-	#emit sctrl 4
+	#emit sctrl __stk
 
 	if (auto_pop) {
 		g_nargs = 0;
@@ -414,12 +414,12 @@ stock SysreqDWide(address, wide, bool:auto_pop = true) {
 	#emit push.pri
 
 	// tmp = cod + cip - dat + <distance to nop #1>
-	#emit lctrl 0  // COD
+	#emit lctrl __cod  // COD
 	#emit move.alt
-	#emit lctrl 6  // CIP
+	#emit lctrl __cip  // CIP
 	#emit add
 	#emit move.alt
-	#emit lctrl 1 // DAT
+	#emit lctrl __dat // DAT
 	#emit sub.alt
 	#emit add.c cells0
 	#emit stor.s.pri tmp
@@ -443,11 +443,11 @@ stock SysreqDWide(address, wide, bool:auto_pop = true) {
 	#emit stor.s.pri retval
 
 	// Pop native arguments.
-	#emit lctrl 4
+	#emit lctrl __stk
 	#emit load.s.alt bytes
 	#emit add
 	#emit add.c cells2
-	#emit sctrl 4
+	#emit sctrl __stk
 
 	if (auto_pop) {
 		g_nargs = 0;
@@ -485,12 +485,12 @@ stock SysreqCN(index, args_to_push, bool:auto_pop = true) {
 	#emit push.pri
 
 	// tmp = cod + cip - dat + <distance to SYSREQ.C's operand>
-	#emit lctrl 0  // COD
+	#emit lctrl __cod  // COD
 	#emit move.alt
-	#emit lctrl 6  // CIP
+	#emit lctrl __cip  // CIP
 	#emit add
 	#emit move.alt
-	#emit lctrl 1  // DAT
+	#emit lctrl __dat  // DAT
 	#emit sub.alt
 	#emit add.c cells0
 	#emit stor.s.pri tmp
@@ -514,11 +514,11 @@ stock SysreqCN(index, args_to_push, bool:auto_pop = true) {
 	#emit stor.s.pri retval
 
 	// Pop native arguments.
-	#emit lctrl 4
+	#emit lctrl __stk
 	#emit load.s.alt bytes
 	#emit add
 	#emit add.c cells2
-	#emit sctrl 4
+	#emit sctrl __stk
 
 	if (auto_pop) {
 		g_nargs = end;
@@ -557,12 +557,12 @@ stock SysreqDN(address, args_to_push, bool:auto_pop = true) {
 	#emit push.pri
 
 	// tmp = cod + cip - dat + <distance to nop #1>
-	#emit lctrl 0  // COD
+	#emit lctrl __cod  // COD
 	#emit move.alt
-	#emit lctrl 6  // CIP
+	#emit lctrl __cip  // CIP
 	#emit add
 	#emit move.alt
-	#emit lctrl 1 // DAT
+	#emit lctrl __dat // DAT
 	#emit sub.alt
 	#emit add.c cells0
 	#emit stor.s.pri tmp
@@ -586,11 +586,11 @@ stock SysreqDN(address, args_to_push, bool:auto_pop = true) {
 	#emit stor.s.pri retval
 
 	// Pop native arguments.
-	#emit lctrl 4
+	#emit lctrl __stk
 	#emit load.s.alt bytes
 	#emit add
 	#emit add.c cells2
-	#emit sctrl 4
+	#emit sctrl __stk
 
 	if (auto_pop) {
 		g_nargs = end;
@@ -629,12 +629,12 @@ stock SysreqDNWide(address, wide, args_to_push, bool:auto_pop = true) {
 	#emit push.pri
 
 	// tmp = cod + cip - dat + <distance to nop #1>
-	#emit lctrl 0  // COD
+	#emit lctrl __cod  // COD
 	#emit move.alt
-	#emit lctrl 6  // CIP
+	#emit lctrl __cip  // CIP
 	#emit add
 	#emit move.alt
-	#emit lctrl 1 // DAT
+	#emit lctrl __dat // DAT
 	#emit sub.alt
 	#emit add.c cells0
 	#emit stor.s.pri tmp
@@ -658,11 +658,11 @@ stock SysreqDNWide(address, wide, args_to_push, bool:auto_pop = true) {
 	#emit stor.s.pri retval
 
 	// Pop native arguments.
-	#emit lctrl 4
+	#emit lctrl __stk
 	#emit load.s.alt bytes
 	#emit add
 	#emit add.c cells2
-	#emit sctrl 4
+	#emit sctrl __stk
 
 	if (auto_pop) {
 		g_nargs = end;
@@ -693,13 +693,13 @@ stock CallNative(index, {Float,_}:...) {
 	#emit move.alt
 
 	// Last argument is at FRM + 0x0C + arg_bytes (which is in ALT).
-	#emit lctrl 5
+	#emit lctrl __frm
 	#emit add.c cells1
 	#emit add
 	#emit stor.s.pri arg_end
 
 	// Frist argument is at FRM + 0x10.
-	#emit lctrl 5
+	#emit lctrl __frm
 	#emit add.c cells2
 	#emit stor.s.pri arg_begin
 
@@ -718,12 +718,12 @@ stock CallNative(index, {Float,_}:...) {
 	#emit push.s arg_bytes
 
 	// tmp = cod + cip - dat + <distance to nop #1>
-	#emit lctrl 0  // COD
+	#emit lctrl __cod  // COD
 	#emit move.alt
-	#emit lctrl 6  // CIP
+	#emit lctrl __cip  // CIP
 	#emit add
 	#emit move.alt
-	#emit lctrl 1 // DAT
+	#emit lctrl __dat // DAT
 	#emit sub.alt
 	#emit add.c cells3
 	#emit stor.s.pri tmp
@@ -747,11 +747,11 @@ stock CallNative(index, {Float,_}:...) {
 	#emit stor.s.pri retval
 
 	// Pop native arguments.
-	#emit lctrl 4
+	#emit lctrl __stk
 	#emit load.s.alt arg_bytes
 	#emit add
 	#emit add.c cells5
-	#emit sctrl 4
+	#emit sctrl __stk
 
 	return retval;
 }
@@ -781,13 +781,13 @@ stock CallNativeByAddress(address, {Float,_}:...) {
 	#emit move.alt
 
 	// Last argument is at FRM + 0x0C + arg_bytes (which is in ALT).
-	#emit lctrl 5
+	#emit lctrl __frm
 	#emit add.c cells1
 	#emit add
 	#emit stor.s.pri arg_end
 
 	// Frist argument is at FRM + 0x10.
-	#emit lctrl 5
+	#emit lctrl __frm
 	#emit add.c cells2
 	#emit stor.s.pri arg_begin
 
@@ -806,12 +806,12 @@ stock CallNativeByAddress(address, {Float,_}:...) {
 	#emit push.s arg_bytes
 
 	// tmp = cod + cip - dat + <distance to nop #1>
-	#emit lctrl 0  // COD
+	#emit lctrl __cod  // COD
 	#emit move.alt
-	#emit lctrl 6  // CIP
+	#emit lctrl __cip  // CIP
 	#emit add
 	#emit move.alt
-	#emit lctrl 1 // DAT
+	#emit lctrl __dat // DAT
 	#emit sub.alt
 	#emit add.c cells3
 	#emit stor.s.pri tmp
@@ -835,11 +835,11 @@ stock CallNativeByAddress(address, {Float,_}:...) {
 	#emit stor.s.pri retval
 
 	// Pop native arguments.
-	#emit lctrl 4
+	#emit lctrl __stk
 	#emit load.s.alt arg_bytes
 	#emit add
 	#emit add.c cells5
-	#emit sctrl 4
+	#emit sctrl __stk
 
 	return retval;
 }
@@ -870,13 +870,13 @@ stock CallNativeByAddressWide(address, wide, {Float,_}:...) {
 	#emit move.alt
 
 	// Last argument is at FRM + 0x0C + arg_bytes (which is in ALT).
-	#emit lctrl 5
+	#emit lctrl __frm
 	#emit add.c cells1
 	#emit add
 	#emit stor.s.pri arg_end
 
 	// Frist argument is at FRM + 0x10.
-	#emit lctrl 5
+	#emit lctrl __frm
 	#emit add.c cells2
 	#emit stor.s.pri arg_begin
 
@@ -895,12 +895,12 @@ stock CallNativeByAddressWide(address, wide, {Float,_}:...) {
 	#emit push.s arg_bytes
 
 	// tmp = cod + cip - dat + <distance to nop #1>
-	#emit lctrl 0  // COD
+	#emit lctrl __cod  // COD
 	#emit move.alt
-	#emit lctrl 6  // CIP
+	#emit lctrl __cip  // CIP
 	#emit add
 	#emit move.alt
-	#emit lctrl 1 // DAT
+	#emit lctrl __dat // DAT
 	#emit sub.alt
 	#emit add.c cells3
 	#emit stor.s.pri tmp
@@ -924,11 +924,11 @@ stock CallNativeByAddressWide(address, wide, {Float,_}:...) {
 	#emit stor.s.pri retval
 
 	// Pop native arguments.
-	#emit lctrl 4
+	#emit lctrl __stk
 	#emit load.s.alt arg_bytes
 	#emit add
 	#emit add.c cells5
-	#emit sctrl 4
+	#emit sctrl __stk
 
 	return retval;
 }
