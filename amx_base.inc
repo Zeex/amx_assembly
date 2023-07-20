@@ -37,7 +37,12 @@
 /// <p/>
 
 #if defined __PawnBuild
-	#define __pawn_build __PawnBuild
+	#if __PawnBuild == 0
+		#undef __PawnBuild
+		#define __pawn_build 0
+	#else
+		#define __pawn_build __PawnBuild
+	#endif
 #else
 	#define __pawn_build 0
 #endif
