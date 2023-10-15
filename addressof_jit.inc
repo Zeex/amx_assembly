@@ -45,7 +45,7 @@
 
 /// <p/>
 
-#include "addressof"
+#include "addressof_light"
 #include "codescan"
 #include "asm"
 
@@ -54,18 +54,24 @@ static stock AddressofResolveFoundStart(const scanner[CodeScanner]) {
 	// Skip over now superfluous code.
 	new ctx[AsmContext];
 	CodeScanGetMatchAsm(scanner, ctx);
-	new
-		hdr[AMX_HDR];
+	new hdr[AMX_HDR];
 	GetAmxHeader(hdr);
 	AsmEmitJump(ctx, CodeScanGetMatchHole(scanner, 0) + GetAmxBaseAddress() + hdr[AMX_HDR_COD]);
-}
-
-/// <library>amx_assembly addressof_jit</library>
-static stock AddressofResolveFoundEnd(const scanner[CodeScanner]) {
-	// Write a `const` for the function address.
-	new ctx[AsmContext];
-	CodeScanGetMatchAsm(scanner, ctx, CodeScanGetMatchLength(scanner) - 2 * cellbytes);
-	AsmEmitConstPri(ctx, CodeScanGetMatchHole(scanner, 0));
+	new dctx[DisasmContext];
+	CodeScanGetMatchDisasm(scanner, dctx),
+	// Skip the three matched instructions.
+	DisasmNextInsn(dctx),
+	DisasmNextInsn(dctx),
+	DisasmNextInsn(dctx);
+	// Find a `call`.
+	while (DisasmNextInsn(dctx) != OP_CALL)
+	{
+		// Do nothing.
+	}
+	new ptr = DisasmGetOperandReloc(dctx);
+	// Found the location.
+	AsmInitPtr(ctx, CodeScanGetMatchHole(scanner, 0) - hdr[AMX_HDR_DAT] + hdr[AMX_HDR_COD], 2 * cellbytes);
+	AsmEmitConstPri(ctx, ptr);
 }
 
 /// <library>amx_assembly addressof_jit</library>
@@ -111,37 +117,6 @@ stock AddressofResolve() {
 		OP(JZER,       ???)
 	);
 	CodeScanAddMatcher(scanner, csm1);
-	
-	// End.
-	new csm2[CodeScanMatcher];
-	CodeScanMatcherInit(csm2, &AddressofResolveFoundEnd);
-	CodeScanMatcherPattern(csm2,
-		OP(CALL,       ???)
-		OP(LOAD_PRI,   ref(gAddressOfReturnVar_))
-		OP(JZER,       ???)
-		OP(CONST_PRI,  1)
-		OP(JUMP,       ???)
-		OP(CONST_PRI,  2)
-		OP(JUMP,       ???)
-		OP(LOAD_PRI,   ref(gAddressOfReturnVar_))
-	);
-	CodeScanAddMatcher(scanner, csm2);
-	
-	// End with heap.
-	new csm3[CodeScanMatcher];
-	CodeScanMatcherInit(csm3, &AddressofResolveFoundEnd);
-	CodeScanMatcherPattern(csm3,
-		OP(CALL,       ???)
-		OP(HEAP,       ???)
-		OP(LOAD_PRI,   ref(gAddressOfReturnVar_))
-		OP(JZER,       ???)
-		OP(CONST_PRI,  1)
-		OP(JUMP,       ???)
-		OP(CONST_PRI,  2)
-		OP(JUMP,       ???)
-		OP(LOAD_PRI,   ref(gAddressOfReturnVar_))
-	);
-	CodeScanAddMatcher(scanner, csm3);
 	
 	// Run the scanner.
 	CodeScanRunFast(scanner, &AddressOfGetNextCall_);
