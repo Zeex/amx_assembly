@@ -58,6 +58,10 @@
 
 #define __AMX_CALL_UPGRADED
 
+// For future compiler version.  TODO: Figure out `<tTag:>` in this syntax.
+//#define addressof __addressof
+//#define __addressof(%0<%1>) (F@_@%1:__addressof(%0))
+
 // This code uses two nested conditionals because of:
 // https://github.com/Zeex/pawn/issues/96 (this doesn't work):
 //   
