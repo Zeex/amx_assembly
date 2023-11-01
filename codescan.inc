@@ -1014,9 +1014,7 @@ stock bool:CodeScanRunFast(csState[CodeScanner], searchFuncAddr = 0) {
 			parseState = 4,
 			parseParam = 0;
 		// Enable scans to start at a non-zero position.
-		//DisasmInit(dctx);
-		dctx[DisasmContext_nip] = dctx[DisasmContext_cip] = dctx[DisasmContext_start_ip] = gDat;
-		dctx[DisasmContext_end_ip] = 0;
+		DisasmInit(dctx, csState[CodeScanMatch_cip] - gDat);
 		// Call the correct function based on the status of relocation requirements.
 		while (gRelocateRequired ? CodeScanRunFastPrescanRelocate(proc, addr, searchFuncAddr) : CodeScanRunFastPrescanLocated(proc, addr, searchFuncAddr)) {
 			addr += 2 * cellbytes,
@@ -1085,9 +1083,7 @@ stock bool:CodeScanRun(csState[CodeScanner]) {
 		parseState = 4,
 		parseParam = 0;
 	// Enable scans to start at a non-zero position.
-	//DisasmInit(dctx, csState[CodeScanMatch_cip] - gDat);
-	dctx[DisasmContext_nip] = dctx[DisasmContext_cip] = dctx[DisasmContext_start_ip] = csState[CodeScanMatch_cip];
-	dctx[DisasmContext_end_ip] = 0;
+	DisasmInit(dctx, csState[CodeScanMatch_cip] - gDat);
 	for (cur = csState[CodeScanner_first]; cur != -1; CodeScanReset(CodeScanDeref(cur), cur)) { }
 	while (CodeScanStepInternal(dctx, csState, parseState, parseParam)) {
 		// Check the address - if it is a jump target that changes the stack
