@@ -98,6 +98,7 @@ stock bool:NativeIdxOfGetNextCall_() {
 	// for the next "CALL" op to signal the function call from the macro.
 	new ctx[DisasmContext];
 	DisasmInit(ctx, GetCurrentFrameReturn());
+	new candidate = -1;
 	while (DisasmNext(ctx)) {
 #if OPCODE_HAS_O2
 		if (ctx[DisasmContext_opcode] == OP_SYSREQ_C || ctx[DisasmContext_opcode] == OP_SYSREQ_N) {
@@ -105,7 +106,13 @@ stock bool:NativeIdxOfGetNextCall_() {
 		if (ctx[DisasmContext_opcode] == OP_SYSREQ_C) {
 #endif
 			// Return the data in a global, to be repassed from the conditional.
-			gAddressOfReturnVar_ = DisasmGetOperand(ctx);
+			candidate = DisasmGetOperand(ctx);
+		}
+		else if (ctx[DisasmContext_opcode] == OP_JZER && candidate != -1) {
+			// Get the last `SYSREQ.C` before the branch.  Because some calls
+			// may invoke additional natives in their stubbing, most notably
+			// `float(0)` in e.g. `nativeidxof(floatmul<ii>)`.
+			gAddressOfReturnVar_ = candidate;
 			return false;
 		}
 	}
