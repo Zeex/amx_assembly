@@ -31,15 +31,15 @@
  *     This XSL has features such as library and markdown support, and will not
  *     render this message when used.
  *   </summary>
-///   <remarks>
-///     <c>addressof</c> works by reading data directly out of the stack to get
-///     a return address, then reading information from that location in memory
-///     to get the next <c>CALL</c> OpCode.  This fails with the JIT because the
-///     return address is in the JITed code, not in the original p-code.
-///     Instead, when the JIT is in use, use <em>codescan</em> to convert
-///     runtime <c>addressof</c> calls to startup-time resolutions.  Actually,
-///     there's no reason why this should be restricted to JIT only.
-///   </remarks>
+ *   <remarks>
+ *     <c>addressof</c> works by reading data directly out of the stack to get
+ *     a return address, then reading information from that location in memory
+ *     to get the next <c>CALL</c> OpCode.  This fails with the JIT because the
+ *     return address is in the JITed code, not in the original p-code.
+ *     Instead, when the JIT is in use, use <em>codescan</em> to convert
+ *     runtime <c>addressof</c> calls to startup-time resolutions.  Actually,
+ *     there's no reason why this should be restricted to JIT only.
+ *   </remarks>
  * </library>
  */
 
