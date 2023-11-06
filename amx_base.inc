@@ -109,13 +109,7 @@ stock GetAmxBaseAddressNow() {
 	GetAmxBaseAddress_helper();
 	#emit lctrl __cip
 	#emit stor.s.pri call_addr
-	#if cellbits == 32
-		call_addr = call_addr - 12 + code_start;
-	#elseif cellbits == 64
-		call_addr = call_addr - 24 + code_start;
-	#else
-		#error Unsupported `cellbits`.
-	#endif
+	call_addr = call_addr - 3 * cellbytes + code_start;
 	#emit lref.s.pri call_addr
 	#emit stor.s.pri fn_addr_reloc
 
