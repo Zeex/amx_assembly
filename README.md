@@ -5,6 +5,7 @@
 * [`amx_base.inc`](amx_base.inc) - Get base address of the AMX in memory (`amx->base`).
 * [`amx_header.inc`](amx_header.inc) - Read contents of the AMX header (`AMX_HEADER`) and query header tables such as publics, natives, tags, etc.
 * [`amx_memory.inc`](amx_memory.inc) - Read/write contents of variables using their AMX address (kind of like pointers in C).
+* [`asm.inc`](asm.inc) - `@emit()` for generating new assembly at runtime, similar to what `#emit` and `__emit` are for compile-time.
 * [`codescan.inc`](codescan.inc) - Find patterns in bytecode.
 * [`disasm.inc`](disasm.inc) - Example of how to disassemble AMX bytecode (i.e. self-disassembly).
 * [`dynamic_call.inc`](dynamic_call.inc) - Call any function by address or index. Can be very powerful in combination with [`amx_header.inc`](amx_header.inc).
