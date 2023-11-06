@@ -3,10 +3,7 @@ amx_assembly addressof_jit
 AMX Assembly Library: `addressof` JIT code.
 ------------------------------------------
 
-///
-/// `addressof` works by reading data directly out of the stack to get /// a return address, then reading information from that location in memory /// to get the next `CALL` OpCode. This fails with the JIT because the /// return address is in the JITed code, not in the original p-code. /// Instead, when the JIT is in use, use *codescan* to convert /// runtime `addressof` calls to startup-time resolutions. Actually, /// there's no reason why this should be restricted to JIT only. ///
-
-
+`addressof` works by reading data directly out of the stack to get a return address, then reading information from that location in memory to get the next `CALL` OpCode. This fails with the JIT because the return address is in the JITed code, not in the original p-code.  Instead, when the JIT is in use, use *codescan* to convert runtime `addressof` calls to startup-time resolutions. Actually, there's no reason why this should be restricted to JIT only.
 
 
 ## Functions
