@@ -1,6 +1,7 @@
 ## Overview
 
-* [`amx.inc`](amx.inc) - Read/write contents of the AMX strcture (`AMX` struct in C code).
+* [`addressof.inc`](addressof.inc) - Provide `addressof` to get the compiled address of a function, plus runtime compilation to a simple constant, and a lightweight version with no *disasm* dependency.
+* [`amx.inc`](amx.inc) - Read/write contents of the AMX structure (`AMX` struct in C code).
 * [`amx_base.inc`](amx_base.inc) - Get base address of the AMX in memory (`amx->base`).
 * [`amx_header.inc`](amx_header.inc) - Read contents of the AMX header (`AMX_HEADER`) and query header tables such as publics, natives, tags, etc.
 * [`amx_memory.inc`](amx_memory.inc) - Read/write contents of variables using their AMX address (kind of like pointers in C).
