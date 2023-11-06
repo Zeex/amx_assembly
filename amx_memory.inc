@@ -150,7 +150,8 @@ stock GetAmxNextInstructionPointer()
 	// getting the pointer will in itself take code, so exactly where is "here"?
 	// This returns its own return address, which points to the instruction
 	// directly after the call.  This is at least well defined.
-	#emit load.s.pri 4
+	const cells0 = 1 * cellbytes;
+	#emit load.s.pri cells0 // Return address.
 	#emit retn
 	return 0;
 }
