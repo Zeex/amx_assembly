@@ -52,7 +52,7 @@ main()
 
 In the latter case the return value will have a tag representing how to call the function, so without the `_:` tag override as seen in the example above you would need to declare `addr` as `Func:addr<ii>`.
 
-The *addressof-jit.inc* library will re-compile `addressof` calls to a single constant when `AddressofResolve()` is called.  It should really be a constant, but there's no (known) way of doing that at compile-time with only macros.  However, compiler version 3.10.11 introduced a native `__addressof` operator to do exactly this (but without the tag-type information, so still using `addressof` is better; with it using `_addressof` underneath where possible).  The original implementation of `addressof` used *disasm.inc* to find the fake function call and get the address from that.  The new version (ignoring any `__addressof` usage) does away with that fairly heavy dependency and is a single small function, defined in *addressof-light.inc*.
+The *addressof-jit.inc* library will re-compile `addressof` calls to a single constant when `AddressofResolve()` is called.  It should really be a constant, but there's no (known) way of doing that at compile-time with only macros.  However, compiler version 3.10.11 introduced a native `__addressof` operator to do exactly this (but without the tag-type information, so still using `addressof` is better; with it using `__addressof` underneath where possible).  The original implementation of `addressof` used *disasm.inc* to find the fake function call and get the address from that.  The new version (ignoring any `__addressof` usage) does away with that fairly heavy dependency and is a single small function, defined in *addressof-light.inc*.
 
 ### `nativeidxof`
 
